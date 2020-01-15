@@ -1223,12 +1223,11 @@ static int edma_axi_probe(struct platform_device *pdev)
 				err = -EIO;
 				goto edma_phy_attach_fail;
 			} else {
-				adapter[i]->phydev->advertising |=
-					ADVERTISED_Pause |
-					ADVERTISED_Asym_Pause;
-				adapter[i]->phydev->supported |=
-					SUPPORTED_Pause |
-					SUPPORTED_Asym_Pause;
+				linkmode_set_bit(ETHTOOL_LINK_MODE_Pause_BIT, adapter[i]->phydev->advertising);
+				linkmode_set_bit(ETHTOOL_LINK_MODE_Asym_Pause_BIT, adapter[i]->phydev->advertising);
+
+				linkmode_set_bit(ETHTOOL_LINK_MODE_Pause_BIT, adapter[i]->phydev->supported);
+				linkmode_set_bit(ETHTOOL_LINK_MODE_Asym_Pause_BIT, adapter[i]->phydev->supported);
 			}
 		} else {
 			adapter[i]->phydev = NULL;
