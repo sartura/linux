@@ -1808,8 +1808,11 @@ ar40xx_phy_probe(struct phy_device *phydev)
 	if (phydev->mdio.addr == 0)
 		ar40xx_priv->phy = phydev;
 
-	phydev->supported |= SUPPORTED_1000baseT_Full;
-	phydev->advertising |= ADVERTISED_1000baseT_Full;
+	linkmode_set_bit(ETHTOOL_LINK_MODE_1000baseT_Full_BIT, 
+					phydev->supported);
+	linkmode_set_bit(ETHTOOL_LINK_MODE_1000baseT_Full_BIT, 
+					phydev->advertising);
+
 	return 0;
 }
 
@@ -1848,7 +1851,7 @@ static struct phy_driver ar40xx_phy_driver = {
 	.phy_id		= 0x004d0000,
 	.name		= "QCA Malibu",
 	.phy_id_mask	= 0xffff0000,
-	.features	= PHY_BASIC_FEATURES,
+	.features	= PHY_GBIT_FEATURES,
 	.probe		= ar40xx_phy_probe,
 	.remove		= ar40xx_phy_remove,
 	.config_init	= ar40xx_phy_config_init,
