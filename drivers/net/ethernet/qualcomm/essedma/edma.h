@@ -136,11 +136,11 @@
 #define EDMA_MAX_SKB_FRAGS (MAX_SKB_FRAGS + 1)
 
 /* Ethtool specific list of EDMA supported features */
-#define EDMA_SUPPORTED_FEATURES (SUPPORTED_10baseT_Half \
-					| SUPPORTED_10baseT_Full \
-					| SUPPORTED_100baseT_Half \
-					| SUPPORTED_100baseT_Full \
-					| SUPPORTED_1000baseT_Full)
+#define EDMA_SUPPORTED_FEATURES (ETHTOOL_LINK_MODE_10baseT_Half_BIT \
+					| ETHTOOL_LINK_MODE_10baseT_Full_BIT \
+					| ETHTOOL_LINK_MODE_100baseT_Half_BIT \
+					| ETHTOOL_LINK_MODE_100baseT_Full_BIT \
+					| ETHTOOL_LINK_MODE_1000baseT_Full_BIT)
 
 /* Recevie side atheros Header */
 #define EDMA_RX_ATH_HDR_VERSION 0x2
