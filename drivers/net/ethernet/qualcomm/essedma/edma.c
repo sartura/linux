@@ -502,13 +502,13 @@ static int edma_rx_complete_paged(struct sk_buff *skb, u16 num_rfds, u16 length,
 		skb_fill_page_desc(skb, 0, skb_frag_page(frag),
 				16, length);
 	} else {
-		frag->size -= 16;
-		skb->data_len = frag->size;
+		frag->bv_len -= 16;
+		skb->data_len = frag->bv_len;
 		skb->truesize += edma_cinfo->rx_page_buffer_len;
-		size_remaining = length - frag->size;
+		size_remaining = length - frag->bv_len;
 
 		skb_fill_page_desc(skb, 0, skb_frag_page(frag),
-				16, frag->size);
+				16, frag->bv_len);
 
 		/* clean-up all related sw_descs */
 		for (i = 1; i < num_rfds; i++) {
@@ -519,17 +519,17 @@ static int edma_rx_complete_paged(struct sk_buff *skb, u16 num_rfds, u16 length,
 				sw_desc->length, DMA_FROM_DEVICE);
 
 			if (size_remaining < edma_cinfo->rx_page_buffer_len)
-				frag->size = size_remaining;
+				frag->bv_len = size_remaining;
 
 			skb_fill_page_desc(skb, i, skb_frag_page(frag),
-					0, frag->size);
+					0, frag->bv_len);
 
 			skb_shinfo(skb_temp)->nr_frags = 0;
 			dev_kfree_skb_any(skb_temp);
 
-			skb->data_len += frag->size;
+			skb->data_len += frag->bv_len;
 			skb->truesize += edma_cinfo->rx_page_buffer_len;
-			size_remaining -= frag->size;
+			size_remaining -= frag->bv_len;
 
 			/* Increment SW index */
 			sw_next_to_clean = (sw_next_to_clean + 1) & (erdr->count - 1);
