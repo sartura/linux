@@ -117,52 +117,61 @@ static void ipqess_get_drvinfo(struct net_device *dev,
 }
 
 static int ipqess_get_settings(struct net_device *netdev,
-			       struct ethtool_cmd *ecmd)
+			       struct ethtool_link_ksettings *cmd)
 {
 	struct phy_device *phydev = NULL;
 	uint16_t phyreg;
 
 	phydev = netdev->phydev;
 
-	ecmd->advertising = phydev->advertising;
-	ecmd->autoneg = phydev->autoneg;
-	ecmd->speed = phydev->speed;
-	ecmd->duplex = phydev->duplex;
-	ecmd->phy_address = phydev->mdio.addr;
+	linkmode_copy(cmd->link_modes.advertising, phydev->advertising);
+	linkmode_copy(cmd->link_modes.supported, phydev->supported);
+
+	cmd->base.autoneg = phydev->autoneg;
+	cmd->base.speed = phydev->speed;
+	cmd->base.duplex = phydev->duplex;
+	cmd->base.phy_address = phydev->mdio.addr;
 
 	phyreg = (uint16_t)phy_read(netdev->phydev, MII_LPA);
 	if (phyreg & LPA_10HALF)
-		ecmd->lp_advertising |= ADVERTISED_10baseT_Half;
+		linkmode_set_bit(ETHTOOL_LINK_MODE_10baseT_Half_BIT,
+						cmd->link_modes.lp_advertising);
 
 	if (phyreg & LPA_10FULL)
-		ecmd->lp_advertising |= ADVERTISED_10baseT_Full;
+		linkmode_set_bit(ETHTOOL_LINK_MODE_10baseT_Full_BIT,
+						cmd->link_modes.lp_advertising);
 
 	if (phyreg & LPA_100HALF)
-		ecmd->lp_advertising |= ADVERTISED_100baseT_Half;
+		linkmode_set_bit(ETHTOOL_LINK_MODE_100baseT_Half_BIT,
+						cmd->link_modes.lp_advertising);
 
 	if (phyreg & LPA_100FULL)
-		ecmd->lp_advertising |= ADVERTISED_100baseT_Full;
+		linkmode_set_bit(ETHTOOL_LINK_MODE_100baseT_Full_BIT,
+						cmd->link_modes.lp_advertising);
 
 	phyreg = (uint16_t)phy_read(netdev->phydev, MII_STAT1000);
 	if (phyreg & LPA_1000HALF)
-		ecmd->lp_advertising |= ADVERTISED_1000baseT_Half;
+		linkmode_set_bit(ETHTOOL_LINK_MODE_1000baseT_Half_BIT,
+						cmd->link_modes.lp_advertising);
 
 	if (phyreg & LPA_1000FULL)
-		ecmd->lp_advertising |= ADVERTISED_1000baseT_Full;
+		linkmode_set_bit(ETHTOOL_LINK_MODE_1000baseT_Full_BIT,
+						cmd->link_modes.lp_advertising);
 
 	return 0;
 }
 
 static int ipqess_set_settings(struct net_device *netdev,
-			     struct ethtool_cmd *ecmd)
+			    const struct ethtool_link_ksettings *cmd)
 {
 	struct phy_device *phydev = NULL;
 
 	phydev = netdev->phydev;
-	phydev->advertising = ecmd->advertising;
-	phydev->autoneg = ecmd->autoneg;
-	phydev->speed = ethtool_cmd_speed(ecmd);
-	phydev->duplex = ecmd->duplex;
+	linkmode_copy(phydev->advertising, cmd->link_modes.advertising);
+	linkmode_copy(phydev->supported, cmd->link_modes.supported);
+	phydev->autoneg = cmd->base.autoneg;
+	phydev->speed = cmd->base.speed;
+	phydev->duplex = cmd->base.duplex;
 
 	genphy_config_aneg(phydev);
 
@@ -179,8 +188,8 @@ static void ipqess_get_ringparam(struct net_device *netdev,
 static const struct ethtool_ops ipqesstool_ops = {
 	.get_drvinfo = &ipqess_get_drvinfo,
 	.get_link = &ethtool_op_get_link,
-	.get_settings = &ipqess_get_settings,
-	.set_settings = &ipqess_set_settings,
+	.get_link_ksettings = &ipqess_get_settings,
+	.set_link_ksettings = &ipqess_set_settings,
 	.get_strings = &ipqess_get_strings,
 	.get_sset_count = &ipqess_get_strset_count,
 	.get_ringparam = ipqess_get_ringparam,
