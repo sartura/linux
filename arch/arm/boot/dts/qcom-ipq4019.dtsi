@@ -39,6 +39,7 @@
 		spi1 = &blsp1_spi2;
 		i2c0 = &blsp1_i2c3;
 		i2c1 = &blsp1_i2c4;
+		ethernet0 = &gmac;
 	};
 
 	cpus {
@@ -637,6 +638,134 @@
 				qcom,tx-driver-strength = <PSGMII_QSGMII_TX_DRIVER_300MV>;
 				qcom,psgmii-az;
 			};
+		};
+
+		psgmii_phy: psgmii-phy@98000 {
+			compatible = "qcom,ipq4019-psgmii-phy", "syscon";
+			reg = <0x98000 0x800>;
+			resets = <&gcc ESS_PSGMII_ARES>;
+			reset-names = "psgmii_rst";
+
+			status = "disabled";
+		};
+
+		ess: switch@c000000 {
+			compatible = "qca,qca8337-mmio", "syscon";
+			reg = <0xc000000 0x80000>;
+			resets = <&gcc ESS_RESET>, <&gcc ESS_MAC1_CLK_DIS>,
+				 <&gcc ESS_MAC2_CLK_DIS>, <&gcc ESS_MAC3_CLK_DIS>,
+				 <&gcc ESS_MAC4_CLK_DIS>, <&gcc ESS_MAC5_CLK_DIS>;
+			reset-names = "ess_rst", "ess_mac1_clk_dis",
+				      "ess_mac2_clk_dis", "ess_mac3_clk_dis",
+				      "ess_mac4_clk_dis", "ess_mac5_clk_dis";
+			clocks = <&gcc GCC_ESS_CLK>;
+			clock-names = "ess_clk";
+			psgmii-phy = <&psgmii_phy>;
+			syscon = <&portwrapper>;
+			mii = <&mdio>;
+			mac-mode = <0>; /* 0 = PSGMII, 1 = RGMII5 */
+
+			status = "disabled";
+
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				essport0: port@0 { /* MAC0 */
+					reg = <0>;
+					label = "cpu";
+					ethernet = <&gmac>;
+					phy-mode = "internal";
+
+					fixed-link {
+						speed = <1000>;
+						full-duplex;
+						pause;
+					};
+				};
+
+				essport1: port@1 { /* MAC1 */
+					reg = <1>;
+					label = "lan1";
+					phy-handle = <&ethphy0>;
+				};
+
+				essport2: port@2 { /* MAC2 */
+					reg = <2>;
+					label = "lan2";
+					phy-handle = <&ethphy1>;
+				};
+
+				essport3: port@3 { /* MAC3 */
+					reg = <3>;
+					label = "lan3";
+					phy-handle = <&ethphy2>;
+				};
+
+				essport4: port@4 { /* MAC4 */
+					reg = <4>;
+					label = "lan4";
+					phy-handle = <&ethphy3>;
+				};
+
+				essport5: port@5 { /* MAC5 */
+					reg = <5>;
+					label = "wan";
+					phy-handle = <&ethphy4>;
+				};
+			};
+		};
+
+		gmac: ethernet@c080000 {
+			compatible = "qcom,ipq4019-ess-edma";
+			reg = <0xc080000 0x8000>;
+			interrupts = <GIC_SPI  65 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI  66 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI  67 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI  68 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI  69 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI  70 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI  71 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI  72 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI  73 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI  74 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI  75 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI  76 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI  77 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI  78 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI  79 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI  80 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 240 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 241 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 242 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 243 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 244 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 245 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 246 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 247 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 248 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 249 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 250 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 251 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 252 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 253 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 254 IRQ_TYPE_EDGE_RISING>,
+				     <GIC_SPI 255 IRQ_TYPE_EDGE_RISING>;
+
+			status = "disabled";
+
+			phy-mode = "internal";
+			fixed-link {
+				speed = <1000>;
+				full-duplex;
+				pause;
+				asym-pause;
+			};
+		};
+
+		portwrapper: portmux@1953000 {
+			compatible = "syscon";
+			reg = <0x1953000 0x1000>;
 		};
 
 		usb3_ss_phy: ssphy@9a000 {
