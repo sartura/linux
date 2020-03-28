@@ -106,6 +106,12 @@ config NET_DSA_TAG_QCA
 	  Say Y or M if you want to enable support for tagging frames for
 	  the Qualcomm Atheros QCA8K switches.
 
+config NET_DSA_TAG_QCA_IPQ40XX
+	tristate "Tag driver for Qualcomm Atheros QCA8K switches in IPQ40xx SoC-s"
+	help
+	  Say Y or M if you want to enable support for tagging frames for
+	  the Qualcomm Atheros QCA8K switches in IPQ40xx SoC-s.
+
 config NET_DSA_TAG_LAN9303
 	tristate "Tag driver for SMSC/Microchip LAN9303 family of switches"
 	help
