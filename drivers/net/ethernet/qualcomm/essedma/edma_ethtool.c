@@ -358,6 +358,7 @@ static void edma_get_ringparam(struct net_device *netdev,
 /* Ethtool operations
  */
 static const struct ethtool_ops edma_ethtool_ops = {
+	.supported_coalesce_params = ETHTOOL_COALESCE_USECS,
 	.get_drvinfo = &edma_get_drvinfo,
 	.get_link = &ethtool_op_get_link,
 	.get_msglevel = &edma_get_msglevel,
