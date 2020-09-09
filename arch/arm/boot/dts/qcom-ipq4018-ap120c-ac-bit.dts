@@ -14,6 +14,16 @@
 			default-state = "on";
 		};
 
+		lan {
+			label = "ap120c-ac:green:lan";
+			gpios = <&qca8075 19 GPIO_ACTIVE_HIGH>;
+		};
+
+		wan {
+			label = "ap120c-ac:green:wan";
+			gpios = <&qca8075 15 GPIO_ACTIVE_HIGH>;
+		};
+
 		wlan {
 			label = "ap120c-ac:green:wlan";
 			gpios = <&tlmm 3 GPIO_ACTIVE_HIGH>;
