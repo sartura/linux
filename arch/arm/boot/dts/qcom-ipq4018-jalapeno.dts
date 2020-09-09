@@ -4,10 +4,61 @@
 #include "qcom-ipq4019.dtsi"
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/input/input.h>
+#include <dt-bindings/soc/qcom,tcsr.h>
 
 / {
 	model = "8devices Jalapeno";
 	compatible = "8dev,jalapeno";
+
+	aliases {
+		serial0 = &blsp1_uart1;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	soc {
+		ess-psgmii@98000 {
+			status = "okay";
+		};
+
+		tcsr@1949000 {
+			compatible = "qcom,tcsr";
+			reg = <0x1949000 0x100>;
+			qcom,wifi_glb_cfg = <TCSR_WIFI_GLB_CFG>;
+		};
+
+		tcsr@194b000 {
+			status = "okay";
+
+			compatible = "qcom,tcsr";
+			reg = <0x194b000 0x100>;
+			qcom,usb-hsphy-mode-select = <TCSR_USB_HSPHY_HOST_MODE>;
+		};
+
+		ess_tcsr@1953000 {
+			compatible = "qcom,tcsr";
+			reg = <0x1953000 0x1000>;
+			qcom,ess-interface-select = <TCSR_ESS_PSGMII>;
+		};
+
+		tcsr@1957000 {
+			compatible = "qcom,tcsr";
+			reg = <0x1957000 0x100>;
+			qcom,wifi_noc_memtype_m0_m2 = <TCSR_WIFI_NOC_MEMTYPE_M0_M2>;
+		};
+
+		ess-switch@c000000 {
+			status = "okay";
+
+			switch_lan_bmp = <0x10>; /* lan port bitmap */
+		};
+
+		edma@c080000 {
+			status = "okay";
+		};
+	};
 };
 
 &tlmm {
@@ -179,6 +230,20 @@
 
 	pinctrl-0 = <&mdio_pins>;
 	pinctrl-names = "default";
+};
+
+&gmac0 {
+	qcom,poll_required = <1>;
+	qcom,poll_required_dynamic = <1>;
+	qcom,phy_mdio_addr = <3>;
+	vlan_tag = <1 0x10>;
+};
+
+&gmac1 {
+	qcom,poll_required = <1>;
+	qcom,poll_required_dynamic = <1>;
+	qcom,phy_mdio_addr = <4>;
+	vlan_tag = <2 0x20>;
 };
 
 &wifi0 {
