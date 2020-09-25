@@ -601,7 +601,7 @@ static int __init ipqess_init(struct net_device *netdev)
 	const char *mac_addr;
 
 	mac_addr = of_get_mac_address(of_node);
-	if (mac_addr)
+	if (!IS_ERR(mac_addr))
 		ether_addr_copy(netdev->dev_addr, mac_addr);
 	if (!is_valid_ether_addr(netdev->dev_addr)) {
 		random_ether_addr(netdev->dev_addr);
