@@ -250,6 +250,16 @@
 
 &ess {
 	status = "okay";
+
+	ports {
+		/delete-node/ port@1;
+		/delete-node/ port@2;
+		/delete-node/ port@3;
+	};
+};
+
+&essport4 {
+	label = "lan";
 };
 
 &gmac {
