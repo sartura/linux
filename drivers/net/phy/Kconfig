@@ -283,6 +283,16 @@ config AT803X_PHY
 	  Currently supports the AR8030, AR8031, AR8033, AR8035 and internal
 	  QCA8337(Internal qca8k PHY) model
 
+config QCA807X_PHY
+	tristate "Qualcomm QCA807X PHYs"
+	depends on OF_MDIO
+	help
+	  Adds support for the Qualcomm QCA807x PHYs.
+	  These are 802.3 Clause 22 compliant PHYs supporting gigabit
+	  ethernet as well as 100Base-FX and 1000Base-X fibre.
+
+	  Currently supports the QCA8072 and QCA8075 models.
+
 config QSEMI_PHY
 	tristate "Quality Semiconductor PHYs"
 	help
