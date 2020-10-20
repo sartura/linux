@@ -245,6 +245,16 @@ config QSEMI_PHY
 	help
 	  Currently supports the qs6612
 
+config QCA807X_PHY
+	tristate "Qualcomm QCA807X PHYs"
+	depends on OF_MDIO
+	help
+	  Adds support for the Qualcomm QCA807x PHYs.
+	  These are 802.3 Clause 22 compliant PHYs supporting gigabit
+	  ethernet as well as 100Base-FX and 1000Base-X fibre.
+
+	  Currently supports the QCA8072 and QCA8075 models.
+
 config REALTEK_PHY
 	tristate "Realtek PHYs"
 	help
