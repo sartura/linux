@@ -48,14 +48,11 @@
 			qcom,wifi_noc_memtype_m0_m2 = <TCSR_WIFI_NOC_MEMTYPE_M0_M2>;
 		};
 
-		qca8075: ess-switch@c000000 {
+		ess-switch@c000000 {
 			status = "okay";
 
 			switch_lan_bmp = <0x10>;
 			switch_wan_bmp = <0x20>;
-
-			#gpio-cells = <2>;
-			gpio-controller;
 		};
 
 		edma@c080000 {
@@ -266,6 +263,16 @@
 
 	pinctrl-0 = <&mdio_pins>;
 	pinctrl-names = "default";
+};
+
+&ethphy3 {
+	gpio-controller;
+	#gpio-cells = <2>;
+};
+
+&ethphy4 {
+	gpio-controller;
+	#gpio-cells = <2>;
 };
 
 &gmac0 {
