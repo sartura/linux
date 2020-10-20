@@ -16,12 +16,12 @@
 
 		lan {
 			label = "ap120c-ac:green:lan";
-			gpios = <&qca8075 19 GPIO_ACTIVE_HIGH>;
+			gpios = <&ethphy4 1 GPIO_ACTIVE_HIGH>;
 		};
 
 		wan {
 			label = "ap120c-ac:green:wan";
-			gpios = <&qca8075 15 GPIO_ACTIVE_HIGH>;
+			gpios = <&ethphy3 1 GPIO_ACTIVE_HIGH>;
 		};
 
 		wlan {
