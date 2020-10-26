@@ -41,6 +41,25 @@ config ACPI_MDIO
 	help
 	  ACPI MDIO bus (Ethernet PHY) accessors
 
+comment "Switch configuration API + drivers"
+
+config SWCONFIG
+	tristate "Switch configuration API"
+	help
+	  Switch configuration API using netlink. This allows
+	  you to configure the VLAN features of certain switches.
+
+config SWCONFIG_LEDS
+	bool "Switch LED trigger support"
+	depends on (SWCONFIG && LEDS_TRIGGERS)
+
+config AR40XX_PHY
+	tristate "Driver for Qualcomm Atheros IPQ40XX switches"
+	depends on HAS_IOMEM && OF && OF_MDIO
+	select SWCONFIG
+	help
+	   This is the driver for Qualcomm Atheros IPQ40XX ESS switches.
+
 if MDIO_BUS
 
 config MDIO_DEVRES
