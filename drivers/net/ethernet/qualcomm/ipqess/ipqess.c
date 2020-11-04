@@ -522,7 +522,8 @@ static int ipqess_tx_complete(struct ipqess_tx_ring *tx_ring, int budget)
 		 tx_ring->tail);
 
 	if (netif_tx_queue_stopped(tx_ring->nq)) {
-		printk("S %d\n", tx_ring->idx);
+		netdev_dbg(tx_ring->ess->netdev, "waking up tx queue %d\n",
+			   tx_ring->idx);
 		netif_tx_wake_queue(tx_ring->nq);
 	}
 
@@ -906,13 +907,19 @@ static netdev_tx_t ipqess_xmit(struct sk_buff *skb,
 {
 	struct ipqess *ess = netdev_priv(netdev);
 	struct ipqess_tx_ring *tx_ring;
+	int avail;
 	int tx_num;
 	int ret;
 
 	tx_ring = &ess->tx_ring[skb_get_queue_mapping(skb)];
 	tx_num = ipqess_cal_txd_req(skb);
-	if (ipqess_tx_desc_available(tx_ring) <= tx_num) {
-		printk("s %d %x\n", tx_ring->idx, ipqess_r32(tx_ring->ess, IPQESS_REG_TX_INT_MASK_Q(tx_ring->idx)));
+	avail = ipqess_tx_desc_available(tx_ring);
+	if (avail <= tx_num) {
+		netdev_dbg(netdev,
+			   "stopping tx queue %d, avail=%d req=%d im=%x\n",
+			   tx_ring->idx, avail, tx_num,
+			   ipqess_r32(tx_ring->ess,
+				      IPQESS_REG_TX_INT_MASK_Q(tx_ring->idx)));
 		netif_tx_stop_queue(tx_ring->nq);
 		ipqess_w32(tx_ring->ess, IPQESS_REG_TX_INT_MASK_Q(tx_ring->idx), 0x1);
 		return NETDEV_TX_BUSY;
