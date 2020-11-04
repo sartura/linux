@@ -1489,25 +1489,35 @@ qca8k_mmio_probe(struct platform_device *pdev)
 	}
 
 	ret = of_property_read_u32(np, "mac-mode", &priv->mac_mode);
-	if (ret < 0)
+	if (ret < 0) {
+		dev_err(&pdev->dev, "unable to get 'mac-mode' property\n");
 		return -EINVAL;
+	}
 
 	priv->base = syscon_node_to_regmap(np);
-	if (IS_ERR_OR_NULL(priv->base))
+	if (IS_ERR_OR_NULL(priv->base)) {
+		dev_err(&pdev->dev, "unable to get register's base address\n");
 		return -EINVAL;
+	}
 
 	priv->psgmii = syscon_regmap_lookup_by_phandle(np, "psgmii-phy");
-	if (IS_ERR_OR_NULL(priv->psgmii))
+	if (IS_ERR_OR_NULL(priv->psgmii)) {
+		dev_err(&pdev->dev, "unable to get 'psgmii-phy' base\n");
 		return -EINVAL;
+	}
 
 	mii_np = of_parse_phandle(np, "mii", 0);
-	if (!mii_np)
+	if (!mii_np) {
+		dev_err(&pdev->dev, "unable to get mii bus property\n");
 		return -EINVAL;
+	}
 
 	priv->bus = of_mdio_find_bus(mii_np);
 	of_node_put(mii_np);
-	if (!priv->bus)
+	if (!priv->bus) {
+		dev_err(&pdev->dev, "unable to find MDIO bus\n");
 		return -EPROBE_DEFER;
+	}
 
 	priv->ds = devm_kzalloc(&pdev->dev, sizeof(*priv->ds),
 				QCA8K_NUM_PORTS);
