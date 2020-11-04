@@ -264,6 +264,7 @@ static inline void build_test(void)
 }
 
 void ipqess_set_ethtool_ops(struct net_device *netdev);
+void ipqess_update_hw_stats(struct ipqess *ess);
 
 /* register definition */
 #define IPQESS_REG_MAS_CTRL 0x0

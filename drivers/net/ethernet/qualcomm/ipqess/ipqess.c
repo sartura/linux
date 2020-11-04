@@ -54,6 +54,40 @@ static void ipqess_m32(struct ipqess *ess, u32 mask, u32 val, u16 reg)
 	ipqess_w32(ess, reg, _val);
 }
 
+void ipqess_update_hw_stats(struct ipqess *ess)
+{
+	uint32_t *p;
+	u32 stat;
+	int i;
+
+	lockdep_assert_held(&ess->stats_lock);
+
+	p = (uint32_t *)&(ess->ipqessstats);
+	for (i = 0; i < IPQESS_MAX_TX_QUEUE; i++) {
+		stat = ipqess_r32(ess, IPQESS_REG_TX_STAT_PKT_Q(i));
+		*p += stat;
+		p++;
+	}
+
+	for (i = 0; i < IPQESS_MAX_TX_QUEUE; i++) {
+		stat = ipqess_r32(ess, IPQESS_REG_TX_STAT_BYTE_Q(i));
+		*p += stat;
+		p++;
+	}
+
+	for (i = 0; i < IPQESS_MAX_RX_QUEUE; i++) {
+		stat = ipqess_r32(ess, IPQESS_REG_RX_STAT_PKT_Q(i));
+		*p += stat;
+		p++;
+	}
+
+	for (i = 0; i < IPQESS_MAX_RX_QUEUE; i++) {
+		stat = ipqess_r32(ess, IPQESS_REG_RX_STAT_BYTE_Q(i));
+		*p += stat;
+		p++;
+	}
+}
+
 static int ipqess_tx_ring_alloc(struct ipqess *ess)
 {
 	int i;
@@ -279,37 +313,9 @@ static void ipqess_rx_ring_free(struct ipqess *ess)
 static struct net_device_stats *ipqess_get_stats(struct net_device *netdev)
 {
 	struct ipqess *ess = netdev_priv(netdev);
-	uint32_t *p;
-	int i;
-	u32 stat;
 
 	spin_lock(&ess->stats_lock);
-	p = (uint32_t *)&(ess->ipqessstats);
-
-	for (i = 0; i < IPQESS_MAX_TX_QUEUE; i++) {
-		stat = ipqess_r32(ess, IPQESS_REG_TX_STAT_PKT_Q(i));
-		*p += stat;
-		p++;
-	}
-
-	for (i = 0; i < IPQESS_MAX_TX_QUEUE; i++) {
-		stat = ipqess_r32(ess, IPQESS_REG_TX_STAT_BYTE_Q(i));
-		*p += stat;
-		p++;
-	}
-
-	for (i = 0; i < IPQESS_MAX_RX_QUEUE; i++) {
-		stat = ipqess_r32(ess, IPQESS_REG_RX_STAT_PKT_Q(i));
-		*p += stat;
-		p++;
-	}
-
-	for (i = 0; i < IPQESS_MAX_RX_QUEUE; i++) {
-		stat = ipqess_r32(ess, IPQESS_REG_RX_STAT_BYTE_Q(i));
-		*p += stat;
-		p++;
-	}
-
+	ipqess_update_hw_stats(ess);
 	spin_unlock(&ess->stats_lock);
 
 	return &ess->stats;
