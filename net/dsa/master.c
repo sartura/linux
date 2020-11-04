@@ -82,10 +82,14 @@ static void dsa_master_get_ethtool_stats(struct net_device *dev,
 	int port = cpu_dp->index;
 	int count = 0;
 
-	if (ops->get_sset_count && ops->get_ethtool_stats) {
+	if (ops->get_sset_count) {
 		count = ops->get_sset_count(dev, ETH_SS_STATS);
-		ops->get_ethtool_stats(dev, stats, data);
+		if (count < 0)
+			count = 0;
 	}
+
+	if (count && ops->get_ethtool_stats)
+		ops->get_ethtool_stats(dev, stats, data);
 
 	if (ds->ops->get_ethtool_stats)
 		ds->ops->get_ethtool_stats(ds, port, data + count);
