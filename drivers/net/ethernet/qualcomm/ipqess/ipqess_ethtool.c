@@ -109,6 +109,24 @@ static void ipqess_get_strings(struct net_device *netdev, uint32_t stringset,
 	}
 }
 
+static void ipqess_get_ethtool_stats(struct net_device *netdev,
+				     struct ethtool_stats *stats,
+				     uint64_t *data)
+{
+	struct ipqess *ess = netdev_priv(netdev);
+	u32 *essstats = (u32 *)&ess->ipqessstats;
+	int i;
+
+	spin_lock(&ess->stats_lock);
+
+	ipqess_update_hw_stats(ess);
+
+	for (i = 0; i < ARRAY_SIZE(ipqess_stats); i++)
+		data[i] = *(u32 *)(essstats + (ipqess_stats[i].offset / sizeof(u32)));
+
+	spin_unlock(&ess->stats_lock);
+}
+
 static void ipqess_get_drvinfo(struct net_device *dev,
 			       struct ethtool_drvinfo *info)
 {
@@ -192,6 +210,7 @@ static const struct ethtool_ops ipqesstool_ops = {
 	.set_link_ksettings = &ipqess_set_settings,
 	.get_strings = &ipqess_get_strings,
 	.get_sset_count = &ipqess_get_strset_count,
+	.get_ethtool_stats = &ipqess_get_ethtool_stats,
 	.get_ringparam = ipqess_get_ringparam,
 };
 
