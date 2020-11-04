@@ -244,6 +244,7 @@ struct ipqess {
 	struct ipqess_rx_ring rx_ring[IPQESS_NETDEV_QUEUES];
 
 	struct platform_device *pdev;
+	struct device_node *phy_node;
 	struct queue queue[CONFIG_NR_CPUS];
 	struct ipqess_tx_ring tx_ring[IPQESS_NETDEV_QUEUES];
 

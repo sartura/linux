@@ -315,25 +315,60 @@ static struct net_device_stats *ipqess_get_stats(struct net_device *netdev)
 	return &ess->stats;
 }
 
+static void ipqess_adjust_link(struct net_device *netdev)
+{
+	/* TODO */
+}
+
 static int ipqess_phy_connect(struct net_device *netdev)
 {
 	struct ipqess *ess = netdev_priv(netdev);
 	struct device_node *of_node = ess->pdev->dev.of_node;
-	struct device_node *np = NULL;
+	struct device_node *phy_node;
+	struct phy_device *phy;
+	phy_interface_t phy_if;
+	int ret;
 
-	if (!of_phy_register_fixed_link(of_node))
-		np = of_node_get(of_node);
-	if (!np)
-		return -ENODEV;
-
-	netdev->phydev = of_phy_find_device(np);
-	of_node_put(np);
-	if (!netdev->phydev) {
-		of_phy_deregister_fixed_link(of_node);
+	if (!of_phy_is_fixed_link(of_node)) {
+		netdev_err(netdev, "fixed-link is not present\n");
 		return -EINVAL;
 	}
 
+	ret = of_phy_register_fixed_link(of_node);
+	if (ret) {
+		netdev_err(netdev, "failed to register fixed-link (%d)\n",
+			   ret);
+		return ret;
+	}
+
+	phy_node = of_node_get(of_node);
+
+	ret = of_get_phy_mode(of_node, &phy_if);
+	if (ret) {
+		netdev_err(netdev, "unable to get phy-mode property (%d)\n",
+			   ret);
+		goto err_put_phy_node;
+	}
+
+	phy = of_phy_connect(netdev, phy_node, &ipqess_adjust_link, 0, phy_if);
+	if (!phy) {
+		netdev_err(netdev, "unable to find phy \"%pOF\"\n", of_node);
+		ret = -ENODEV;
+		goto err_put_phy_node;
+	}
+
+	ess->phy_node = phy_node;
+	netdev->phydev = phy;
+
+	phy_attached_info(phy);
+
 	return 0;
+
+err_put_phy_node:
+	of_node_put(phy_node);
+	of_phy_deregister_fixed_link(of_node);
+
+	return ret;
 }
 
 static int ipqess_rx_poll(struct ipqess_rx_ring *rx_ring, int budget)
@@ -618,6 +653,7 @@ static void ipqess_uninit(struct net_device *netdev)
 	struct ipqess *ess = netdev_priv(netdev);
 	struct device_node *of_node = ess->pdev->dev.of_node;
 
+	of_node_put(ess->phy_node);
 	phy_disconnect(netdev->phydev);
 	of_phy_deregister_fixed_link(of_node);
 }
