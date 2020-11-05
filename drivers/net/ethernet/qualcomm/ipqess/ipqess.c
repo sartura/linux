@@ -96,6 +96,7 @@ static int ipqess_tx_ring_alloc(struct ipqess *ess)
 		u32 idx;
 
 		ess->tx_ring[i].ess = ess;
+		ess->tx_ring[i].ring_id = i;
 		ess->tx_ring[i].idx = i * 4;
 		ess->tx_ring[i].count = IPQESS_TX_RING_SIZE;
 		ess->tx_ring[i].nq = netdev_get_tx_queue(ess->netdev, i);
@@ -258,6 +259,7 @@ static int ipqess_rx_ring_alloc(struct ipqess *ess)
 
 		ess->rx_ring[i].ess = ess;
 		ess->rx_ring[i].ppdev = &ess->pdev->dev;
+		ess->rx_ring[i].ring_id = i;
 		ess->rx_ring[i].idx = i;
 
 		ess->rx_ring[i].buf = devm_kzalloc(&ess->pdev->dev,

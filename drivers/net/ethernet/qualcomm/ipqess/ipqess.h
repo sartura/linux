@@ -209,6 +209,7 @@ struct queue {
 struct ipqess_tx_ring {
 	struct napi_struct napi_tx;
 	u32 idx;
+	int ring_id;
 	struct ipqess *ess;
 	struct netdev_queue *nq;
 	void *hw_desc;
@@ -222,6 +223,7 @@ struct ipqess_tx_ring {
 struct ipqess_rx_ring {
 	struct napi_struct napi_rx;
 	u32 idx;
+	int ring_id;
 	struct ipqess *ess;
 	struct device *ppdev;
 	void **hw_desc;
