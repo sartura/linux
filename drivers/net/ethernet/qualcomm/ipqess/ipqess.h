@@ -302,7 +302,8 @@ void ipqess_update_hw_stats(struct ipqess *ess);
 #define IPQESS_WOL_IMR_NORMAL_MASK 0x1
 
 /* Edma receive consumer index */
-#define IPQESS_REG_RX_SW_CONS_IDX_Q(x) (0x220 + ((x) << 3)) /* x is the queue id */
+#define IPQESS_REG_RX_SW_CONS_IDX_Q(x) (0x220 + ((x) << 2)) /* x is the queue id */
+
 /* Edma transmit consumer index */
 #define IPQESS_REG_TX_SW_CONS_IDX_Q(x) (0x240 + ((x) << 2)) /* x is the queue id */
 
@@ -320,7 +321,7 @@ void ipqess_update_hw_stats(struct ipqess *ess);
 #define IPQESS_INTR_CLEAR_TYPE_R 1
 
 /* RX Interrupt Mask Register */
-#define IPQESS_REG_RX_INT_MASK_Q(x) (0x300 + ((x) << 3)) /* x = queue id */
+#define IPQESS_REG_RX_INT_MASK_Q(x) (0x300 + ((x) << 2)) /* x = queue id */
 
 /* TX Interrupt mask register */
 #define IPQESS_REG_TX_INT_MASK_Q(x) (0x340 + ((x) << 2)) /* x = queue id */
@@ -368,10 +369,6 @@ void ipqess_update_hw_stats(struct ipqess *ess);
 #define IPQESS_TPD_RING_SIZE_MASK 0xFFFF
 
 /* Transmit descriptor base address */
-/* FYI: ess_dma.h definition uses << 2 for RX queues, however the
- * driver code does increments in steps of 2. So this is where the
- * discrepancy is coming from.
- */
 #define IPQESS_REG_TPD_BASE_ADDR_Q(x) (0x420 + ((x) << 2)) /* x = queue id */
 
 /* TPD Index Register */
@@ -475,10 +472,10 @@ void ipqess_update_hw_stats(struct ipqess *ess);
 #define IPQESS_RFS_EXPIRE_COUNT_PER_CALL 128
 
 /* RFD Base Address Register */
-#define IPQESS_REG_RFD_BASE_ADDR_Q(x) (0x950 + ((x) << 3)) /* x = queue id */
+#define IPQESS_REG_RFD_BASE_ADDR_Q(x) (0x950 + ((x) << 2)) /* x = queue id */
 
 /* RFD Index Register */
-#define IPQESS_REG_RFD_IDX_Q(x) (0x9B0 + ((x) << 3))
+#define IPQESS_REG_RFD_IDX_Q(x) (0x9B0 + ((x) << 2)) /* x = queue id */
 
 #define IPQESS_RFD_PROD_IDX_BITS 0x00000FFF
 #define IPQESS_RFD_CONS_IDX_BITS 0x0FFF0000

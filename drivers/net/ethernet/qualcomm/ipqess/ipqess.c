@@ -260,7 +260,7 @@ static int ipqess_rx_ring_alloc(struct ipqess *ess)
 		ess->rx_ring[i].ess = ess;
 		ess->rx_ring[i].ppdev = &ess->pdev->dev;
 		ess->rx_ring[i].ring_id = i;
-		ess->rx_ring[i].idx = i;
+		ess->rx_ring[i].idx = i * 2;
 
 		ess->rx_ring[i].buf = devm_kzalloc(&ess->pdev->dev,
 			sizeof(struct ipqess_buf) * IPQESS_RX_RING_SIZE,
@@ -566,7 +566,7 @@ static int ipqess_rx_napi(struct napi_struct *napi, int budget)
 	struct ipqess *ess = rx_ring->ess;
 	int remain_budget = budget;
 	int rx_done;
-	u32 rx_mask = BIT(rx_ring->idx << IPQESS_RX_PER_CPU_MASK_SHIFT);
+	u32 rx_mask = BIT(rx_ring->idx);
 	u32 status;
 
 poll_again:
