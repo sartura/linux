@@ -281,7 +281,7 @@ static int ipqess_rx_ring_alloc(struct ipqess *ess)
 		ess->rx_refill[i].rx_ring = &ess->rx_ring[i];
 		INIT_WORK(&ess->rx_refill[i].refill_work, ipqess_refill_work);
 
-		ipqess_w32(ess, IPQESS_REG_RFD_BASE_ADDR_Q(i),
+		ipqess_w32(ess, IPQESS_REG_RFD_BASE_ADDR_Q(ess->rx_ring[i].idx),
 			 (u32)(ess->rx_ring[i].dma));
 	}
 
@@ -623,8 +623,8 @@ static void ipqess_irq_enable(struct ipqess *ess)
 	ipqess_w32(ess, IPQESS_REG_RX_ISR, 0xff);
 	ipqess_w32(ess, IPQESS_REG_TX_ISR, 0xffff);
 	for (i = 0; i < IPQESS_NETDEV_QUEUES; i++) {
-		ipqess_w32(ess, IPQESS_REG_RX_INT_MASK_Q(i), 1);
-		ipqess_w32(ess, IPQESS_REG_TX_INT_MASK_Q(i), 1);
+		ipqess_w32(ess, IPQESS_REG_RX_INT_MASK_Q(ess->rx_ring[i].idx), 1);
+		ipqess_w32(ess, IPQESS_REG_TX_INT_MASK_Q(ess->tx_ring[i].idx), 1);
 	}
 }
 
@@ -633,8 +633,8 @@ static void ipqess_irq_disable(struct ipqess *ess)
 	int i;
 
 	for (i = 0; i < IPQESS_NETDEV_QUEUES; i++) {
-		ipqess_w32(ess, IPQESS_REG_RX_INT_MASK_Q(i), 0);
-		ipqess_w32(ess, IPQESS_REG_TX_INT_MASK_Q(i), 0);
+		ipqess_w32(ess, IPQESS_REG_RX_INT_MASK_Q(ess->rx_ring[i].idx), 0);
+		ipqess_w32(ess, IPQESS_REG_TX_INT_MASK_Q(ess->tx_ring[i].idx), 0);
 	}
 }
 
@@ -985,8 +985,8 @@ static void ipqess_reset(struct ipqess *ess)
 
 	/* disable all IRQs */
 	for (i = 0; i < IPQESS_NETDEV_QUEUES; i++) {
-		ipqess_w32(ess, IPQESS_REG_RX_INT_MASK_Q(i), 0x0);
-		ipqess_w32(ess, IPQESS_REG_TX_INT_MASK_Q(i), 0x0);
+		ipqess_w32(ess, IPQESS_REG_RX_INT_MASK_Q(ess->rx_ring[i].idx), 0);
+		ipqess_w32(ess, IPQESS_REG_TX_INT_MASK_Q(ess->rx_ring[i].idx), 0);
 	}
 
 	ipqess_w32(ess, IPQESS_REG_MISC_IMR, 0);
