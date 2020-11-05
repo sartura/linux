@@ -457,7 +457,7 @@ static int ipqess_rx_poll(struct ipqess_rx_ring *rx_ring, int budget)
 
 		skb->dev = rx_ring->ess->netdev;
 		skb->protocol = eth_type_trans(skb, rx_ring->ess->netdev);
-		skb_record_rx_queue(skb, rx_ring->idx);
+		skb_record_rx_queue(skb, rx_ring->ring_id);
 
 		if (rd->rrd6 & IPQESS_RRD_CSUM_FAIL_MASK)
 			skb_checksum_none_assert(skb);
@@ -484,7 +484,7 @@ skip:
 				num_desc = atomic_add_return(num_desc,
 					 &rx_ring->refill_count);
 				if (num_desc >= ((4 * IPQESS_RX_RING_SIZE + 6) / 7))
-					schedule_work(&rx_ring->ess->rx_refill[rx_ring->idx].refill_work);
+					schedule_work(&rx_ring->ess->rx_refill[rx_ring->ring_id].refill_work);
 				break;
 			}
 			num_desc--;
@@ -763,9 +763,9 @@ static struct ipqess_tx_desc *ipqess_tx_desc_next(struct ipqess_tx_ring *tx_ring
 }
 
 static void ipqess_rollback_tx(struct ipqess *eth,
-			    struct ipqess_tx_desc *first_desc, int queue_id)
+			    struct ipqess_tx_desc *first_desc, int ring_id)
 {
-	struct ipqess_tx_ring *tx_ring = &eth->tx_ring[queue_id / 4];
+	struct ipqess_tx_ring *tx_ring = &eth->tx_ring[ring_id];
 	struct ipqess_buf *buf;
 	struct ipqess_tx_desc *desc = NULL;
 	u16 start_index, index;
@@ -897,7 +897,7 @@ static int ipqess_tx_map_and_fill(struct ipqess_tx_ring *tx_ring, struct sk_buff
 	return 0;
 
 dma_error:
-	ipqess_rollback_tx(tx_ring->ess, first_desc, tx_ring->idx);
+	ipqess_rollback_tx(tx_ring->ess, first_desc, tx_ring->ring_id);
 	dev_err(&pdev->dev, "TX DMA map failed\n");
 
 vlan_tag_error:
