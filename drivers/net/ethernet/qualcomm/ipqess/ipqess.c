@@ -552,8 +552,9 @@ static int ipqess_tx_napi(struct napi_struct *napi, int budget)
 	ipqess_w32(tx_ring->ess, IPQESS_REG_TX_ISR, shadow_tx_status);
 
 	if (likely(work_done < budget)) {
-		napi_complete(napi);
-		ipqess_w32(tx_ring->ess, IPQESS_REG_TX_INT_MASK_Q(tx_ring->idx), 0x1);
+		if (napi_complete_done(napi, work_done))
+			ipqess_w32(tx_ring->ess,
+				   IPQESS_REG_TX_INT_MASK_Q(tx_ring->idx), 0x1);
 	}
 
 	return work_done;
@@ -582,8 +583,8 @@ poll_again:
 		goto poll_again;
 	}
 
-	napi_complete(napi);
-	ipqess_w32(ess, IPQESS_REG_RX_INT_MASK_Q(rx_ring->idx), 0x1);
+	if (napi_complete_done(napi, rx_done + budget - remain_budget))
+		ipqess_w32(ess, IPQESS_REG_RX_INT_MASK_Q(rx_ring->idx), 0x1);
 
 	return rx_done + budget - remain_budget;
 }
