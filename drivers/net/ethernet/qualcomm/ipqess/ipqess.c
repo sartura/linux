@@ -1173,9 +1173,8 @@ static int ipqess_axi_probe(struct platform_device *pdev)
 		ess->queue[i].ess = ess;
 		ess->queue[i].idx = i;
 
-		netif_napi_add(netdev,
-			       &ess->tx_ring[i].napi_tx,
-			       ipqess_tx_napi, 64);
+		netif_tx_napi_add(netdev, &ess->tx_ring[i].napi_tx,
+				  ipqess_tx_napi, 64);
 		netif_napi_add(netdev,
 			       &ess->rx_ring[i].napi_rx,
 			       ipqess_rx_napi, 64);
