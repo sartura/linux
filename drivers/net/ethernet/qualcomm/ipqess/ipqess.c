@@ -1137,6 +1137,9 @@ static int ipqess_axi_probe(struct platform_device *pdev)
 	for (i = 0; i < IPQESS_MAX_RX_QUEUE; i++)
 		ess->rx_irq[i] = platform_get_irq(pdev, i + IPQESS_MAX_TX_QUEUE);
 
+#undef NETIF_F_TSO6
+#define NETIF_F_TSO6 0
+
 	netdev->netdev_ops = &ipqess_axi_netdev_ops;
 	netdev->features = NETIF_F_HW_CSUM | NETIF_F_RXCSUM |
 			   NETIF_F_HW_VLAN_CTAG_RX |
