@@ -966,6 +966,17 @@ static int ipqess_set_mac_address(struct net_device *netdev, void *p)
 	return 0;
 }
 
+static void ipqess_tx_timeout(struct net_device *netdev, unsigned int txq_id)
+{
+	struct ipqess *ess = netdev_priv(netdev);
+	struct ipqess_tx_ring *tr = &ess->tx_ring[txq_id];
+
+	netdev_warn(netdev, "hardware queue %d is in stuck?\n",
+		    tr->idx);
+
+	/* TODO: dump hardware queue */
+}
+
 static const struct net_device_ops ipqess_axi_netdev_ops = {
 	.ndo_init		= ipqess_init,
 	.ndo_uninit		= ipqess_uninit,
@@ -975,6 +986,7 @@ static const struct net_device_ops ipqess_axi_netdev_ops = {
 	.ndo_start_xmit		= ipqess_xmit,
 	.ndo_get_stats		= ipqess_get_stats,
 	.ndo_set_mac_address	= ipqess_set_mac_address,
+	.ndo_tx_timeout		= ipqess_tx_timeout,
 };
 
 static void ipqess_reset(struct ipqess *ess)
