@@ -198,13 +198,6 @@ struct ipqess_buf {
 	u16 length;
 };
 
-struct queue {
-	u32 idx;
-	u32 tx_mask;
-	u32 tx_start;
-	struct ipqess *ess;
-};
-
 struct ipqess_tx_ring {
 	struct napi_struct napi_tx;
 	u32 idx;
@@ -246,7 +239,6 @@ struct ipqess {
 
 	struct platform_device *pdev;
 	struct device_node *phy_node;
-	struct queue queue[CONFIG_NR_CPUS];
 	struct ipqess_tx_ring tx_ring[IPQESS_NETDEV_QUEUES];
 
 	struct ipqesstool_statistics ipqessstats;
