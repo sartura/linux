@@ -201,7 +201,6 @@ struct ipqess_buf {
 struct queue {
 	u32 idx;
 	u32 tx_mask;
-	u32 tx_status;
 	u32 tx_start;
 	struct ipqess *ess;
 };

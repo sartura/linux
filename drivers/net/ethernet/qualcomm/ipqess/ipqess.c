@@ -538,18 +538,15 @@ static int ipqess_tx_napi(struct napi_struct *napi, int budget)
 {
 	struct ipqess_tx_ring *tx_ring = container_of(napi, struct ipqess_tx_ring,
 						    napi_tx);
-	u32 reg_data;
-	u32 shadow_tx_status;
+	u32 tx_status;
 	int work_done = 0;
-	struct queue *queue = &tx_ring->ess->queue[tx_ring->idx / 4];
 
-	reg_data = ipqess_r32(tx_ring->ess, IPQESS_REG_TX_ISR);
-	queue->tx_status |= reg_data & BIT(tx_ring->idx);
-	shadow_tx_status = queue->tx_status;
+	tx_status = ipqess_r32(tx_ring->ess, IPQESS_REG_TX_ISR);
+	tx_status &= BIT(tx_ring->idx);
 
 	work_done = ipqess_tx_complete(tx_ring, budget);
 
-	ipqess_w32(tx_ring->ess, IPQESS_REG_TX_ISR, shadow_tx_status);
+	ipqess_w32(tx_ring->ess, IPQESS_REG_TX_ISR, tx_status);
 
 	if (likely(work_done < budget)) {
 		if (napi_complete_done(napi, work_done))
