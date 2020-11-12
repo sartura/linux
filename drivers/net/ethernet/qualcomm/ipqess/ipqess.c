@@ -825,7 +825,7 @@ static int ipqess_tx_map_and_fill(struct ipqess_tx_ring *tx_ring, struct sk_buff
 			break;
 		case htons(ETH_P_8021AD):
 			word1 |= BIT(IPQESS_TX_INS_SVLAN);
-			svlan_tag = skb_vlan_tag_get(skb) << IPQESS_TX_SVLAN_TAG_SHIFT;
+			svlan_tag = skb_vlan_tag_get(skb);
 			break;
 		default:
 			dev_err(&pdev->dev, "no ctag or stag present\n");
