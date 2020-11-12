@@ -836,11 +836,8 @@ static int ipqess_tx_map_and_fill(struct ipqess_tx_ring *tx_ring, struct sk_buff
         if (skb->protocol == htons(ETH_P_PPP_SES))
                 word1 |= IPQESS_TPD_PPPOE_EN;
 
-	if ((skb->dev_scratch > 1) && (skb->dev_scratch < 0x3e)) {
-		word3 |= skb->dev_scratch << IPQESS_TPD_PORT_BITMAP_SHIFT;
-	} else {
-		word3 |= 0x3e << IPQESS_TPD_PORT_BITMAP_SHIFT;
-	}
+	word3 |= 0x3e << IPQESS_TPD_PORT_BITMAP_SHIFT;
+
 	len = skb_headlen(skb);
 
 	first_desc = desc = ipqess_tx_desc_next(tx_ring);
