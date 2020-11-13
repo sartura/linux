@@ -391,6 +391,11 @@ void ipqess_update_hw_stats(struct ipqess *ess);
 /* Tx side VLAN Configuration Register */
 #define IPQESS_REG_VLAN_CFG 0x4AC
 
+#define IPQESS_VLAN_CFG_SVLAN_TPID_SHIFT 0
+#define IPQESS_VLAN_CFG_SVLAN_TPID_MASK 0xffff
+#define IPQESS_VLAN_CFG_CVLAN_TPID_SHIFT 16
+#define IPQESS_VLAN_CFG_CVLAN_TPID_MASK 0xffff
+
 #define IPQESS_TX_CVLAN 16
 #define IPQESS_TX_INS_CVLAN 17
 #define IPQESS_TX_CVLAN_TAG_SHIFT 0

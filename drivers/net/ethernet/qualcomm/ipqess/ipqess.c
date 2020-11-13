@@ -1029,6 +1029,11 @@ static int ipqess_hw_init(struct ipqess *ess)
 		 (IPQESS_TX_IMT << IPQESS_IRQ_MODRT_TX_TIMER_SHIFT) |
 		 (IPQESS_RX_IMT << IPQESS_IRQ_MODRT_RX_TIMER_SHIFT));
 
+	/* Set Customer and Service VLAN TPIDs */
+	ipqess_w32(ess, IPQESS_REG_VLAN_CFG,
+		   (ETH_P_8021Q << IPQESS_VLAN_CFG_CVLAN_TPID_SHIFT) |
+		   (ETH_P_8021AD << IPQESS_VLAN_CFG_SVLAN_TPID_SHIFT));
+
 	/* Configure the TX Queue bursting */
 	ipqess_w32(ess, IPQESS_REG_TXQ_CTRL,
 		 (IPQESS_TPD_BURST << IPQESS_TXQ_NUM_TPD_BURST_SHIFT) |
