@@ -390,6 +390,40 @@ qca8k_port_set_status(struct qca8k_priv *priv, int port, int enable)
 		qca8k_reg_clear(priv, QCA8K_REG_PORT_STATUS(port), mask);
 }
 
+static void
+qca8k_setup_port(struct dsa_switch *ds, int port)
+{
+	struct qca8k_priv *priv = (struct qca8k_priv *)ds->priv;
+
+	if (dsa_is_cpu_port(ds, port)) {
+		/* CPU port gets connected to all user ports of the switch */
+		qca8k_rmw(priv, QCA8K_PORT_LOOKUP_CTRL(QCA8K_CPU_PORT),
+			  QCA8K_PORT_LOOKUP_MEMBER, dsa_user_ports(ds));
+	}
+
+	if (dsa_is_user_port(ds, port)) {
+		int shift = 16 * (port % 2);
+
+		/* Invividual user ports get connected to CPU port only */
+		qca8k_rmw(priv, QCA8K_PORT_LOOKUP_CTRL(port),
+			  QCA8K_PORT_LOOKUP_MEMBER,
+			  BIT(QCA8K_CPU_PORT));
+
+		/* Enable ARP Auto-learning by default */
+		qca8k_reg_set(priv, QCA8K_PORT_LOOKUP_CTRL(port),
+			      QCA8K_PORT_LOOKUP_LEARN);
+
+		/* For port based vlans to work we need to set the
+		 * default egress vid
+		 */
+		qca8k_rmw(priv, QCA8K_EGRESS_VLAN(port),
+			  0xffff << shift, 1 << shift);
+		qca8k_write(priv, QCA8K_REG_PORT_VLAN_CTRL0(port),
+			    QCA8K_PORT_VLAN_CVID(1) |
+			    QCA8K_PORT_VLAN_SVID(1));
+	}
+}
+
 static int
 qca8k_setup(struct dsa_switch *ds)
 {
@@ -469,35 +503,8 @@ qca8k_setup(struct dsa_switch *ds)
 		    GENMASK(5, 0) << QCA8K_GLOBAL_FW_CTRL1_UC_DP_S);
 
 	/* Setup connection between CPU port & user ports */
-	for (i = 0; i < QCA8K_NUM_PORTS; i++) {
-		/* CPU port gets connected to all user ports of the switch */
-		if (dsa_is_cpu_port(ds, i)) {
-			qca8k_rmw(priv, QCA8K_PORT_LOOKUP_CTRL(QCA8K_CPU_PORT),
-				  QCA8K_PORT_LOOKUP_MEMBER, dsa_user_ports(ds));
-		}
-
-		/* Invividual user ports get connected to CPU port only */
-		if (dsa_is_user_port(ds, i)) {
-			int shift = 16 * (i % 2);
-
-			qca8k_rmw(priv, QCA8K_PORT_LOOKUP_CTRL(i),
-				  QCA8K_PORT_LOOKUP_MEMBER,
-				  BIT(QCA8K_CPU_PORT));
-
-			/* Enable ARP Auto-learning by default */
-			qca8k_reg_set(priv, QCA8K_PORT_LOOKUP_CTRL(i),
-				      QCA8K_PORT_LOOKUP_LEARN);
-
-			/* For port based vlans to work we need to set the
-			 * default egress vid
-			 */
-			qca8k_rmw(priv, QCA8K_EGRESS_VLAN(i),
-				  0xffff << shift, 1 << shift);
-			qca8k_write(priv, QCA8K_REG_PORT_VLAN_CTRL0(i),
-				    QCA8K_PORT_VLAN_CVID(1) |
-				    QCA8K_PORT_VLAN_SVID(1));
-		}
-	}
+	for (i = 0; i < QCA8K_NUM_PORTS; i++)
+		qca8k_setup_port(ds, i);
 
 	/* Flush the FDB table */
 	qca8k_fdb_flush(priv);
