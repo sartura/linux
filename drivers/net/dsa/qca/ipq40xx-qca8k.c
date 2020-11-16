@@ -786,7 +786,7 @@ static enum dsa_tag_protocol
 qca8k_get_tag_protocol(struct dsa_switch *ds, int port,
 		       enum dsa_tag_protocol mp)
 {
-	return DSA_TAG_PROTO_QCA_IPQ40XX;
+	return DSA_TAG_PROTO_IPQ40XX;
 }
 
 static const struct dsa_switch_ops qca8k_switch_ops = {
