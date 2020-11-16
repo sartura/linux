@@ -123,6 +123,12 @@ struct __dsa_skb_cb {
 #define DSA_SKB_CB_PRIV(skb)			\
 	((void *)(skb)->cb + offsetof(struct __dsa_skb_cb, priv))
 
+/* A simple structure for now. It is only for testing */
+struct dsa_skb_ext {
+	enum dsa_tag_protocol tag_proto;
+	u8 tag_data[8];
+};
+
 struct dsa_switch_tree {
 	struct list_head	list;
 
@@ -849,6 +855,33 @@ int register_dsa_notifier(struct notifier_block *nb);
 int unregister_dsa_notifier(struct notifier_block *nb);
 int call_dsa_notifiers(unsigned long val, struct net_device *dev,
 		       struct dsa_notifier_info *info);
+
+static inline struct dsa_skb_ext *__dsa_skb_ext_add(struct sk_buff *skb,
+						    enum dsa_tag_protocol proto)
+{
+	struct dsa_skb_ext *ext;
+
+	ext = skb_ext_add(skb, SKB_EXT_DSA);
+	if (ext)
+		ext->tag_proto = proto;
+
+	return ext;
+}
+
+static inline struct dsa_skb_ext *dsa_skb_ext_find(struct sk_buff *skb,
+						   enum dsa_tag_protocol proto)
+{
+	struct dsa_skb_ext *ext;
+
+	ext = skb_ext_find(skb, SKB_EXT_DSA);
+	if (!ext)
+		return NULL;
+
+	if (ext->tag_proto != proto)
+		return NULL;
+
+	return ext;
+}
 #else
 static inline int register_dsa_notifier(struct notifier_block *nb)
 {
@@ -865,7 +898,25 @@ static inline int call_dsa_notifiers(unsigned long val, struct net_device *dev,
 {
 	return NOTIFY_DONE;
 }
+
+static inline struct dsa_skb_ext *__dsa_skb_ext_add(struct sk_buff *skb,
+						    enum dsa_tag_protocol proto)
+{
+	return NULL;
+}
+
+static inline struct dsa_skb_ext *dsa_skb_ext_find(struct sk_buff *skb,
+						   enum dsa_tag_protocol proto)
+{
+	return NULL;
+}
 #endif
+
+#define dsa_skb_ext_add(skb, proto, type) ({				\
+	BUILD_BUG_ON(sizeof_field(struct dsa_skb_ext, tag_data) < 	\
+		     sizeof(type));					\
+	__dsa_skb_ext_add((skb),(proto)); })
+
 
 /* Broadcom tag specific helpers to insert and extract queue/port number */
 #define BRCM_TAG_SET_PORT_QUEUE(p, q)	((p) << 8 | q)

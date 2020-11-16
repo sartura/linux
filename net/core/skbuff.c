@@ -69,6 +69,7 @@
 #include <net/xfrm.h>
 #include <net/mpls.h>
 #include <net/mptcp.h>
+#include <net/dsa.h>
 
 #include <linux/uaccess.h>
 #include <trace/events/skb.h>
@@ -4209,6 +4210,9 @@ static const u8 skb_ext_type_len[] = {
 #if IS_ENABLED(CONFIG_MPTCP)
 	[SKB_EXT_MPTCP] = SKB_EXT_CHUNKSIZEOF(struct mptcp_ext),
 #endif
+#if IS_ENABLED(CONFIG_NET_DSA)
+	[SKB_EXT_DSA] = SKB_EXT_CHUNKSIZEOF(struct dsa_skb_ext),
+#endif
 };
 
 static __always_inline unsigned int skb_ext_total_length(void)
@@ -4225,6 +4229,9 @@ static __always_inline unsigned int skb_ext_total_length(void)
 #endif
 #if IS_ENABLED(CONFIG_MPTCP)
 		skb_ext_type_len[SKB_EXT_MPTCP] +
+#endif
+#if IS_ENABLED(CONFIG_NET_DSA)
+		skb_ext_type_len[SKB_EXT_DSA] +
 #endif
 		0;
 }
