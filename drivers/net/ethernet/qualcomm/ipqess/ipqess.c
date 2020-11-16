@@ -26,8 +26,10 @@
 #include <linux/phy.h>
 #include <linux/skbuff.h>
 #include <linux/vmalloc.h>
+#include <linux/dsa/ipq40xx.h>
 
 #include <net/checksum.h>
+#include <net/dsa.h>
 #include <net/ip6_checksum.h>
 
 #include "ipqess.h"
@@ -782,6 +784,37 @@ static void ipqess_rollback_tx(struct ipqess *eth,
 	tx_ring->head = start_index;
 }
 
+static bool ipqess_process_dsa_tag(struct sk_buff *skb, u32 *word3)
+{
+	struct ipq40xx_dsa_tag_data *ext_data;
+	struct dsa_skb_ext *ext;
+
+	ext = dsa_skb_ext_find(skb, DSA_TAG_PROTO_IPQ40XX);
+	if (!ext)
+		return false;
+
+	ext_data = (struct ipq40xx_dsa_tag_data *)ext->tag_data;
+
+	*word3 |= ((u32)ext_data->dp) << IPQESS_TPD_PORT_BITMAP_SHIFT;
+	if (ext_data->from_cpu)
+		*word3 |= BIT(IPQESS_TPD_FROM_CPU_SHIFT);
+
+	skb_ext_del(skb, SKB_EXT_DSA);
+
+	return true;
+}
+
+static void ipqess_get_dp_info(struct ipqess *ess, struct sk_buff *skb,
+			       u32 *word3)
+{
+	if (netdev_uses_dsa(ess->netdev)) {
+		if (ipqess_process_dsa_tag(skb, word3))
+			return;
+	}
+
+	*word3 |= 0x3e << IPQESS_TPD_PORT_BITMAP_SHIFT;
+}
+
 static int ipqess_tx_map_and_fill(struct ipqess_tx_ring *tx_ring, struct sk_buff *skb)
 {
 	struct ipqess_buf *buf = NULL;
@@ -790,6 +823,8 @@ static int ipqess_tx_map_and_fill(struct ipqess_tx_ring *tx_ring, struct sk_buff
 	u32 word1 = 0, word3 = 0, lso_word1 = 0, svlan_tag = 0;
 	u16 len, lso_len = 0;
 	int i = 0;
+
+	ipqess_get_dp_info(tx_ring->ess, skb, &word3);
 
 	if (skb_is_gso(skb)) {
 		if (skb_shinfo(skb)->gso_type & SKB_GSO_TCPV4) {
@@ -835,8 +870,6 @@ static int ipqess_tx_map_and_fill(struct ipqess_tx_ring *tx_ring, struct sk_buff
 
         if (skb->protocol == htons(ETH_P_PPP_SES))
                 word1 |= IPQESS_TPD_PPPOE_EN;
-
-	word3 |= 0x3e << IPQESS_TPD_PORT_BITMAP_SHIFT;
 
 	len = skb_headlen(skb);
 
