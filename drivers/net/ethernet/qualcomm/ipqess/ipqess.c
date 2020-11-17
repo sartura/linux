@@ -875,7 +875,7 @@ static int ipqess_tx_map_and_fill(struct ipqess_tx_ring *tx_ring, struct sk_buff
 		buf->length = len;
 		buf->flags |= IPQESS_DESC_PAGE;
 		buf->dma = skb_frag_dma_map(&pdev->dev, frag, 0, len, DMA_TO_DEVICE);
-		if (dma_mapping_error(NULL, buf->dma))
+		if (dma_mapping_error(&pdev->dev, buf->dma))
 			goto dma_error;
 
 		desc->addr = cpu_to_le32(buf->dma);
