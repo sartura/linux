@@ -957,6 +957,22 @@ ar40xx_malibu_psgmii_ess_reset(struct qca8k_priv *priv)
 	mdiobus_write(bus, AR40XX_PSGMII_ID, 0x0, 0x005f);
 }
 
+static void
+ar40xx_phytest_run(struct qca8k_priv *priv, int phy)
+{
+	/* enable check */
+	qca8k_phy_mmd_write(priv, phy, 7, 0x8029, 0x0000);
+	qca8k_phy_mmd_write(priv, phy, 7, 0x8029, 0x0003);
+
+	/* start traffic */
+	qca8k_phy_mmd_write(priv, phy, 7, 0x8020, 0xa000);
+
+	/* wait precisely for all traffic end
+	 * 4096(pkt num) * 1524(size) * 8ns (125MHz) = 49.9ms
+	 */
+	mdelay(50);
+}
+
 static bool
 ar40xx_phytest_check_counters(struct qca8k_priv *priv, int phy, u32 count)
 {
@@ -1008,17 +1024,7 @@ ar40xx_psgmii_single_phy_testing(struct qca8k_priv *priv, int phy)
 		mdelay(8);
 	}
 
-	/* enable check */
-	qca8k_phy_mmd_write(priv, phy, 7, 0x8029, 0x0000);
-	qca8k_phy_mmd_write(priv, phy, 7, 0x8029, 0x0003);
-
-	/* start traffic */
-	qca8k_phy_mmd_write(priv, phy, 7, 0x8020, 0xa000);
-
-	/* wait precisely for all traffic end
-	 * 4096(pkt num) * 1524(size) * 8ns (125MHz) = 49.9ms
-	 */
-	mdelay(50);
+	ar40xx_phytest_run(priv, phy);
 
 	/* check counter */
 	if (ar40xx_phytest_check_counters(priv, phy, 0x1000)) {
@@ -1056,17 +1062,8 @@ ar40xx_psgmii_all_phy_testing(struct qca8k_priv *priv)
 		/* The polling interva to check if the PHY link up or not */
 		mdelay(8);
 	}
-	/* enable package accounting */
-	qca8k_phy_mmd_write(priv, 0x1f, 7, 0x8029, 0x0000);
-	qca8k_phy_mmd_write(priv, 0x1f, 7, 0x8029, 0x0003);
 
-	/* start traffic generator */
-	qca8k_phy_mmd_write(priv, 0x1f, 7, 0x8020, 0xa000);
-
-	/* wait for the traffic to die down.
-	 * 4096 Packets * 1524 Bytes/Packet * 8 ns/Byte (125MHz) = 49.9ms
-	 */
-	mdelay(50);
+	ar40xx_phytest_run(priv, 0x1f);
 
 	for (phy = 0; phy < AR40XX_NUM_PORTS - 1; phy++) {
 		if (ar40xx_phytest_check_counters(priv, phy, 4096)) {
