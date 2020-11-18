@@ -150,11 +150,16 @@
 /* QCA specific MII registers */
 #define MII_ATH_MMD_ADDR				0x0d
 #define MII_ATH_MMD_DATA				0x0e
+#define MII_ATH_DBG_ADDR				0x1d
+#define MII_ATH_DBG_DATA				0x1e
 
 #define AR40XX_REG_QM_DEBUG_ADDR		0x820
 #define AR40XX_REG_QM_DEBUG_VALUE		0x824
 #define   AR40XX_REG_QM_PORT0_3_QNUM		0x1d
 #define   AR40XX_REG_QM_PORT4_6_QNUM		0x1e
+
+#define AR40XX_PHY_DEBUG_0   			0
+#define AR40XX_PHY_MANU_CTRL_EN			BIT(12)
 
 enum {
 	QCA8K_PORT_SPEED_10M = 0,

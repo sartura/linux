@@ -1246,8 +1246,29 @@ ar40xx_mac_mode_init(struct qca8k_priv *priv)
 	}
 }
 
-#ifdef QM_ERROR_WAR
-/* Start of qm error WAR */
+static void
+ar40xx_phy_dbg_write(struct qca8k_priv *priv, int phy_addr,
+		     u16 dbg_addr, u16 dbg_data)
+{
+	struct mii_bus *bus = priv->bus;
+
+	mutex_lock(&bus->mdio_lock);
+	__mdiobus_write(bus, phy_addr, MII_ATH_DBG_ADDR, dbg_addr);
+	__mdiobus_write(bus, phy_addr, MII_ATH_DBG_DATA, dbg_data);
+	mutex_unlock(&bus->mdio_lock);
+}
+
+static void
+ar40xx_phy_dbg_read(struct qca8k_priv *priv, int phy_addr,
+		    u16 dbg_addr, u16 *dbg_data)
+{
+	struct mii_bus *bus = priv->bus;
+
+	mutex_lock(&bus->mdio_lock);
+	__mdiobus_write(bus, phy_addr, MII_ATH_DBG_ADDR, dbg_addr);
+	*dbg_data = __mdiobus_read(bus, phy_addr, MII_ATH_DBG_DATA);
+	mutex_unlock(&bus->mdio_lock);
+}
 
 #define AR40XX_PORT_LINK_UP 1
 #define AR40XX_PORT_LINK_DOWN 0
@@ -1444,9 +1465,18 @@ ar40xx_qm_err_check_work_task(struct work_struct *work)
 			      msecs_to_jiffies(AR40XX_QM_WORK_DELAY));
 }
 
-static int
+static inline bool
+ar40xx_qm_error_war_enabled(void)
+{
+	return false;
+}
+
+static void
 ar40xx_qm_err_check_work_start(struct qca8k_priv *priv)
 {
+	if (!ar40xx_qm_error_war_enabled())
+		return;
+
 	mutex_init(&priv->qm_lock);
 
 	INIT_DELAYED_WORK(&priv->qm_dwork, ar40xx_qm_err_check_work_task);
@@ -1454,16 +1484,7 @@ ar40xx_qm_err_check_work_start(struct qca8k_priv *priv)
 	schedule_delayed_work(&priv->qm_dwork,
 			      msecs_to_jiffies(AR40XX_QM_WORK_DELAY));
 
-	return 0;
 }
-#else
-static int
-ar40xx_qm_err_check_work_start(struct qca8k_priv *priv)
-{
-	return 0;
-}
-#endif
-
 
 static void
 qca8k_dsa_init_work(struct work_struct *work)
