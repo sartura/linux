@@ -957,15 +957,35 @@ ar40xx_malibu_psgmii_ess_reset(struct qca8k_priv *priv)
 	mdiobus_write(bus, AR40XX_PSGMII_ID, 0x0, 0x005f);
 }
 
-static void
-ar40xx_psgmii_single_phy_testing(struct qca8k_priv *priv, int phy)
+static bool
+ar40xx_phytest_check_counters(struct qca8k_priv *priv, int phy, u32 count)
 {
-	struct mii_bus *bus = priv->bus;
 	u32 tx_ok, tx_error;
 	u32 rx_ok, rx_error;
 	u32 tx_ok_high16;
 	u32 rx_ok_high16;
 	u32 tx_all_ok, rx_all_ok;
+
+	/* read counters */
+	tx_ok = qca8k_phy_mmd_read(priv, phy, 7, 0x802e);
+	tx_ok_high16 = qca8k_phy_mmd_read(priv, phy, 7, 0x802d);
+	tx_error = qca8k_phy_mmd_read(priv, phy, 7, 0x802f);
+	rx_ok = qca8k_phy_mmd_read(priv, phy, 7, 0x802b);
+	rx_ok_high16 = qca8k_phy_mmd_read(priv, phy, 7, 0x802a);
+	rx_error = qca8k_phy_mmd_read(priv, phy, 7, 0x802c);
+	tx_all_ok = tx_ok + (tx_ok_high16 << 16);
+	rx_all_ok = rx_ok + (rx_ok_high16 << 16);
+
+	if (tx_all_ok != count || tx_error != 0)
+		return false;
+
+	return true;
+}
+
+static void
+ar40xx_psgmii_single_phy_testing(struct qca8k_priv *priv, int phy)
+{
+	struct mii_bus *bus = priv->bus;
 	int j;
 
 	mdiobus_write(bus, phy, MII_BMCR, BMCR_RESET | BMCR_ANENABLE);
@@ -1001,17 +1021,7 @@ ar40xx_psgmii_single_phy_testing(struct qca8k_priv *priv, int phy)
 	mdelay(50);
 
 	/* check counter */
-	tx_ok = qca8k_phy_mmd_read(priv, phy, 7, 0x802e);
-	tx_ok_high16 = qca8k_phy_mmd_read(priv, phy, 7, 0x802d);
-	tx_error = qca8k_phy_mmd_read(priv, phy, 7, 0x802f);
-	rx_ok = qca8k_phy_mmd_read(priv, phy, 7, 0x802b);
-	rx_ok_high16 = qca8k_phy_mmd_read(priv, phy, 7, 0x802a);
-	rx_error = qca8k_phy_mmd_read(priv, phy, 7, 0x802c);
-	tx_all_ok = tx_ok + (tx_ok_high16 << 16);
-	rx_all_ok = rx_ok + (rx_ok_high16 << 16);
-
-	if (tx_all_ok == 0x1000 && tx_error == 0) {
-		/* success */
+	if (ar40xx_phytest_check_counters(priv, phy, 0x1000)) {
 		priv->phy_t_status &= (~BIT(phy));
 	} else {
 		pr_info("PHY %d single test PSGMII issue happen!\n", phy);
@@ -1059,23 +1069,7 @@ ar40xx_psgmii_all_phy_testing(struct qca8k_priv *priv)
 	mdelay(50);
 
 	for (phy = 0; phy < AR40XX_NUM_PORTS - 1; phy++) {
-		u32 tx_ok, tx_error;
-		u32 rx_ok, rx_error;
-		u32 tx_ok_high16;
-		u32 rx_ok_high16;
-		u32 tx_all_ok, rx_all_ok;
-
-		/* check counter */
-		tx_ok = qca8k_phy_mmd_read(priv, phy, 7, 0x802e);
-		tx_ok_high16 = qca8k_phy_mmd_read(priv, phy, 7, 0x802d);
-		tx_error = qca8k_phy_mmd_read(priv, phy, 7, 0x802f);
-		rx_ok = qca8k_phy_mmd_read(priv, phy, 7, 0x802b);
-		rx_ok_high16 = qca8k_phy_mmd_read(priv, phy, 7, 0x802a);
-		rx_error = qca8k_phy_mmd_read(priv, phy, 7, 0x802c);
-		tx_all_ok = tx_ok + (tx_ok_high16 << 16);
-		rx_all_ok = rx_ok + (rx_ok_high16 << 16);
-
-		if (tx_all_ok == 4096 && tx_error == 0) {
+		if (ar40xx_phytest_check_counters(priv, phy, 4096)) {
 			/* success */
 			priv->phy_t_status &= ~BIT(phy + 8);
 		} else {
