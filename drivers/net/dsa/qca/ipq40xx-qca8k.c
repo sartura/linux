@@ -506,6 +506,13 @@ qca8k_setup(struct dsa_switch *ds)
 	for (i = 0; i < QCA8K_NUM_PORTS; i++)
 		qca8k_setup_port(ds, i);
 
+	/* Setup our port MTUs to match power on defaults */
+	for (i = 0; i < QCA8K_NUM_PORTS; i++)
+		priv->port_mtu[i] = ETH_FRAME_LEN + ETH_FCS_LEN;
+
+	qca8k_write(priv, QCA8K_REG_MAX_FRAME_SIZE,
+		    ETH_FRAME_LEN + ETH_FCS_LEN);
+
 	/* Flush the FDB table */
 	qca8k_fdb_flush(priv);
 
@@ -724,6 +731,31 @@ qca8k_port_disable(struct dsa_switch *ds, int port)
 }
 
 static int
+qca8k_port_change_mtu(struct dsa_switch *ds, int port, int mtu)
+{
+	struct qca8k_priv *priv = ds->priv;
+	int i, max_mtu = 0;
+
+	priv->port_mtu[port] = mtu;
+
+	for (i = 0; i < QCA8K_NUM_PORTS; i++)
+		if (priv->port_mtu[port] > max_mtu)
+			max_mtu = priv->port_mtu[port];
+
+	/* Include L2 header / FCS length */
+	qca8k_write(priv, QCA8K_REG_MAX_FRAME_SIZE,
+		    max_mtu + ETH_HLEN + ETH_FCS_LEN);
+
+	return 0;
+}
+
+static int
+qca8k_port_max_mtu(struct dsa_switch *ds, int port)
+{
+	return QCA8K_MAX_MTU;
+}
+
+static int
 qca8k_port_fdb_insert(struct qca8k_priv *priv, const u8 *addr,
 		      u16 port_mask, u16 vid)
 {
@@ -795,6 +827,8 @@ static const struct dsa_switch_ops qca8k_switch_ops = {
 	.adjust_link            = qca8k_adjust_link,
 	.port_enable		= qca8k_port_enable,
 	.port_disable		= qca8k_port_disable,
+	.port_change_mtu	= qca8k_port_change_mtu,
+	.port_max_mtu		= qca8k_port_max_mtu,
 	.get_strings		= qca8k_get_strings,
 	.get_ethtool_stats	= qca8k_get_ethtool_stats,
 	.get_sset_count		= qca8k_get_sset_count,

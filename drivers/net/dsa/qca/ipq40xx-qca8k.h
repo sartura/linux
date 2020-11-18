@@ -20,6 +20,7 @@
 #include <linux/regmap.h>
 
 #define QCA8K_NUM_PORTS					7
+#define QCA8K_MAX_MTU					9000
 
 #define PHY_ID_QCA8337					0x004dd036
 #define QCA8K_ID_QCA8337				0x13
@@ -188,6 +189,7 @@ struct qca8k_priv {
 	struct mii_bus *bus;
 
 	struct ar8xxx_port_status port_sts[QCA8K_NUM_PORTS];
+	unsigned int port_mtu[QCA8K_NUM_PORTS];
 	struct dsa_switch *ds;
 	struct mutex reg_mutex;
 	struct device *dev;
