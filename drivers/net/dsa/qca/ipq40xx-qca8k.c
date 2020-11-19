@@ -1468,7 +1468,7 @@ ar40xx_qm_err_check_work_task(struct work_struct *work)
 static inline bool
 ar40xx_qm_error_war_enabled(void)
 {
-	return false;
+	return true;
 }
 
 static void
