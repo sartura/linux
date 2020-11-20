@@ -1437,10 +1437,16 @@ ar40xx_sw_mac_polling_task(struct qca8k_priv *priv)
 			ar40xx_get_qm_status(priv, i, &qm_buffer_err);
 			if (qm_buffer_err) {
 				++qm_err_cnt[i];
+				dev_dbg(priv->dev,
+					"QM: %u error(s) detected on port %u\n",
+					qm_err_cnt[i], i);
 			} else {
 				priv->ar40xx_port_qm_buf[i] =
 						AR40XX_QM_EMPTY;
 				qm_err_cnt[i] = 0;
+				dev_dbg(priv->dev,
+					"QM: error(s) cleared on port %u\n",
+					i);
 				ar40xx_force_1g_full(priv, i);
 			}
 		}
