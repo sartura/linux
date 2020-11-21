@@ -822,7 +822,7 @@ static int ipqess_tx_map_and_fill(struct ipqess_tx_ring *tx_ring, struct sk_buff
 	struct ipqess_tx_desc *desc = NULL, *first_desc = NULL;
 	u32 word1 = 0, word3 = 0, lso_word1 = 0, svlan_tag = 0;
 	u16 len, lso_len = 0;
-	int i = 0;
+	int i;
 
 	ipqess_get_dp_info(tx_ring->ess, skb, &word3);
 
@@ -900,7 +900,7 @@ static int ipqess_tx_map_and_fill(struct ipqess_tx_ring *tx_ring, struct sk_buff
 	desc->svlan_tag = svlan_tag;
 	desc->word3 = word3;
 
-	while (i < skb_shinfo(skb)->nr_frags) {
+	for (i = 0; i < skb_shinfo(skb)->nr_frags; i++) {
 		skb_frag_t *frag = &skb_shinfo(skb)->frags[i];
 		len = skb_frag_size(frag);
 		desc = ipqess_tx_desc_next(tx_ring);
@@ -916,7 +916,6 @@ static int ipqess_tx_map_and_fill(struct ipqess_tx_ring *tx_ring, struct sk_buff
 		desc->svlan_tag = svlan_tag;
 		desc->word1 = word1 | lso_word1;
 		desc->word3 = word3;
-		i++;
 	}
 	desc->word1 |= 1 << IPQESS_TPD_EOP_SHIFT;
 	buf->skb = skb;
