@@ -821,7 +821,7 @@ static int ipqess_tx_map_and_fill(struct ipqess_tx_ring *tx_ring, struct sk_buff
 	struct platform_device *pdev = tx_ring->ess->pdev;
 	struct ipqess_tx_desc *desc = NULL, *first_desc = NULL;
 	u32 word1 = 0, word3 = 0, lso_word1 = 0, svlan_tag = 0;
-	u16 len, lso_len = 0;
+	u16 len;
 	int i;
 
 	ipqess_get_dp_info(tx_ring->ess, skb, &word3);
@@ -883,10 +883,7 @@ static int ipqess_tx_map_and_fill(struct ipqess_tx_ring *tx_ring, struct sk_buff
 	}
 
 	buf = ipqess_get_tx_buffer(tx_ring, desc);
-	if (lso_word1)
-		buf->length = lso_len;
-	else
-		buf->length = len;
+	buf->length = len;
 	buf->dma = dma_map_single(&pdev->dev,
 				skb->data, len, DMA_TO_DEVICE);
 	if (dma_mapping_error(&pdev->dev, buf->dma))
