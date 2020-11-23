@@ -71,6 +71,8 @@ static const struct qca8k_mib_desc ar8327_mib[] = {
 	MIB_DESC(1, 0x9c, "TxExcDefer"),
 	MIB_DESC(1, 0xa0, "TxDefer"),
 	MIB_DESC(1, 0xa4, "TxLateCol"),
+	MIB_DESC(1, 0xa8, "RxUnicast"),
+	MIB_DESC(1, 0xac, "TxUnicast"),
 };
 
 
