@@ -730,20 +730,16 @@ static inline u16 ipqess_tx_desc_available(struct ipqess_tx_ring *tx_ring)
 
 static inline int ipqess_cal_txd_req(struct sk_buff *skb)
 {
-	int i, nfrags;
-	const skb_frag_t *frag;
+	int tpds;
 
-	nfrags = 1;
-	if (skb_is_gso(skb)) {
-		for (i = 0; i < skb_shinfo(skb)->nr_frags; i++) {
-			frag = &skb_shinfo(skb)->frags[i];
-			nfrags += DIV_ROUND_UP(frag->bv_len, IPQESS_TX_DMA_BUF_LEN);
-		}
-	} else {
-		nfrags += skb_shinfo(skb)->nr_frags;
+	/* one TPD for the header, and one for each fragments */
+	tpds = 1 + skb_shinfo(skb)->nr_frags;
+	if (skb_is_gso(skb) && skb_is_gso_v6(skb)) {
+		/* for LSOv2 one extra TPD is needed */
+		tpds++;
 	}
 
-	return nfrags; // DIV_ROUND_UP(nfrags, 2);
+	return tpds;
 }
 
 static struct ipqess_buf *ipqess_get_tx_buffer(struct ipqess_tx_ring *tx_ring,
