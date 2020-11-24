@@ -940,7 +940,7 @@ static netdev_tx_t ipqess_xmit(struct sk_buff *skb,
 	tx_ring = &ess->tx_ring[skb_get_queue_mapping(skb)];
 	tx_num = ipqess_cal_txd_req(skb);
 	avail = ipqess_tx_desc_available(tx_ring);
-	if (avail <= tx_num) {
+	if (avail < tx_num) {
 		netdev_dbg(netdev,
 			   "stopping tx queue %d, avail=%d req=%d im=%x\n",
 			   tx_ring->idx, avail, tx_num,
