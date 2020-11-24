@@ -1580,8 +1580,7 @@ qca8k_mmio_probe(struct platform_device *pdev)
 		return -EPROBE_DEFER;
 	}
 
-	priv->ds = devm_kzalloc(&pdev->dev, sizeof(*priv->ds),
-				QCA8K_NUM_PORTS);
+	priv->ds = devm_kzalloc(&pdev->dev, sizeof(*priv->ds), GFP_KERNEL);
 	if (!priv->ds)
 		return -ENOMEM;
 
