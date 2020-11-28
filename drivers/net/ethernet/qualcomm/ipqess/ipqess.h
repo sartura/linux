@@ -243,8 +243,8 @@ struct ipqess {
 	struct net_device_stats stats;
 
 	struct ipqess_rx_ring_refill rx_refill[IPQESS_NETDEV_QUEUES];
-	u32 tx_irq[16];
-	u32 rx_irq[8];
+	u32 tx_irq[IPQESS_MAX_TX_QUEUE];
+	u32 rx_irq[IPQESS_MAX_RX_QUEUE];
 };
 
 static inline void build_test(void)
