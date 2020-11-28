@@ -1168,10 +1168,17 @@ static int ipqess_axi_probe(struct platform_device *pdev)
 		goto err_out;
 	}
 
-	for (i = 0; i < IPQESS_MAX_TX_QUEUE; i++)
+	for (i = 0; i < IPQESS_MAX_TX_QUEUE; i++) {
 		ess->tx_irq[i] = platform_get_irq(pdev, i);
-	for (i = 0; i < IPQESS_MAX_RX_QUEUE; i++)
+		scnprintf(ess->tx_irq_names[i], sizeof(ess->tx_irq_names[i]),
+			 "%s:txq%d", pdev->name, i);
+	}
+
+	for (i = 0; i < IPQESS_MAX_RX_QUEUE; i++) {
 		ess->rx_irq[i] = platform_get_irq(pdev, i + IPQESS_MAX_TX_QUEUE);
+		scnprintf(ess->rx_irq_names[i], sizeof(ess->rx_irq_names[i]),
+			 "%s:rxq%d", pdev->name, i);
+	}
 
 #undef NETIF_F_TSO6
 #define NETIF_F_TSO6 0
@@ -1220,13 +1227,15 @@ static int ipqess_axi_probe(struct platform_device *pdev)
 
 		qid = ess->tx_ring[i].idx;
 		err = devm_request_irq(&ess->netdev->dev, ess->tx_irq[qid],
-			ipqess_interrupt_tx, 0, "ipqess TX", &ess->tx_ring[i]);
+			ipqess_interrupt_tx, 0, ess->tx_irq_names[qid],
+			&ess->tx_ring[i]);
 		if (err)
 			goto err_out;
 
 		qid = ess->rx_ring[i].idx;
 		err = devm_request_irq(&ess->netdev->dev, ess->rx_irq[qid],
-			ipqess_interrupt_rx, 0, "ipqess RX", &ess->rx_ring[i]);
+			ipqess_interrupt_rx, 0, ess->rx_irq_names[qid],
+			&ess->rx_ring[i]);
 		if (err)
 			goto err_out;
 

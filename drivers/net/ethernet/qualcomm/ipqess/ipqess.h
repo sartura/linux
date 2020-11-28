@@ -228,6 +228,8 @@ struct ipqess_rx_ring_refill {
 	struct work_struct refill_work;
 };
 
+#define IPQESS_IRQ_NAME_LEN	32
+
 struct ipqess {
 	struct net_device *netdev;
 	void __iomem *hw_addr;
@@ -244,7 +246,9 @@ struct ipqess {
 
 	struct ipqess_rx_ring_refill rx_refill[IPQESS_NETDEV_QUEUES];
 	u32 tx_irq[IPQESS_MAX_TX_QUEUE];
+	char tx_irq_names[IPQESS_MAX_TX_QUEUE][IPQESS_IRQ_NAME_LEN];
 	u32 rx_irq[IPQESS_MAX_RX_QUEUE];
+	char rx_irq_names[IPQESS_MAX_TX_QUEUE][IPQESS_IRQ_NAME_LEN];
 };
 
 static inline void build_test(void)
