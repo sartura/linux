@@ -1210,20 +1210,22 @@ static int ipqess_axi_probe(struct platform_device *pdev)
 		goto err_out;
 
 	for (i = 0; i < IPQESS_NETDEV_QUEUES; i++) {
+		int qid;
+
 		netif_tx_napi_add(netdev, &ess->tx_ring[i].napi_tx,
 				  ipqess_tx_napi, 64);
 		netif_napi_add(netdev,
 			       &ess->rx_ring[i].napi_rx,
 			       ipqess_rx_napi, 64);
 
-		err = devm_request_irq(&ess->netdev->dev,
-			ess->tx_irq[i << IPQESS_TX_CPU_START_SHIFT],
+		qid = ess->tx_ring[i].idx;
+		err = devm_request_irq(&ess->netdev->dev, ess->tx_irq[qid],
 			ipqess_interrupt_tx, 0, "ipqess TX", &ess->tx_ring[i]);
 		if (err)
 			goto err_out;
 
-		err = devm_request_irq(&ess->netdev->dev,
-			ess->rx_irq[i << IPQESS_RX_CPU_START_SHIFT],
+		qid = ess->rx_ring[i].idx;
+		err = devm_request_irq(&ess->netdev->dev, ess->rx_irq[qid],
 			ipqess_interrupt_rx, 0, "ipqess RX", &ess->rx_ring[i]);
 		if (err)
 			goto err_out;
