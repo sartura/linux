@@ -117,9 +117,6 @@
 
 #define IPQESS_GMAC_NO_MDIO_PHY	PHY_MAX_ADDR
 
-extern int ssdk_rfs_ipct_rule_set(__be32 ip_src, __be32 ip_dst,
-				  __be16 sport, __be16 dport,
-				  uint8_t proto, u16 loadbalance, bool action);
 struct ipqesstool_statistics {
 	u32 tx_q0_pkt;
 	u32 tx_q1_pkt;
