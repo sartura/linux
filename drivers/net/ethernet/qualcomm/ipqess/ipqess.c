@@ -92,44 +92,46 @@ void ipqess_update_hw_stats(struct ipqess *ess)
 
 static int ipqess_tx_ring_alloc(struct ipqess *ess)
 {
+	struct device *dev = &ess->pdev->dev;
 	int i;
 
 	for (i = 0; i < IPQESS_NETDEV_QUEUES; i++) {
+		struct ipqess_tx_ring *tx_ring = &ess->tx_ring[i];
+		size_t size;
 		u32 idx;
 
-		ess->tx_ring[i].ess = ess;
-		ess->tx_ring[i].ring_id = i;
-		ess->tx_ring[i].idx = i * 4;
-		ess->tx_ring[i].count = IPQESS_TX_RING_SIZE;
-		ess->tx_ring[i].nq = netdev_get_tx_queue(ess->netdev, i);
+		tx_ring->ess = ess;
+		tx_ring->ring_id = i;
+		tx_ring->idx = i * 4;
+		tx_ring->count = IPQESS_TX_RING_SIZE;
+		tx_ring->nq = netdev_get_tx_queue(ess->netdev, i);
 
-		ess->tx_ring[i].buf = devm_kzalloc(&ess->pdev->dev,
-			sizeof(struct ipqess_buf) * IPQESS_TX_RING_SIZE,
-			GFP_KERNEL);
-		if (!ess->tx_ring[i].buf) {
+		size = sizeof(struct ipqess_buf) * IPQESS_TX_RING_SIZE;
+		tx_ring->buf = devm_kzalloc(dev, size, GFP_KERNEL);
+		if (!tx_ring->buf) {
 			netdev_err(ess->netdev, "buffer alloc of tx ring failed");
 			return -ENOMEM;
 		}
 
-		ess->tx_ring[i].hw_desc = dmam_alloc_coherent(&ess->pdev->dev,
-			sizeof(struct ipqess_tx_desc) * IPQESS_TX_RING_SIZE,
-			&ess->tx_ring[i].dma, GFP_KERNEL | __GFP_ZERO);
-		if (!ess->tx_ring[i].hw_desc) {
+		size = sizeof(struct ipqess_tx_desc) * IPQESS_TX_RING_SIZE;
+		tx_ring->hw_desc = dmam_alloc_coherent(dev, size, &tx_ring->dma,
+						       GFP_KERNEL | __GFP_ZERO);
+		if (!tx_ring->hw_desc) {
 			netdev_err(ess->netdev, "descriptor allocation for tx ring failed");
 			return -ENOMEM;
 		}
 
-		ipqess_w32(ess, IPQESS_REG_TPD_BASE_ADDR_Q(ess->tx_ring[i].idx),
-			 (u32)ess->tx_ring[i].dma);
+		ipqess_w32(ess, IPQESS_REG_TPD_BASE_ADDR_Q(tx_ring->idx),
+			 (u32)tx_ring->dma);
 
-		idx = ipqess_r32(ess, IPQESS_REG_TPD_IDX_Q(ess->tx_ring[i].idx));
+		idx = ipqess_r32(ess, IPQESS_REG_TPD_IDX_Q(tx_ring->idx));
 		idx >>= IPQESS_TPD_CONS_IDX_SHIFT; /* need u32 here */
 		idx &= 0xffff;
-		ess->tx_ring[i].head = ess->tx_ring[i].tail = idx;
+		tx_ring->head = tx_ring->tail = idx;
 
 		ipqess_m32(ess, IPQESS_TPD_PROD_IDX_MASK << IPQESS_TPD_PROD_IDX_SHIFT,
-			 idx, IPQESS_REG_TPD_IDX_Q(ess->tx_ring[i].idx));
-		ipqess_w32(ess, IPQESS_REG_TX_SW_CONS_IDX_Q(ess->tx_ring[i].idx), idx);
+			 idx, IPQESS_REG_TPD_IDX_Q(tx_ring->idx));
+		ipqess_w32(ess, IPQESS_REG_TX_SW_CONS_IDX_Q(tx_ring->idx), idx);
 		ipqess_w32(ess, IPQESS_REG_TPD_RING_SIZE, IPQESS_TX_RING_SIZE);
 	}
 
