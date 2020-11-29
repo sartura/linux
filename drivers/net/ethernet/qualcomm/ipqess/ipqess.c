@@ -1240,13 +1240,6 @@ static int ipqess_axi_probe(struct platform_device *pdev)
 			&ess->rx_ring[i]);
 		if (err)
 			goto err_out;
-
-		/*
-		 * irq_set_affinity_hint(ess->tx_irq[i << IPQESS_TX_CPU_START_SHIFT],
-		 *			get_cpu_mask(i));
-		 * irq_set_affinity_hint(ess->rx_irq[i << IPQESS_RX_CPU_START_SHIFT],
-		 *			get_cpu_mask(i));
-		 */
 	}
 
 	return 0;
