@@ -960,11 +960,15 @@ static netdev_tx_t ipqess_xmit(struct sk_buff *skb,
 	ess->stats.tx_bytes += skb->len;
 	netdev_tx_sent_queue(tx_ring->nq, skb->len);
 
-	if (!netdev_xmit_more() || netif_xmit_stopped(tx_ring->nq))
+	if (!netdev_xmit_more() || netif_xmit_stopped(tx_ring->nq)) {
+		/* Ensure that all TPDs has been written completely */
+		dma_wmb();
+
 		ipqess_m32(ess,
 			 IPQESS_TPD_PROD_IDX_BITS,
 			 tx_ring->head,
 			 IPQESS_REG_TPD_IDX_Q(tx_ring->idx));
+	}
 
 err_out:
 	return NETDEV_TX_OK;
