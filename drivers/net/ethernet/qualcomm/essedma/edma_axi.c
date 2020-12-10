@@ -1014,6 +1014,8 @@ static int edma_axi_probe(struct platform_device *pdev)
 
 	for_each_available_child_of_node(np, pnp) {
 		const uint32_t *vlan_tag = NULL;
+		struct device_node *phy_node;
+		phy_interface_t phy_mode;
 		int len;
 
 		/* this check is needed if parent and daughter dts have
@@ -1048,20 +1050,26 @@ static int edma_axi_probe(struct platform_device *pdev)
 		if (!of_property_read_u32(pnp, "qcom,poll_required",
 					  &adapter[idx]->poll_required)) {
 			if (adapter[idx]->poll_required) {
-				of_property_read_u32(pnp, "qcom,phy_mdio_addr",
-						     &adapter[idx]->phy_mdio_addr);
 				of_property_read_u32(pnp, "qcom,forced_speed",
 						     &adapter[idx]->forced_speed);
 				of_property_read_u32(pnp, "qcom,forced_duplex",
 						     &adapter[idx]->forced_duplex);
 
-				/* create a phyid using MDIO bus id
-				 * and MDIO bus address
-				 */
-				snprintf(adapter[idx]->phy_id,
-					 MII_BUS_ID_SIZE + 3, PHY_ID_FMT,
-					 miibus->id,
-					 adapter[idx]->phy_mdio_addr);
+				phy_node = of_parse_phandle(pnp, "phy-handle", 0);
+				if (!phy_node) {
+					dev_err(&pdev->dev, "no associated PHY\n");
+					goto edma_phy_attach_fail;
+				}
+
+				adapter[idx]->phy_node = phy_node;
+
+				err = of_get_phy_mode(pnp, &phy_mode);
+				if (err < 0 ) {
+					dev_warn(&pdev->dev, "phy-mode missing, default to SGMII\n");
+					phy_mode = PHY_INTERFACE_MODE_SGMII;
+				}
+
+				adapter[idx]->phy_mode = phy_mode;
 			}
 		} else {
 			adapter[idx]->poll_required = 0;
@@ -1192,19 +1200,12 @@ static int edma_axi_probe(struct platform_device *pdev)
 
 	for (i = 0; i < edma_cinfo->num_gmac; i++) {
 		if (adapter[i]->poll_required) {
-			phy_interface_t phy_mode;
 
-			of_get_phy_mode(np, &phy_mode);
-
-			if (phy_mode < 0)
-				phy_mode = PHY_INTERFACE_MODE_SGMII;
 			adapter[i]->phydev =
-				phy_connect(edma_netdev[i],
-					    (const char *)adapter[i]->phy_id,
-					    &edma_adjust_link,
-					    phy_mode);
+				of_phy_connect(edma_netdev[i], adapter[i]->phy_node, &edma_adjust_link, 0,
+					adapter[i]->phy_mode);
 			if (IS_ERR(adapter[i]->phydev)) {
-				dev_dbg(&pdev->dev, "PHY attach FAIL");
+				dev_err(&pdev->dev, "PHY attach FAIL");
 				err = -EIO;
 				goto edma_phy_attach_fail;
 			} else {
