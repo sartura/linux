@@ -399,12 +399,12 @@ struct edma_adapter {
 	u32 forced_speed; /* link force speed */
 	u32 forced_duplex; /* link force duplex */
 	u32 link_state; /* phy link state */
-	u32 phy_mdio_addr; /* PHY device address on MII interface */
+	struct device_node *phy_node; /* PHY device device node */
+	phy_interface_t phy_mode; /* PHY device mode */
 	u32 poll_required; /* check if link polling is required */
 	u32 tx_start_offset[CONFIG_NR_CPUS]; /* tx queue start */
 	u32 default_vlan_tag; /* vlan tag */
 	u32 dp_bitmap;
-	uint8_t phy_id[MII_BUS_ID_SIZE + 3];
 };
 
 int edma_alloc_queues_tx(struct edma_common_info *edma_cinfo);
