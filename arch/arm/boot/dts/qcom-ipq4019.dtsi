@@ -714,11 +714,13 @@
 
 			gmac1: gmac1 {
 				local-mac-address = [00 00 00 00 00 00];
-				qcom,phy_mdio_addr = <4>;
 				qcom,poll_required = <1>;
 				qcom,forced_speed = <1000>;
 				qcom,forced_duplex = <1>;
 				vlan_tag = <2 0x20>;
+
+				phy-handle = <&ethphy4>;
+				phy-mode = "sgmii";
 			};
 		};
 
