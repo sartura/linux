@@ -1028,8 +1028,12 @@ ar40xx_phytest_check_counters(struct qca8k_priv *priv, int phy, u32 count)
 	tx_all_ok = tx_ok + (tx_ok_high16 << 16);
 	rx_all_ok = rx_ok + (rx_ok_high16 << 16);
 
-	if (tx_all_ok != count || tx_error != 0)
+	if (tx_all_ok != count || tx_error != 0) {
+		dev_dbg(priv->dev,
+			"PHY%d tx_ok:%08x tx_err:%08x rx_ok:%08x rx_err:%08x\n",
+			phy, tx_all_ok, tx_error, rx_all_ok, rx_error);
 		return false;
+	}
 
 	return true;
 }
