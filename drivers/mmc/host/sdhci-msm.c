@@ -2445,7 +2445,7 @@ MODULE_DEVICE_TABLE(of, sdhci_msm_dt_match);
 
 static const struct sdhci_ops sdhci_msm_ops = {
 	.reset = sdhci_msm_reset,
-	.set_clock = sdhci_msm_set_clock,
+	.set_clock = sdhci_set_clock,
 	.get_min_clock = sdhci_msm_get_min_clock,
 	.get_max_clock = sdhci_msm_get_max_clock,
 	.set_bus_width = sdhci_set_bus_width,
