@@ -1039,12 +1039,24 @@ ar40xx_phytest_check_counters(struct qca8k_priv *priv, int phy, u32 count)
 }
 
 static void
+ar40xx_check_phy_reset_status(struct qca8k_priv *priv, int phy)
+{
+	u16 bmcr;
+
+	bmcr = mdiobus_read(priv->bus, phy, MII_BMCR);
+	if (bmcr & BMCR_RESET)
+		dev_warn_once(priv->dev, "PHY %d reset is pending\n", phy);
+}
+
+static void
 ar40xx_psgmii_single_phy_testing(struct qca8k_priv *priv, int phy)
 {
 	struct mii_bus *bus = priv->bus;
 	int j;
 
 	mdiobus_write(bus, phy, MII_BMCR, BMCR_RESET | BMCR_ANENABLE);
+	ar40xx_check_phy_reset_status(priv, phy);
+
 	mdiobus_write(bus, phy, MII_BMCR, BMCR_LOOPBACK | BMCR_FULLDPLX |
 					  BMCR_SPEED1000);
 
@@ -1085,6 +1097,9 @@ ar40xx_psgmii_all_phy_testing(struct qca8k_priv *priv)
 	int phy, j;
 
 	mdiobus_write(bus, 0x1f, MII_BMCR, BMCR_RESET | BMCR_ANENABLE);
+	for (phy = 0; phy < AR40XX_NUM_PORTS - 1; phy++)
+		ar40xx_check_phy_reset_status(priv, phy);
+
 	mdiobus_write(bus, 0x1f, MII_BMCR, BMCR_LOOPBACK | BMCR_FULLDPLX |
 					   BMCR_SPEED1000);
 
