@@ -1830,7 +1830,11 @@ static int ar40xx_probe(struct platform_device *pdev)
 	swdev->vlans = AR40XX_MAX_VLANS;
 	swdev->ports = AR40XX_NUM_PORTS;
 	swdev->ops = &ar40xx_sw_ops;
-	register_switch(swdev, NULL);
+	ret = register_switch(swdev, NULL);
+	if (ret < 0) {
+		dev_err(&pdev->dev, "Switch registration failed!\n");
+		return ret;
+	}
 
 	num_mibs = ARRAY_SIZE(ar40xx_mibs);
 	len = priv->dev.ports * num_mibs *
