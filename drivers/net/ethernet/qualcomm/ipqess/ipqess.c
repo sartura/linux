@@ -23,7 +23,7 @@
 #include <linux/of_mdio.h>
 #include <linux/of_device.h>
 #include <linux/platform_device.h>
-#include <linux/phy.h>
+#include <linux/phylink.h>
 #include <linux/skbuff.h>
 #include <linux/vmalloc.h>
 #include <linux/dsa/ipq40xx.h>
@@ -327,62 +327,6 @@ static struct net_device_stats *ipqess_get_stats(struct net_device *netdev)
 	return &ess->stats;
 }
 
-static void ipqess_adjust_link(struct net_device *netdev)
-{
-	/* TODO */
-}
-
-static int ipqess_phy_connect(struct net_device *netdev)
-{
-	struct ipqess *ess = netdev_priv(netdev);
-	struct device_node *of_node = ess->pdev->dev.of_node;
-	struct device_node *phy_node;
-	struct phy_device *phy;
-	phy_interface_t phy_if;
-	int ret;
-
-	if (!of_phy_is_fixed_link(of_node)) {
-		netdev_err(netdev, "fixed-link is not present\n");
-		return -EINVAL;
-	}
-
-	ret = of_phy_register_fixed_link(of_node);
-	if (ret) {
-		netdev_err(netdev, "failed to register fixed-link (%d)\n",
-			   ret);
-		return ret;
-	}
-
-	phy_node = of_node_get(of_node);
-
-	ret = of_get_phy_mode(of_node, &phy_if);
-	if (ret) {
-		netdev_err(netdev, "unable to get phy-mode property (%d)\n",
-			   ret);
-		goto err_put_phy_node;
-	}
-
-	phy = of_phy_connect(netdev, phy_node, &ipqess_adjust_link, 0, phy_if);
-	if (!phy) {
-		netdev_err(netdev, "unable to find phy \"%pOF\"\n", of_node);
-		ret = -ENODEV;
-		goto err_put_phy_node;
-	}
-
-	ess->phy_node = phy_node;
-	netdev->phydev = phy;
-
-	phy_attached_info(phy);
-
-	return 0;
-
-err_put_phy_node:
-	of_node_put(phy_node);
-	of_phy_deregister_fixed_link(of_node);
-
-	return ret;
-}
-
 static int ipqess_rx_poll(struct ipqess_rx_ring *rx_ring, int budget)
 {
 	u32 length = 0, num_desc, tail, rx_ring_tail;
@@ -656,17 +600,14 @@ static int __init ipqess_init(struct net_device *netdev)
 		netdev->addr_assign_type = NET_ADDR_RANDOM;
 	}
 
-	return ipqess_phy_connect(netdev);
+	return phylink_of_phy_connect(ess->phylink, of_node, 0);
 }
 
 static void ipqess_uninit(struct net_device *netdev)
 {
 	struct ipqess *ess = netdev_priv(netdev);
-	struct device_node *of_node = ess->pdev->dev.of_node;
 
-	of_node_put(ess->phy_node);
-	phy_disconnect(netdev->phydev);
-	of_phy_deregister_fixed_link(of_node);
+	phylink_disconnect_phy(ess->phylink);
 }
 
 static int ipqess_open(struct net_device *netdev)
@@ -679,9 +620,8 @@ static int ipqess_open(struct net_device *netdev)
 		napi_enable(&ess->rx_ring[i].napi_rx);
 	}
 	ipqess_irq_enable(ess);
-	phy_start(ess->netdev->phydev);
+	phylink_start(ess->phylink);
 	netif_tx_start_all_queues(netdev);
-	netif_carrier_on(netdev);
 
 	return 0;
 }
@@ -692,8 +632,7 @@ static int ipqess_stop(struct net_device *netdev)
 	int i;
 
 	netif_tx_stop_all_queues(netdev);
-	phy_stop(netdev->phydev);
-	netif_carrier_off(netdev);
+	phylink_stop(ess->phylink);
 	ipqess_irq_disable(ess);
 	for (i = 0; i < IPQESS_NETDEV_QUEUES; i++) {
 		napi_disable(&ess->tx_ring[i].napi_tx);
@@ -705,11 +644,13 @@ static int ipqess_stop(struct net_device *netdev)
 
 static int ipqess_do_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
 {
+	struct ipqess *ess = netdev_priv(netdev);
+
 	switch (cmd) {
 	case SIOCGMIIPHY:
 	case SIOCGMIIREG:
 	case SIOCSMIIREG:
-		return phy_mii_ioctl(netdev->phydev, ifr, cmd);
+		return phylink_mii_ioctl(ess->phylink, ifr, cmd);
 	default:
 		break;
 	}
@@ -1135,6 +1076,56 @@ static int ipqess_hw_init(struct ipqess *ess)
 	return 0;
 }
 
+static void ipqess_validate(struct phylink_config *config,
+			    unsigned long *supported,
+			    struct phylink_link_state *state)
+{
+	struct ipqess *ess = container_of(config, struct ipqess, phylink_config);
+	__ETHTOOL_DECLARE_LINK_MODE_MASK(mask) = { 0, };
+
+	if (state->interface != PHY_INTERFACE_MODE_INTERNAL) {
+		dev_err(&ess->pdev->dev, "unsupported interface mode: %d\n",
+			state->interface);
+		linkmode_zero(supported);
+		return;
+	}
+
+	phylink_set_port_modes(mask);
+	phylink_set(mask, 1000baseT_Full);
+
+	linkmode_and(supported, supported, mask);
+	linkmode_and(state->advertising, state->advertising, mask);
+}
+
+static void ipqess_mac_config(struct phylink_config *config, unsigned int mode,
+			      const struct phylink_link_state *state)
+{
+	/* TODO */
+}
+
+static void ipqess_mac_link_down(struct phylink_config *config,
+				 unsigned int mode,
+				 phy_interface_t interface)
+{
+	/* TODO */
+}
+
+static void ipqess_mac_link_up(struct phylink_config *config,
+			       struct phy_device *phy, unsigned int mode,
+			       phy_interface_t interface,
+			       int speed, int duplex,
+			       bool tx_pause, bool rx_pause)
+{
+	/* TODO */
+}
+
+static struct phylink_mac_ops ipqess_phylink_mac_ops = {
+	.validate		= ipqess_validate,
+	.mac_config		= ipqess_mac_config,
+	.mac_link_up		= ipqess_mac_link_up,
+	.mac_link_down		= ipqess_mac_link_down,
+};
+
 static void ipqess_cleanup(struct ipqess *ess)
 {
 	ipqess_reset(ess);
@@ -1143,11 +1134,15 @@ static void ipqess_cleanup(struct ipqess *ess)
 	ipqess_tx_ring_free(ess);
 	ipqess_rx_ring_free(ess);
 
+	if (!IS_ERR_OR_NULL(ess->phylink))
+		phylink_destroy(ess->phylink);
+
 	free_netdev(ess->netdev);
 }
 
 static int ipqess_axi_probe(struct platform_device *pdev)
 {
+	struct device_node *np = pdev->dev.of_node;
 	struct ipqess *ess;
 	struct net_device *netdev;
 	struct resource *res;
@@ -1171,6 +1166,19 @@ static int ipqess_axi_probe(struct platform_device *pdev)
 	ess->hw_addr = devm_ioremap_resource(&pdev->dev, res);
 	if (IS_ERR(ess->hw_addr)) {
 		err = PTR_ERR(ess->hw_addr);
+		goto err_out;
+	}
+
+	ess->phylink_config.dev = &netdev->dev;
+	ess->phylink_config.type = PHYLINK_NETDEV;
+	ess->phylink_config.pcs_poll = true;
+
+	ess->phylink = phylink_create(&ess->phylink_config,
+				      of_fwnode_handle(np),
+				      PHY_INTERFACE_MODE_INTERNAL,
+				      &ipqess_phylink_mac_ops);
+	if (IS_ERR(ess->phylink)) {
+		err = PTR_ERR(ess->phylink);
 		goto err_out;
 	}
 
@@ -1213,7 +1221,6 @@ static int ipqess_axi_probe(struct platform_device *pdev)
 
 	ipqess_set_ethtool_ops(netdev);
 
-	netif_carrier_off(netdev);
 	err = register_netdev(netdev);
 	if (err)
 		goto err_out;

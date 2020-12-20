@@ -63,6 +63,7 @@ config QCOM_EMAC
 config IPQ_ESS
 	tristate "Qualcomm Atheros IPQ ESS support"
 	depends on OF
+	select PHYLINK
 	help
 	  This driver supports the Qualcomm IPQ40xx built-int
 	  ESS ethernet controller.
