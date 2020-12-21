@@ -81,14 +81,14 @@ qca8k_read(struct qca8k_priv *priv, u32 reg)
 {
 	unsigned int val;
 
-	regmap_read(priv->base, reg, &val);
+	regmap_read(priv->regmap, reg, &val);
 	return val;
 }
 
 static void
 qca8k_write(struct qca8k_priv *priv, u32 reg, u32 val)
 {
-	regmap_write(priv->base, reg, val);
+	regmap_write(priv->regmap, reg, val);
 }
 
 static u32
@@ -1554,12 +1554,6 @@ qca8k_mmio_probe(struct platform_device *pdev)
 	ret = of_property_read_u32(np, "mac-mode", &priv->mac_mode);
 	if (ret < 0) {
 		dev_err(&pdev->dev, "unable to get 'mac-mode' property\n");
-		return -EINVAL;
-	}
-
-	priv->base = syscon_node_to_regmap(np);
-	if (IS_ERR_OR_NULL(priv->base)) {
-		dev_err(&pdev->dev, "unable to get register's base address\n");
 		return -EINVAL;
 	}
 

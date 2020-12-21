@@ -187,7 +187,6 @@ struct qca8k_priv {
 	struct delayed_work dsa_init;
 
 	struct regmap *regmap;
-	struct regmap *base;
 	struct regmap *psgmii;
 	struct clk *ess_clk;
 	struct reset_control *ess_rst;
