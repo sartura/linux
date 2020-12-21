@@ -440,12 +440,6 @@ qca8k_setup(struct dsa_switch *ds)
 		return -EINVAL;
 	}
 
-	/* Start by setting up the register mapping */
-	priv->regmap = devm_regmap_init(ds->dev, NULL, priv,
-					&qca8k_regmap_config);
-	if (IS_ERR(priv->regmap))
-		pr_warn("regmap initialization failed");
-
 	/* Initialize CPU port pad mode (xMII type, delays...) */
 	ret = of_get_phy_mode(dsa_to_port(ds, QCA8K_CPU_PORT)->dn, &phy_mode);
 	if (ret) {
@@ -1553,6 +1547,15 @@ qca8k_mmio_probe(struct platform_device *pdev)
 
 	priv->pdev = pdev;
 	mutex_init(&priv->reg_mutex);
+
+	/* Start by setting up the register mapping */
+	priv->regmap = devm_regmap_init(&pdev->dev, NULL, priv,
+					&qca8k_regmap_config);
+	if (IS_ERR(priv->regmap)) {
+		ret = PTR_ERR(priv->regmap);
+		dev_err(&pdev->dev, "regmap initialization failed, %d\n", ret);
+		return ret;
+	}
 
 	priv->ess_clk = of_clk_get_by_name(np, "ess_clk");
 	if (IS_ERR(priv->ess_clk)) {
