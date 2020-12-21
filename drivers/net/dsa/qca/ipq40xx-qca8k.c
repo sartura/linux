@@ -440,8 +440,6 @@ qca8k_setup(struct dsa_switch *ds)
 		return -EINVAL;
 	}
 
-	mutex_init(&priv->reg_mutex);
-
 	/* Start by setting up the register mapping */
 	priv->regmap = devm_regmap_init(ds->dev, NULL, priv,
 					&qca8k_regmap_config);
