@@ -116,26 +116,6 @@ qca8k_reg_clear(struct qca8k_priv *priv, u32 reg, u32 val)
 	qca8k_rmw(priv, reg, val, 0);
 }
 
-static int
-qca8k_regmap_read(void *ctx, uint32_t reg, uint32_t *val)
-{
-	struct qca8k_priv *priv = (struct qca8k_priv *)ctx;
-
-	*val = qca8k_read(priv, reg);
-
-	return 0;
-}
-
-static int
-qca8k_regmap_write(void *ctx, uint32_t reg, uint32_t val)
-{
-	struct qca8k_priv *priv = (struct qca8k_priv *)ctx;
-
-	qca8k_write(priv, reg, val);
-
-	return 0;
-}
-
 static const struct regmap_range qca8k_readable_ranges[] = {
 	regmap_reg_range(0x0000, 0x00e4), /* Global control */
 	regmap_reg_range(0x0100, 0x0168), /* EEE control */
@@ -165,8 +145,6 @@ static struct regmap_config qca8k_regmap_config = {
 	.val_bits = 32,
 	.reg_stride = 4,
 	.max_register = 0x16ac, /* end MIB - Port6 range */
-	.reg_read = qca8k_regmap_read,
-	.reg_write = qca8k_regmap_write,
 	.rd_table = &qca8k_readable_table,
 };
 
@@ -1540,6 +1518,7 @@ static int __init
 qca8k_mmio_probe(struct platform_device *pdev)
 {
 	struct qca8k_priv *priv;
+	void __iomem *base;
 	struct device_node *np = pdev->dev.of_node, *mii_np;
 	int ret;
 
@@ -1548,9 +1527,12 @@ qca8k_mmio_probe(struct platform_device *pdev)
 	priv->pdev = pdev;
 	mutex_init(&priv->reg_mutex);
 
-	/* Start by setting up the register mapping */
-	priv->regmap = devm_regmap_init(&pdev->dev, NULL, priv,
-					&qca8k_regmap_config);
+	base = devm_platform_get_and_ioremap_resource(pdev, 0, NULL);
+	if (IS_ERR(base))
+		return PTR_ERR(base);
+
+	priv->regmap = devm_regmap_init_mmio(&pdev->dev, base,
+					     &qca8k_regmap_config);
 	if (IS_ERR(priv->regmap)) {
 		ret = PTR_ERR(priv->regmap);
 		dev_err(&pdev->dev, "regmap initialization failed, %d\n", ret);
