@@ -1267,16 +1267,16 @@ ar40xx_phy_dbg_read(struct qca8k_priv *priv, int phy_addr,
 #define AR40XX_QM_EMPTY  0
 
 static
-int ar40xx_force_1g_full(struct qca8k_priv *priv, u32 port_id)
+void ar40xx_force_1g_full(struct qca8k_priv *priv, u32 port_id)
 {
 	u32 reg;
 
 	if (port_id < 0 || port_id > 6)
-		return -1;
+		return;
 
 	reg = QCA8K_REG_PORT_STATUS(port_id);
-	return qca8k_rmw(priv, reg, QCA8K_PORT_STATUS_SPEED,
-			(QCA8K_PORT_STATUS_SPEED_1000 | QCA8K_PORT_STATUS_DUPLEX));
+	qca8k_rmw(priv, reg, QCA8K_PORT_STATUS_SPEED,
+		  (QCA8K_PORT_STATUS_SPEED_1000 | QCA8K_PORT_STATUS_DUPLEX));
 }
 
 static
