@@ -91,17 +91,15 @@ qca8k_write(struct qca8k_priv *priv, u32 reg, u32 val)
 	regmap_write(priv->regmap, reg, val);
 }
 
-static u32
+static void
 qca8k_rmw(struct qca8k_priv *priv, u32 reg, u32 mask, u32 val)
 {
-	u32 ret;
+	u32 t;
 
-	ret = qca8k_read(priv, reg);
-	ret &= ~mask;
-	ret |= val;
-	qca8k_write(priv, reg, ret);
-
-	return ret;
+	t = qca8k_read(priv, reg);
+	t &= ~mask;
+	t |= val;
+	qca8k_write(priv, reg, t);
 }
 
 static void
