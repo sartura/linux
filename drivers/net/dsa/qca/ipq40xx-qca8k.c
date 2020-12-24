@@ -94,24 +94,19 @@ qca8k_write(struct qca8k_priv *priv, u32 reg, u32 val)
 static void
 qca8k_rmw(struct qca8k_priv *priv, u32 reg, u32 mask, u32 val)
 {
-	u32 t;
-
-	t = qca8k_read(priv, reg);
-	t &= ~mask;
-	t |= val;
-	qca8k_write(priv, reg, t);
+       regmap_update_bits(priv->regmap, reg, mask, val);
 }
 
 static void
 qca8k_reg_set(struct qca8k_priv *priv, u32 reg, u32 val)
 {
-	qca8k_rmw(priv, reg, 0, val);
+       regmap_set_bits(priv->regmap, reg, val);
 }
 
 static void
 qca8k_reg_clear(struct qca8k_priv *priv, u32 reg, u32 val)
 {
-	qca8k_rmw(priv, reg, val, 0);
+	regmap_clear_bits(priv->regmap, reg, val);
 }
 
 static const struct regmap_range qca8k_readable_ranges[] = {
