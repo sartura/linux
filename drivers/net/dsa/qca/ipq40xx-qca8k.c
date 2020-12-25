@@ -407,6 +407,9 @@ qca8k_setup(struct dsa_switch *ds)
 	/* Flush the FDB table */
 	qca8k_fdb_flush(priv);
 
+	/* We don't have interrupts for link changes, so we need to poll */
+	ds->pcs_poll = true;
+
 	return 0;
 }
 
