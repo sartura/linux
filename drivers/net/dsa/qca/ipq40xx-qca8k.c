@@ -770,8 +770,8 @@ qca8k_port_change_mtu(struct dsa_switch *ds, int port, int mtu)
 	priv->port_mtu[port] = mtu;
 
 	for (i = 0; i < QCA8K_NUM_PORTS; i++)
-		if (priv->port_mtu[port] > max_mtu)
-			max_mtu = priv->port_mtu[port];
+		if (priv->port_mtu[i] > max_mtu)
+			max_mtu = priv->port_mtu[i];
 
 	/* Include L2 header / FCS length */
 	qca8k_write(priv, QCA8K_REG_MAX_FRAME_SIZE,
