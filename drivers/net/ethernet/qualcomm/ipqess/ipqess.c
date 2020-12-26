@@ -1155,7 +1155,6 @@ static int ipqess_axi_probe(struct platform_device *pdev)
 		return -ENODEV;
 
 	ess = netdev_priv(netdev);
-	memset(ess, 0, sizeof(struct ipqess));
 	ess->netdev = netdev;
 	ess->pdev = pdev;
 	spin_lock_init(&ess->stats_lock);
