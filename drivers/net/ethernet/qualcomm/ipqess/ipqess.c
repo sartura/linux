@@ -40,12 +40,12 @@
 
 static void ipqess_w32(struct ipqess *ess, u32 reg, u32 val)
 {
-	__raw_writel(val, ess->hw_addr + reg);
+	writel(val, ess->hw_addr + reg);
 }
 
 static u32 ipqess_r32(struct ipqess *ess, u16 reg)
 {
-	return __raw_readl(ess->hw_addr + reg);
+	return readl(ess->hw_addr + reg);
 }
 
 static void ipqess_m32(struct ipqess *ess, u32 mask, u32 val, u16 reg)
