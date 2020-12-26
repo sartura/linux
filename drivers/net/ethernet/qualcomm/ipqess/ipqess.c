@@ -1136,8 +1136,6 @@ static void ipqess_cleanup(struct ipqess *ess)
 
 	if (!IS_ERR_OR_NULL(ess->phylink))
 		phylink_destroy(ess->phylink);
-
-	free_netdev(ess->netdev);
 }
 
 static int ipqess_axi_probe(struct platform_device *pdev)
@@ -1148,11 +1146,11 @@ static int ipqess_axi_probe(struct platform_device *pdev)
 	struct resource *res;
 	int i, err = 0;
 
-	netdev = alloc_etherdev_mqs(sizeof(struct ipqess),
-				    IPQESS_NETDEV_QUEUES,
-				    IPQESS_NETDEV_QUEUES);
+	netdev = devm_alloc_etherdev_mqs(&pdev->dev, sizeof(struct ipqess),
+					 IPQESS_NETDEV_QUEUES,
+					 IPQESS_NETDEV_QUEUES);
 	if (!netdev)
-		return -ENODEV;
+		return -ENOMEM;
 
 	ess = netdev_priv(netdev);
 	ess->netdev = netdev;
