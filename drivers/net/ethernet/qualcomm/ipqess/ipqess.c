@@ -1026,10 +1026,9 @@ static int ipqess_hw_init(struct ipqess *ess)
 
 	/* Set Rx FIFO
 	 * - threshold to start to DMA data to host
-	 * (Remove IPQESS_RXQ_CTRL_RMV_VLAN otherwise VLAN won't work)
 	 */
 	ipqess_w32(ess, IPQESS_REG_RXQ_CTRL,
-		 IPQESS_FIFO_THRESH_128_BYTE /* | IPQESS_RXQ_CTRL_RMV_VLAN */);
+		 IPQESS_FIFO_THRESH_128_BYTE | IPQESS_RXQ_CTRL_RMV_VLAN);
 
 	err = ipqess_rx_ring_alloc(ess);
 	if (err)
