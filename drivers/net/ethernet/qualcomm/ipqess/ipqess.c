@@ -1200,11 +1200,8 @@ static int ipqess_axi_probe(struct platform_device *pdev)
 			   NETIF_F_HW_VLAN_CTAG_TX |
 			   NETIF_F_TSO | NETIF_F_TSO6 |
 			   NETIF_F_GRO | NETIF_F_SG;
-	netdev->hw_features = NETIF_F_HW_CSUM | NETIF_F_RXCSUM |
-			      NETIF_F_HW_VLAN_CTAG_RX |
-			      NETIF_F_HW_VLAN_CTAG_TX | NETIF_F_SG |
-			      NETIF_F_TSO | NETIF_F_TSO6 |
-			      NETIF_F_GRO;
+	/* feature change is not supported yet */
+	netdev->hw_features = 0;
 	netdev->vlan_features = NETIF_F_HW_CSUM | NETIF_F_SG | NETIF_F_RXCSUM |
 				NETIF_F_TSO | NETIF_F_TSO6 |
 				NETIF_F_GRO;
