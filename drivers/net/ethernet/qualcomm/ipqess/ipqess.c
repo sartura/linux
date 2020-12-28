@@ -15,6 +15,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <linux/bitfield.h>
 #include <linux/if_vlan.h>
 #include <linux/interrupt.h>
 #include <linux/module.h>
@@ -743,11 +744,44 @@ static bool ipqess_process_dsa_tag(struct sk_buff *skb, u32 *word3)
 	return true;
 }
 
+static bool ipqess_process_dsa_tag_ib(struct sk_buff *skb, u32 *word3)
+{
+	struct vlan_ethhdr *veth = vlan_eth_hdr(skb);
+	u16 tci;
+	u32 dp;
+
+	if (be16_to_cpu(veth->h_vlan_proto) != IPQ40XX_DSA_TAG_PROTO)
+		return false;
+
+	if (unlikely(!pskb_may_pull(skb, VLAN_HLEN)))
+		return false;
+
+	tci = be16_to_cpu(veth->h_vlan_TCI);
+	dp = FIELD_GET(IPQ40XX_DSA_DP_MASK, tci);
+
+	pr_debug("IB tag present @ %08x, proto: %04x data: %04x\n",
+		 (u32)veth, be16_to_cpu(veth->h_vlan_proto), tci);
+
+	*word3 |= dp << IPQESS_TPD_PORT_BITMAP_SHIFT;
+	if (tci & IPQ40XX_DSA_FROM_CPU)
+		*word3 |= BIT(IPQESS_TPD_FROM_CPU_SHIFT);
+
+	/* remove the pseudo VLAN header */
+	skb_pull(skb, VLAN_HLEN);
+	memmove(skb->data, skb->data - VLAN_HLEN, 2 * ETH_ALEN);
+	skb->mac_header += VLAN_HLEN;
+
+	return true;
+}
+
 static void ipqess_get_dp_info(struct ipqess *ess, struct sk_buff *skb,
 			       u32 *word3)
 {
 	if (netdev_uses_dsa(ess->netdev)) {
 		if (ipqess_process_dsa_tag(skb, word3))
+			return;
+
+		if (ipqess_process_dsa_tag_ib(skb, word3))
 			return;
 	}
 
