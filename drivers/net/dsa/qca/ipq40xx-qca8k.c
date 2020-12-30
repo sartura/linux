@@ -849,7 +849,14 @@ static enum dsa_tag_protocol
 qca8k_get_tag_protocol(struct dsa_switch *ds, int port,
 		       enum dsa_tag_protocol mp)
 {
-	return DSA_TAG_PROTO_IPQ40XX;
+	if (IS_ENABLED(CONFIG_NET_DSA_IPQ40XX_TAG_INBAND))
+		return DSA_TAG_PROTO_IPQ40XX_IB;
+
+	if (IS_ENABLED(CONFIG_NET_DSA_IPQ40XX_TAG_SKB_EXT))
+		return DSA_TAG_PROTO_IPQ40XX;
+
+	WARN_ONCE(1, "unsupported tagging protocol\n");
+	return DSA_TAG_PROTO_NONE;
 }
 
 static const struct dsa_switch_ops qca8k_switch_ops = {

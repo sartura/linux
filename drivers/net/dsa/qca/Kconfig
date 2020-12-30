@@ -11,8 +11,22 @@ config NET_DSA_AR9331
 config NET_DSA_IPQ40XX_QCA8K
 	tristate "Qualcomm Atheros QCA8K Ethernet switch in IPQ40xx SoC-s support"
 	depends on NET_DSA
-	select NET_DSA_TAG_IPQ40XX
 	select REGMAP
 	help
 	  This enables support for the Qualcomm Atheros QCA8K Ethernet
 	  switch chips in IPQ40xx SoC-s.
+
+choice
+	prompt "IPQ40xx switch tagging protocol"
+	depends on NET_DSA_IPQ40XX_QCA8K
+	default NET_DSA_IPQ40XX_TAG_INBAND
+
+config NET_DSA_IPQ40XX_TAG_INBAND
+	bool "Use in-band tags"
+	select NET_DSA_TAG_IPQ40XX_IB
+
+config NET_DSA_IPQ40XX_TAG_SKB_EXT
+	bool "Use skb extension based tags"
+	select NET_DSA_TAG_IPQ40XX
+
+endchoice
