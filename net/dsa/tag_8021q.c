@@ -453,10 +453,16 @@ EXPORT_SYMBOL_GPL(dsa_8021q_crosschip_bridge_leave);
 struct sk_buff *dsa_8021q_xmit(struct sk_buff *skb, struct net_device *netdev,
 			       u16 tpid, u16 tci)
 {
+	int rc;
+
 	/* skb->data points at skb_mac_header, which
 	 * is fine for vlan_insert_tag.
 	 */
-	return vlan_insert_tag(skb, htons(tpid), tci);
+	rc = __vlan_insert_tag(skb, htons(tpid), tci);
+	if (rc)
+		return NULL;
+
+	return skb;
 }
 EXPORT_SYMBOL_GPL(dsa_8021q_xmit);
 
