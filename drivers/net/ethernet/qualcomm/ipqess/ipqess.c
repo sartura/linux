@@ -901,6 +901,16 @@ vlan_tag_error:
 	return -ENOMEM;
 }
 
+static inline void ipqess_kick_tx(struct ipqess_tx_ring *tx_ring)
+{
+	/* Ensure that all TPDs has been written completely */
+	dma_wmb();
+
+	/* update software producer index */
+	ipqess_w32(tx_ring->ess, IPQESS_REG_TPD_IDX_Q(tx_ring->idx),
+		   tx_ring->head);
+}
+
 static netdev_tx_t ipqess_xmit(struct sk_buff *skb,
 			     struct net_device *netdev)
 {
@@ -921,6 +931,7 @@ static netdev_tx_t ipqess_xmit(struct sk_buff *skb,
 				      IPQESS_REG_TX_INT_MASK_Q(tx_ring->idx)));
 		netif_tx_stop_queue(tx_ring->nq);
 		ipqess_w32(tx_ring->ess, IPQESS_REG_TX_INT_MASK_Q(tx_ring->idx), 0x1);
+		ipqess_kick_tx(tx_ring);
 		return NETDEV_TX_BUSY;
 	}
 
@@ -935,15 +946,8 @@ static netdev_tx_t ipqess_xmit(struct sk_buff *skb,
 	ess->stats.tx_bytes += skb->len;
 	netdev_tx_sent_queue(tx_ring->nq, skb->len);
 
-	if (!netdev_xmit_more() || netif_xmit_stopped(tx_ring->nq)) {
-		/* Ensure that all TPDs has been written completely */
-		dma_wmb();
-
-		ipqess_m32(ess,
-			 IPQESS_TPD_PROD_IDX_BITS,
-			 tx_ring->head,
-			 IPQESS_REG_TPD_IDX_Q(tx_ring->idx));
-	}
+	if (!netdev_xmit_more() || netif_xmit_stopped(tx_ring->nq))
+		ipqess_kick_tx(tx_ring);
 
 err_out:
 	return NETDEV_TX_OK;
