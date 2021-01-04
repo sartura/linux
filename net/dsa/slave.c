@@ -1952,6 +1952,16 @@ int dsa_slave_create(struct dsa_port *port)
 	if (slave_dev == NULL)
 		return -ENOMEM;
 
+	slave_dev->features = master->vlan_features | NETIF_F_HW_TC;
+	if (ds->ops->port_vlan_add && ds->ops->port_vlan_del)
+		slave_dev->features |= NETIF_F_HW_VLAN_CTAG_FILTER;
+	if (cpu_dp->tag_ops->vlan_tx_offload_allowed)
+		slave_dev->features |= master->features &
+				       (NETIF_F_HW_VLAN_CTAG_TX |
+					NETIF_F_HW_VLAN_STAG_TX);
+
+	slave_dev->hw_features |= NETIF_F_HW_TC;
+	slave_dev->features |= NETIF_F_LLTX;
 	slave_dev->ethtool_ops = &dsa_slave_ethtool_ops;
 	if (!is_zero_ether_addr(port->mac))
 		ether_addr_copy(slave_dev->dev_addr, port->mac);

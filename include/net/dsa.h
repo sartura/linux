@@ -98,6 +98,7 @@ struct dsa_device_ops {
 	 * its RX filter.
 	 */
 	bool promisc_on_master;
+	bool vlan_tx_offload_allowed;
 };
 
 /* This structure defines the control interfaces that are overlayed by the
