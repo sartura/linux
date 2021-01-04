@@ -53,6 +53,7 @@ const struct dsa_device_ops ipq40xx_ib_tag_ops = {
 	.xmit	= ipq40xx_ib_tag_xmit,
 	.rcv	= ipq40xx_ib_tag_rcv,
 	.overhead = VLAN_HLEN,
+	.vlan_tx_offload_allowed = true,
 };
 
 MODULE_LICENSE("GPL v2");
