@@ -996,7 +996,7 @@ static const struct net_device_ops ipqess_axi_netdev_ops = {
 	.ndo_tx_timeout		= ipqess_tx_timeout,
 };
 
-static void ipqess_reset(struct ipqess *ess)
+static void ipqess_hw_stop(struct ipqess *ess)
 {
 	int i;
 
@@ -1025,7 +1025,7 @@ static int ipqess_hw_init(struct ipqess *ess)
 {
 	int i, err;
 
-	ipqess_reset(ess);
+	ipqess_hw_stop(ess);
 
 	ipqess_m32(ess, BIT(IPQESS_INTR_SW_IDX_W_TYP_SHIFT),
 		 IPQESS_INTR_SW_IDX_W_TYPE << IPQESS_INTR_SW_IDX_W_TYP_SHIFT,
@@ -1165,7 +1165,7 @@ static struct phylink_mac_ops ipqess_phylink_mac_ops = {
 
 static void ipqess_cleanup(struct ipqess *ess)
 {
-	ipqess_reset(ess);
+	ipqess_hw_stop(ess);
 	unregister_netdev(ess->netdev);
 
 	ipqess_tx_ring_free(ess);
