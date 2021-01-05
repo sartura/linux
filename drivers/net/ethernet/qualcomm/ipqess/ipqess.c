@@ -1031,9 +1031,6 @@ static int ipqess_hw_init(struct ipqess *ess)
 		 IPQESS_INTR_SW_IDX_W_TYPE << IPQESS_INTR_SW_IDX_W_TYP_SHIFT,
 		 IPQESS_REG_INTR_CTRL);
 
-	ipqess_w32(ess, IPQESS_REG_RX_ISR, 0xff);
-	ipqess_w32(ess, IPQESS_REG_TX_ISR, 0xffff);
-
 	/* enable IRQ delay slot */
 	ipqess_w32(ess, IPQESS_REG_IRQ_MODRT_TIMER_INIT,
 		 (IPQESS_TX_IMT << IPQESS_IRQ_MODRT_TX_TIMER_SHIFT) |
