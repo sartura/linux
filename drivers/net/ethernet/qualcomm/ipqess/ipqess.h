@@ -139,7 +139,7 @@ struct ipqess_tx_ring {
 	int ring_id;
 	struct ipqess *ess;
 	struct netdev_queue *nq;
-	void *hw_desc;
+	struct ipqess_tx_desc *hw_desc;
 	struct ipqess_buf *buf;
 	dma_addr_t dma;
 	u16 count;

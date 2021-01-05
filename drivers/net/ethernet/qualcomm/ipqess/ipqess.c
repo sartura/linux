@@ -689,14 +689,14 @@ static inline int ipqess_cal_txd_req(struct sk_buff *skb)
 static struct ipqess_buf *ipqess_get_tx_buffer(struct ipqess_tx_ring *tx_ring,
 					       struct ipqess_tx_desc *desc)
 {
-	return &tx_ring->buf[desc - (struct ipqess_tx_desc *)tx_ring->hw_desc];
+	return &tx_ring->buf[desc - tx_ring->hw_desc];
 }
 
 static struct ipqess_tx_desc *ipqess_tx_desc_next(struct ipqess_tx_ring *tx_ring)
 {
 	struct ipqess_tx_desc *desc;
 
-	desc = (&((struct ipqess_tx_desc *)(tx_ring->hw_desc))[tx_ring->head]);
+	desc = &tx_ring->hw_desc[tx_ring->head];
 	tx_ring->head = IPQESS_NEXT_IDX(tx_ring->head, tx_ring->count);
 
 	return desc;
@@ -710,11 +710,11 @@ static void ipqess_rollback_tx(struct ipqess *eth,
 	struct ipqess_tx_desc *desc = NULL;
 	u16 start_index, index;
 
-	start_index = first_desc - (struct ipqess_tx_desc *)(tx_ring->hw_desc);
+	start_index = first_desc - tx_ring->hw_desc;
 
 	index = start_index;
 	while (index != tx_ring->head) {
-		desc = (&((struct ipqess_tx_desc *)(tx_ring->hw_desc))[index]);
+		desc = &tx_ring->hw_desc[index];
 		buf = &tx_ring->buf[index];
 		ipqess_tx_unmap_and_free(&eth->pdev->dev, buf);
 		memset(desc, 0, sizeof(struct ipqess_tx_desc));
