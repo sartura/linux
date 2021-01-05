@@ -301,7 +301,7 @@ static void ipqess_rx_ring_free(struct ipqess *ess)
 {
 	int i;
 
-	for (i = 0, i = 0; i < IPQESS_NETDEV_QUEUES; i++) {
+	for (i = 0; i < IPQESS_NETDEV_QUEUES; i++) {
 		int j;
 
 		atomic_set(&ess->rx_ring[i].refill_count, 0);
