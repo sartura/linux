@@ -1242,9 +1242,6 @@ static int ipqess_axi_probe(struct platform_device *pdev)
 	netdev->vlan_features = NETIF_F_HW_CSUM | NETIF_F_SG | NETIF_F_RXCSUM |
 				NETIF_F_TSO | NETIF_F_TSO6 |
 				NETIF_F_GRO;
-	netdev->wanted_features = NETIF_F_HW_CSUM | NETIF_F_SG |
-				  NETIF_F_TSO | NETIF_F_TSO6 |
-				  NETIF_F_GRO;
 	netdev->watchdog_timeo = 5 * HZ;
 	netdev->base_addr = (u32) ess->hw_addr;
 	netdev->max_mtu = 9000;
