@@ -153,7 +153,7 @@ struct ipqess_rx_ring {
 	int ring_id;
 	struct ipqess *ess;
 	struct device *ppdev;
-	void **hw_desc;
+	struct ipqess_rx_desc **hw_desc;
 	struct ipqess_buf *buf;
 	dma_addr_t dma;
 	u16 head;

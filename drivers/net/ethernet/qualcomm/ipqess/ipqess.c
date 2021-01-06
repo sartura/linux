@@ -197,7 +197,7 @@ static int ipqess_rx_buf_prepare(struct ipqess_buf *buf,
 	}
 
 	buf->length = IPQESS_RX_HEAD_BUFF_SIZE;
-	rx_ring->hw_desc[rx_ring->head] = (void *)buf->dma;
+	rx_ring->hw_desc[rx_ring->head] = (struct ipqess_rx_desc *)buf->dma;
 	rx_ring->head = (rx_ring->head + 1) % IPQESS_RX_RING_SIZE;
 
 	ipqess_m32(rx_ring->ess, IPQESS_RFD_PROD_IDX_BITS,
