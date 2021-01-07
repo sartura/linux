@@ -442,6 +442,7 @@ void ipqess_update_hw_stats(struct ipqess *ess);
 #define IPQESS_FIFO_THRESH_64_BYTE 0x1
 #define IPQESS_RXQ_CTRL_RMV_VLAN 0x00000002
 #define IPQESS_RXQ_CTRL_EN_MASK			GENMASK(15, 8)
+#define IPQESS_RXQ_CTRL_EN(__qid)		BIT(8 + (__qid))
 
 /* AXI Burst Size Config */
 #define IPQESS_REG_AXIW_CTRL_MAXWRSIZE 0xA1C

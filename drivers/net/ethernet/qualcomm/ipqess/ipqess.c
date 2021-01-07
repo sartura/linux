@@ -1023,6 +1023,7 @@ static void ipqess_hw_stop(struct ipqess *ess)
 
 static int ipqess_hw_init(struct ipqess *ess)
 {
+	u32 tmp;
 	int i, err;
 
 	ipqess_hw_stop(ess);
@@ -1103,9 +1104,15 @@ static int ipqess_hw_init(struct ipqess *ess)
 	ipqess_w32(ess, IPQESS_REG_AXIW_CTRL_MAXWRSIZE,
 		 IPQESS_AXIW_MAXWRSIZE_VALUE);
 
-	/* Enable All 16 tx and 8 rx irq mask */
+	/* Enable TX queues */
 	ipqess_m32(ess, 0, IPQESS_TXQ_CTRL_TXQ_EN, IPQESS_REG_TXQ_CTRL);
-	ipqess_m32(ess, 0, IPQESS_RXQ_CTRL_EN_MASK, IPQESS_REG_RXQ_CTRL);
+
+	/* Enable RX queues */
+	tmp = 0;
+	for (i = 0; i < IPQESS_NETDEV_QUEUES; i++)
+		tmp |= IPQESS_RXQ_CTRL_EN(ess->rx_ring[i].idx);
+
+	ipqess_m32(ess, IPQESS_RXQ_CTRL_EN_MASK, tmp, IPQESS_REG_RXQ_CTRL);
 
 	return 0;
 }
