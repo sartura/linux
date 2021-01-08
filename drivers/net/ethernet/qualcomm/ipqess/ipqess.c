@@ -1000,12 +1000,15 @@ static void ipqess_hw_stop(struct ipqess *ess)
 {
 	int i;
 
-	/* disable all IRQs */
-	for (i = 0; i < IPQESS_NETDEV_QUEUES; i++) {
-		ipqess_w32(ess, IPQESS_REG_RX_INT_MASK_Q(ess->rx_ring[i].idx), 0);
-		ipqess_w32(ess, IPQESS_REG_TX_INT_MASK_Q(ess->rx_ring[i].idx), 0);
-	}
+	/* disable all RX queue IRQs */
+	for (i = 0; i < IPQESS_MAX_RX_QUEUE; i++)
+		ipqess_w32(ess, IPQESS_REG_RX_INT_MASK_Q(i), 0);
 
+	/* disable all TX queue IRQs */
+	for (i = 0; i < IPQESS_MAX_TX_QUEUE; i++)
+		ipqess_w32(ess, IPQESS_REG_TX_INT_MASK_Q(i), 0);
+
+	/* disable all other IRQs */
 	ipqess_w32(ess, IPQESS_REG_MISC_IMR, 0);
 	ipqess_w32(ess, IPQESS_REG_WOL_IMR, 0);
 
