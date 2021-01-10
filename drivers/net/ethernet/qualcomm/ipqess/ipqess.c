@@ -841,6 +841,9 @@ static int ipqess_tx_map_and_fill(struct ipqess_tx_ring *tx_ring, struct sk_buff
 		}
 	}
 
+	if (eth_type_vlan(skb->protocol))
+		word1 |= IPQESS_TPD_VLAN_TAGGED;
+
         if (skb->protocol == htons(ETH_P_PPP_SES))
                 word1 |= IPQESS_TPD_PPPOE_EN;
 

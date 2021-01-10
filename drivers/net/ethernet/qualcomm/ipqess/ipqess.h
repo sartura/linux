@@ -495,6 +495,13 @@ void ipqess_update_hw_stats(struct ipqess *ess);
 #define IPQESS_TPD_CUSTOM_CSUM_EN 0x00000C00
 #define IPQESS_TPD_LSO_EN 0x00001000
 #define IPQESS_TPD_LSO_V2_EN 0x00002000
+/* The VLAN_TAGGED bit is not used in the publicly available
+ * drivers. The definition has been stolen from the Atheros
+ * 'alx' driver (drivers/net/ethernet/atheros/alx/hw.h). It
+ * seems that it has the same meaning in regard to the EDMA
+ * hardware.
+ */
+#define IPQESS_TPD_VLAN_TAGGED 0x00004000
 #define IPQESS_TPD_IPV4_EN 0x00010000
 #define IPQESS_TPD_MSS_MASK 0x1FFF
 #define IPQESS_TPD_MSS_SHIFT 18
