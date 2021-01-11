@@ -62,6 +62,12 @@ config NET_DSA_TAG_IPQ40XX_IB
 	  Say Y or M if you want to enable support for tagging frames for
 	  the built-in switch of the Qualcomm Atheros IPQ40xx SoCs.
 
+config NET_DSA_TAG_IPQ40XX_SH
+	tristate "Tag driver for IPQ40xx SoCs' built-in switch (shinfo)"
+	help
+	  Say Y or M if you want to enable support for tagging frames for
+	  the built-in switch of the Qualcomm Atheros IPQ40xx SoCs.
+
 config NET_DSA_TAG_GSWIP
 	tristate "Tag driver for Lantiq / Intel GSWIP switches"
 	help
