@@ -29,4 +29,8 @@ config NET_DSA_IPQ40XX_TAG_SKB_EXT
 	bool "Use skb extension based tags"
 	select NET_DSA_TAG_IPQ40XX
 
+config NET_DSA_IPQ40XX_TAG_SHINFO
+	bool "Use shared skbinfo based tags"
+	select NET_DSA_TAG_IPQ40XX_SH
+
 endchoice
