@@ -774,6 +774,26 @@ static bool ipqess_process_dsa_tag_ib(struct sk_buff *skb, u32 *word3)
 	return true;
 }
 
+static bool ipqess_process_dsa_tag_sh(struct sk_buff *skb, u32 *word3)
+{
+	struct skb_shared_info *shinfo = skb_shinfo(skb);
+	struct ipq40xx_dsa_tag_data *tag_data;
+
+	if (shinfo->dsa_tag_proto != DSA_TAG_PROTO_IPQ40XX_SH)
+		return false;
+
+	tag_data = (struct ipq40xx_dsa_tag_data *)shinfo->dsa_tag_data;
+
+	pr_debug("SH tag @ %08x, dp:%02x from_cpu:%u\n",
+		 (u32)tag_data, tag_data->dp, tag_data->from_cpu);
+
+	*word3 |= tag_data->dp << IPQESS_TPD_PORT_BITMAP_SHIFT;
+	if (tag_data->from_cpu)
+		*word3 |= BIT(IPQESS_TPD_FROM_CPU_SHIFT);
+
+	return true;
+}
+
 static void ipqess_get_dp_info(struct ipqess *ess, struct sk_buff *skb,
 			       u32 *word3)
 {
@@ -782,6 +802,9 @@ static void ipqess_get_dp_info(struct ipqess *ess, struct sk_buff *skb,
 			return;
 
 		if (ipqess_process_dsa_tag_ib(skb, word3))
+			return;
+
+		if (ipqess_process_dsa_tag_sh(skb, word3))
 			return;
 	}
 
