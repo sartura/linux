@@ -522,6 +522,9 @@ struct skb_shared_info {
 	unsigned int	gso_type;
 	u32		tskey;
 
+	unsigned int	dsa_tag_proto;
+	unsigned char	dsa_tag_data[8];
+
 	/*
 	 * Warning : all fields before dataref are cleared in __alloc_skb()
 	 */
