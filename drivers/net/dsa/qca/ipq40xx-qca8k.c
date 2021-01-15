@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright (C) 2009 Felix Fietkau <nbd@nbd.name>
- * Copyright (C) 2011-2012 Gabor Juhos <juhosg@openwrt.org>
+ * Copyright (C) 2011-2012, 2020-2021 Gabor Juhos <j4g8y7@gmail.com>
  * Copyright (c) 2015, The Linux Foundation. All rights reserved.
  * Copyright (c) 2016 John Crispin <john@phrozen.org>
  */
@@ -1712,6 +1712,7 @@ static struct platform_driver qca8kmmio_driver = {
 module_platform_driver_probe(qca8kmmio_driver, qca8k_mmio_probe);
 
 MODULE_AUTHOR("Mathieu Olivari, John Crispin <john@phrozen.org>");
+MODULE_AUTHOR("Gabor Juhos <j4g8y7@gmail.com>");
 MODULE_DESCRIPTION("Driver for QCA8K ethernet switch family");
 MODULE_LICENSE("GPL v2");
 MODULE_ALIAS("platform:qca8k");

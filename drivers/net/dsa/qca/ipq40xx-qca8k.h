@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Felix Fietkau <nbd@nbd.name>
- * Copyright (C) 2011-2012 Gabor Juhos <juhosg@openwrt.org>
+ * Copyright (C) 2011-2012, 2020-2021 Gabor Juhos <j4g8y7@gmail.com>
  * Copyright (c) 2015, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
