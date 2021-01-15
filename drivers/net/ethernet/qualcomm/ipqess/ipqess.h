@@ -2,6 +2,7 @@
 /* Copyright (c) 2014 - 2016, The Linux Foundation. All rights reserved.
  * Copyright (c) 2017 - 2018, John Crispin <john@phrozen.org>
  * Copyright (c) 2018 - 2019, Christian Lamparter <chunkeey@gmail.com>
+ * Copyright (c) 2020 - 2021, Gabor Juhos <j4g8y7@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
