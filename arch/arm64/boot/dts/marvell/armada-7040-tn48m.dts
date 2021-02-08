@@ -32,6 +32,7 @@
 	prestera {
 		status = "okay";
 		compatible = "marvell,prestera";
+		base-mac-provider = <&onie_eeprom>;
 
 		ports {
 			port49 {
@@ -101,6 +102,14 @@
 			label = "psu:green";
 			default-state = "on";
 		};
+	};
+
+	onie_eeprom: onie-eeprom {
+		status = "okay";
+		compatible = "onie,nvmem-cells";
+
+		nvmem-name = "1-00563";
+		nvmem = <&eeprom_at24>;
 	};
 
 	i2c-mux {
