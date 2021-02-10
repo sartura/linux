@@ -191,10 +191,6 @@ static int edma_get_settings(struct net_device *netdev,
 			return -EPERM;
 
 		phy_ethtool_ksettings_get(adapter->phydev, cmd);
-		if (linkmode_test_bit(ETHTOOL_LINK_MODE_FIBRE_BIT, adapter->phydev->advertising))
-			cmd->base.port = PORT_FIBRE;
-		else
-			cmd->base.port = PORT_TP;
 	} else {
 		/* If the speed/duplex for this GMAC is forced and we
 		 * are not polling for link state changes, return the
