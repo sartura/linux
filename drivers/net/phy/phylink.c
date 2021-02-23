@@ -1432,6 +1432,7 @@ int phylink_ethtool_ksettings_set(struct phylink *pl,
 	__ETHTOOL_DECLARE_LINK_MODE_MASK(support);
 	struct phylink_link_state config;
 	const struct phy_setting *s;
+	bool major_change = false;
 
 	ASSERT_RTNL();
 
@@ -1466,6 +1467,8 @@ int phylink_ethtool_ksettings_set(struct phylink *pl,
 		     support);
 	linkmode_mod_bit(ETHTOOL_LINK_MODE_Autoneg_BIT, config.advertising,
 			 config.an_enabled);
+	if(kset->base.speed != config.speed)
+		major_change = true;
 
 	/* FIXME: should we reject autoneg if phy/mac does not support it? */
 	switch (kset->base.autoneg) {
@@ -1527,7 +1530,7 @@ int phylink_ethtool_ksettings_set(struct phylink *pl,
 	pl->link_config.duplex = config.duplex;
 	pl->link_config.an_enabled = config.an_enabled;
 
-	if (pl->link_config.interface != config.interface) {
+	if ((pl->link_config.interface != config.interface) || major_change) {
 		/* The interface changed, e.g. 1000base-X <-> 2500base-X */
 		/* We need to force the link down, then change the interface */
 		if (pl->old_link_state) {
