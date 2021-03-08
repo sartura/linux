@@ -276,6 +276,11 @@
 		reg = <0x2e>;
 	};
 
+	pd69200@3c {
+		compatible = "microchip,pd69200";
+		reg = <0x3c>;
+	};
+
 	tmp1075@4a {
 		compatible = "ti,tmp1075";
 		reg = <0x4a>;
