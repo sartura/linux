@@ -260,6 +260,18 @@
 			status = "okay";
 		};
 	};
+
+	psu@5a {
+		compatible = "delta,dps920ab";
+		reg = <0x5a>;
+		status = "okay";
+	};
+
+	psu@5b {
+		compatible = "delta,dps920ab";
+		reg = <0x5b>;
+		status = "okay";
+	};
 };
 
 &cp0_i2c0 {
