@@ -905,7 +905,7 @@ static int edma_axi_probe(struct platform_device *pdev)
 	}
 
 	for_each_available_child_of_node(np, pnp) {
-		const char *mac_addr;
+		u8 mac_addr[ETH_ALEN];
 
 		/* this check is needed if parent and daughter dts have
 		 * different number of gmac nodes
@@ -915,8 +915,8 @@ static int edma_axi_probe(struct platform_device *pdev)
 			break;
 		}
 
-		mac_addr = of_get_mac_address(pnp);
-		if (!IS_ERR(mac_addr))
+		err = of_get_mac_address(pnp, mac_addr);
+		if (!err)
 			memcpy(edma_netdev[idx_mac]->dev_addr, mac_addr, ETH_ALEN);
 
 		idx_mac++;
