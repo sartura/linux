@@ -447,15 +447,11 @@ static int mvsw_pr_port_obj_del(struct net_device *dev,
 }
 
 static int mvsw_pr_port_attr_br_vlan_set(struct mvsw_pr_port *port,
-					 struct switchdev_trans *trans,
 					 struct net_device *orig_dev,
 					 bool vlan_enabled)
 {
 	struct mvsw_pr_switch *sw = port->sw;
 	struct mvsw_pr_bridge_device *bridge_device;
-
-	if (!switchdev_trans_ph_prepare(trans))
-		return 0;
 
 	bridge_device = mvsw_pr_bridge_device_find(sw->bridge, orig_dev);
 	if (WARN_ON(!bridge_device))
@@ -470,15 +466,11 @@ static int mvsw_pr_port_attr_br_vlan_set(struct mvsw_pr_port *port,
 }
 
 static int mvsw_pr_port_attr_br_flags_set(struct mvsw_pr_port *port,
-					  struct switchdev_trans *trans,
 					  struct net_device *orig_dev,
 					  unsigned long flags)
 {
 	struct mvsw_pr_bridge_port *br_port;
 	int err;
-
-	if (switchdev_trans_ph_prepare(trans))
-		return 0;
 
 	br_port = mvsw_pr_bridge_port_find(port->sw->bridge, orig_dev);
 	if (!br_port)
@@ -501,7 +493,6 @@ static int mvsw_pr_port_attr_br_flags_set(struct mvsw_pr_port *port,
 }
 
 static int mvsw_pr_port_attr_br_ageing_set(struct mvsw_pr_port *port,
-					   struct switchdev_trans *trans,
 					   unsigned long ageing_clock_t)
 {
 	int err;
@@ -509,13 +500,11 @@ static int mvsw_pr_port_attr_br_ageing_set(struct mvsw_pr_port *port,
 	unsigned long ageing_jiffies = clock_t_to_jiffies(ageing_clock_t);
 	u32 ageing_time = jiffies_to_msecs(ageing_jiffies);
 
-	if (switchdev_trans_ph_prepare(trans)) {
-		if (ageing_time < MVSW_PR_MIN_AGEING_TIME ||
-		    ageing_time > MVSW_PR_MAX_AGEING_TIME)
-			return -ERANGE;
-		else
-			return 0;
-	}
+	if (ageing_time < MVSW_PR_MIN_AGEING_TIME ||
+	    ageing_time > MVSW_PR_MAX_AGEING_TIME)
+		return -ERANGE;
+	else
+		return 0;
 
 	err = mvsw_pr_switch_ageing_set(sw, ageing_time);
 	if (!err)
@@ -542,7 +531,6 @@ mvsw_pr_port_bridge_vlan_stp_set(struct mvsw_pr_port *port,
 }
 
 static int mvsw_pr_port_attr_stp_state_set(struct mvsw_pr_port *port,
-					   struct switchdev_trans *trans,
 					   struct net_device *orig_dev,
 					   u8 state)
 {
@@ -550,9 +538,6 @@ static int mvsw_pr_port_attr_stp_state_set(struct mvsw_pr_port *port,
 	struct mvsw_pr_bridge_vlan *br_vlan;
 	int err;
 	u16 vid;
-
-	if (switchdev_trans_ph_prepare(trans))
-		return 0;
 
 	br_port = mvsw_pr_bridge_port_find(port->sw->bridge, orig_dev);
 	if (!br_port)
@@ -591,7 +576,6 @@ err_port_bridge_stp_set:
 }
 
 static int mvsw_pr_port_attr_br_mc_disabled_set(struct mvsw_pr_port *port,
-						struct switchdev_trans *trans,
 						struct net_device *orig_dev,
 						bool mc_disabled)
 {
@@ -600,9 +584,6 @@ static int mvsw_pr_port_attr_br_mc_disabled_set(struct mvsw_pr_port *port,
 	struct mvsw_pr_bridge_port *br_port;
 	bool enabled = !mc_disabled;
 	int err;
-
-	if (!switchdev_trans_ph_prepare(trans))
-		return 0;
 
 	br_dev = mvsw_pr_bridge_device_find(sw->bridge, orig_dev);
 	if (!br_dev)
@@ -624,15 +605,14 @@ static int mvsw_pr_port_attr_br_mc_disabled_set(struct mvsw_pr_port *port,
 }
 
 static int mvsw_pr_port_obj_attr_set(struct net_device *dev,
-				     const struct switchdev_attr *attr,
-				     struct switchdev_trans *trans)
+				     const struct switchdev_attr *attr)
 {
 	int err = 0;
 	struct mvsw_pr_port *port = netdev_priv(dev);
 
 	switch (attr->id) {
 	case SWITCHDEV_ATTR_ID_PORT_STP_STATE:
-		err = mvsw_pr_port_attr_stp_state_set(port, trans,
+		err = mvsw_pr_port_attr_stp_state_set(port,
 						      attr->orig_dev,
 						      attr->u.stp_state);
 		break;
@@ -642,21 +622,21 @@ static int mvsw_pr_port_obj_attr_set(struct net_device *dev,
 			err = -EINVAL;
 		break;
 	case SWITCHDEV_ATTR_ID_PORT_BRIDGE_FLAGS:
-		err = mvsw_pr_port_attr_br_flags_set(port, trans,
+		err = mvsw_pr_port_attr_br_flags_set(port,
 						     attr->orig_dev,
 						     attr->u.brport_flags);
 		break;
 	case SWITCHDEV_ATTR_ID_BRIDGE_AGEING_TIME:
-		err = mvsw_pr_port_attr_br_ageing_set(port, trans,
+		err = mvsw_pr_port_attr_br_ageing_set(port,
 						      attr->u.ageing_time);
 		break;
 	case SWITCHDEV_ATTR_ID_BRIDGE_VLAN_FILTERING:
-		err = mvsw_pr_port_attr_br_vlan_set(port, trans,
+		err = mvsw_pr_port_attr_br_vlan_set(port,
 						    attr->orig_dev,
 						    attr->u.vlan_filtering);
 		break;
 	case SWITCHDEV_ATTR_ID_BRIDGE_MC_DISABLED:
-		err = mvsw_pr_port_attr_br_mc_disabled_set(port, trans,
+		err = mvsw_pr_port_attr_br_mc_disabled_set(port,
 							   attr->orig_dev,
 							   attr->u.mc_disabled);
 		break;
