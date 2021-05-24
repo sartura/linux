@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BSD-3-Clause OR GPL-2.0
-/* Copyright (c) 2019-2020 Marvell International Ltd. All rights reserved */
+/* Copyright (c) 2020 Marvell International Ltd. All rights reserved */
 
 #include <net/devlink.h>
 
@@ -9,7 +9,7 @@ static int prestera_dl_info_get(struct devlink *dl,
 				struct devlink_info_req *req,
 				struct netlink_ext_ack *extack)
 {
-	struct prestera_switch *sw = devlink_priv(dl);
+	struct mvsw_pr_switch *sw = devlink_priv(dl);
 	char buf[16];
 	int err;
 
@@ -31,44 +31,44 @@ static const struct devlink_ops prestera_dl_ops = {
 	.info_get = prestera_dl_info_get,
 };
 
-struct prestera_switch *prestera_devlink_alloc(void)
+struct mvsw_pr_switch *prestera_devlink_alloc(void)
 {
 	struct devlink *dl;
 
-	dl = devlink_alloc(&prestera_dl_ops, sizeof(struct prestera_switch));
+	dl = devlink_alloc(&prestera_dl_ops, sizeof(struct mvsw_pr_switch));
 
 	return devlink_priv(dl);
 }
 
-void prestera_devlink_free(struct prestera_switch *sw)
+void prestera_devlink_free(struct mvsw_pr_switch *sw)
 {
 	struct devlink *dl = priv_to_devlink(sw);
 
 	devlink_free(dl);
 }
 
-int prestera_devlink_register(struct prestera_switch *sw)
+int prestera_devlink_register(struct mvsw_pr_switch *sw)
 {
 	struct devlink *dl = priv_to_devlink(sw);
 	int err;
 
 	err = devlink_register(dl, sw->dev->dev);
 	if (err)
-		dev_err(prestera_dev(sw), "devlink_register failed: %d\n", err);
+		dev_err(sw->dev->dev, "devlink_register failed: %d\n", err);
 
 	return err;
 }
 
-void prestera_devlink_unregister(struct prestera_switch *sw)
+void prestera_devlink_unregister(struct mvsw_pr_switch *sw)
 {
 	struct devlink *dl = priv_to_devlink(sw);
 
 	devlink_unregister(dl);
 }
 
-int prestera_devlink_port_register(struct prestera_port *port)
+int prestera_devlink_port_register(struct mvsw_pr_port *port)
 {
-	struct prestera_switch *sw = port->sw;
+	struct mvsw_pr_switch *sw = port->sw;
 	struct devlink *dl = priv_to_devlink(sw);
 	struct devlink_port_attrs attrs = {};
 	int err;
@@ -82,31 +82,31 @@ int prestera_devlink_port_register(struct prestera_port *port)
 
 	err = devlink_port_register(dl, &port->dl_port, port->fp_id);
 	if (err) {
-		dev_err(prestera_dev(sw), "devlink_port_register failed: %d\n", err);
+		dev_err(sw->dev->dev, "devlink_port_register failed\n");
 		return err;
 	}
 
 	return 0;
 }
 
-void prestera_devlink_port_unregister(struct prestera_port *port)
+void prestera_devlink_port_unregister(struct mvsw_pr_port *port)
 {
 	devlink_port_unregister(&port->dl_port);
 }
 
-void prestera_devlink_port_set(struct prestera_port *port)
+void prestera_devlink_port_set(struct mvsw_pr_port *port)
 {
-	devlink_port_type_eth_set(&port->dl_port, port->dev);
+	devlink_port_type_eth_set(&port->dl_port, port->net_dev);
 }
 
-void prestera_devlink_port_clear(struct prestera_port *port)
+void prestera_devlink_port_clear(struct mvsw_pr_port *port)
 {
 	devlink_port_type_clear(&port->dl_port);
 }
 
 struct devlink_port *prestera_devlink_get_port(struct net_device *dev)
 {
-	struct prestera_port *port = netdev_priv(dev);
+	struct mvsw_pr_port *port = netdev_priv(dev);
 
 	return &port->dl_port;
 }
