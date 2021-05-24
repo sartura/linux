@@ -375,7 +375,6 @@ err_port_vlan_set:
 
 static int mvsw_pr_port_vlans_add(struct prestera_port *port,
 				  const struct switchdev_obj_port_vlan *vlan,
-				  struct switchdev_trans *trans,
 				  struct netlink_ext_ack *extack)
 {
 	bool flag_untagged = vlan->flags & BRIDGE_VLAN_INFO_UNTAGGED;
@@ -387,9 +386,6 @@ static int mvsw_pr_port_vlans_add(struct prestera_port *port,
 	int err;
 
 	if (netif_is_bridge_master(orig_dev))
-		return 0;
-
-	if (switchdev_trans_ph_commit(trans))
 		return 0;
 
 	br_port = mvsw_pr_bridge_port_find(sw->bridge, orig_dev);
@@ -414,7 +410,6 @@ static int mvsw_pr_port_vlans_add(struct prestera_port *port,
 
 static int mvsw_pr_port_obj_add(struct net_device *dev,
 				const struct switchdev_obj *obj,
-				struct switchdev_trans *trans,
 				struct netlink_ext_ack *extack)
 {
 	int err = 0;
@@ -424,7 +419,7 @@ static int mvsw_pr_port_obj_add(struct net_device *dev,
 	switch (obj->id) {
 	case SWITCHDEV_OBJ_ID_PORT_VLAN:
 		vlan = SWITCHDEV_OBJ_PORT_VLAN(obj);
-		err = mvsw_pr_port_vlans_add(port, vlan, trans, extack);
+		err = mvsw_pr_port_vlans_add(port, vlan, extack);
 		break;
 	default:
 		err = -EOPNOTSUPP;
