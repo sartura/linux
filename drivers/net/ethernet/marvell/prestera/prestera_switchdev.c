@@ -629,7 +629,8 @@ static int mvsw_pr_port_attr_br_mc_disabled_set(struct prestera_port *port,
 }
 
 static int mvsw_pr_port_obj_attr_set(struct net_device *dev,
-				     const struct switchdev_attr *attr)
+				     const struct switchdev_attr *attr,
+				     struct netlink_ext_ack *extack)
 {
 	int err = 0;
 	struct prestera_port *port = netdev_priv(dev);
