@@ -345,7 +345,7 @@ static int mvsw_pr_port_vlans_add(struct mvsw_pr_port *port,
 	struct mvsw_pr_bridge_port *br_port;
 	struct mvsw_pr_bridge_device *bridge_device;
 	struct mvsw_pr_switch *sw = port->sw;
-	u16 vid;
+	int err;
 
 	if (netif_is_bridge_master(orig_dev))
 		return 0;
@@ -361,15 +361,11 @@ static int mvsw_pr_port_vlans_add(struct mvsw_pr_port *port,
 	if (!bridge_device->vlan_enabled)
 		return 0;
 
-	for (vid = vlan->vid_begin; vid <= vlan->vid_end; vid++) {
-		int err;
-
-		err = mvsw_pr_bridge_port_vlan_add(port, br_port,
-						   vid, flag_untagged,
-						   flag_pvid, extack);
-		if (err)
-			return err;
-	}
+	err = mvsw_pr_bridge_port_vlan_add(port, br_port,
+					   vlan->vid, flag_untagged,
+					   flag_pvid, extack);
+	if (err)
+		return err;
 
 	if (list_is_singular(&bridge_device->port_list))
 		mvsw_pr_rif_enable(port->sw, bridge_device->dev, true);
@@ -420,7 +416,6 @@ static int mvsw_pr_port_vlans_del(struct mvsw_pr_port *port,
 	struct mvsw_pr_switch *sw = port->sw;
 	struct net_device *orig_dev = vlan->obj.orig_dev;
 	struct mvsw_pr_bridge_port *br_port;
-	u16 vid;
 
 	if (netif_is_bridge_master(orig_dev))
 		return -EOPNOTSUPP;
@@ -432,8 +427,7 @@ static int mvsw_pr_port_vlans_del(struct mvsw_pr_port *port,
 	if (!br_port->bridge_device->vlan_enabled)
 		return 0;
 
-	for (vid = vlan->vid_begin; vid <= vlan->vid_end; vid++)
-		mvsw_pr_bridge_port_vlan_del(port, br_port, vid);
+	mvsw_pr_bridge_port_vlan_del(port, br_port, vlan->vid);
 
 	return 0;
 }
