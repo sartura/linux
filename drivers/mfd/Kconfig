@@ -410,6 +410,18 @@ config MFD_DLN2
 	  etc. must be enabled in order to use the functionality of
 	  the device.
 
+config MFD_AS5114_CPLD
+	tristate "Edgecore Networks AS5114-48X switch CPLD driver"
+	depends on I2C
+	select MFD_SIMPLE_MFD_I2C
+	help
+	  Select this option to enable support for Edgecore Networks AS5114-48X
+	  switch CPLD. It consists of reset and GPIO drivers. CPLD provides
+	  GPIOS-s for the SFP slots, power supply related information, fan
+	  monitoring and PWM based control.
+	  SFP support depends on the GPIO driver while fan monitoring depends
+	  on hwmon driver being selected.
+
 config MFD_ENE_KB3930
 	tristate "ENE KB3930 Embedded Controller support"
 	depends on I2C
