@@ -1218,6 +1218,18 @@ config GPIO_DLN2
 	  This driver can also be built as a module. If so, the module
 	  will be called gpio-dln2.
 
+config GPIO_AS5114_CPLD
+	tristate "Edgecore Networks AS5114-48X CPLD GPIO driver"
+	depends on MFD_AS5114_CPLD
+	select GPIO_REGMAP
+	help
+	  This enables support for the GPIOs found on the Edgecore
+	  Networks AS5114-48X switch CPLD.
+	  They are used for inputs and outputs on the SFP slots.
+
+	  This driver can also be built as a module. If so, the
+	  module will be called gpio-as5114.
+
 config HTC_EGPIO
 	bool "HTC EGPIO support"
 	depends on ARM
