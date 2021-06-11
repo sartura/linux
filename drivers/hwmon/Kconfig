@@ -525,6 +525,16 @@ config SENSORS_DA9055
 	  This driver can also be built as a module. If so, the module
 	  will be called da9055-hwmon.
 
+config SENSORS_AS5114_CPLD
+	tristate "Edgecore Networks AS5114-48X CPLD hwmon driver"
+	depends on MFD_AS5114_CPLD || COMPILE_TEST
+	help
+	  This enables support for the fan monitoring and PWM control found
+	  on the Edgecore Networks AS5114-48X switch CPLD.
+
+	  This driver can also be built as a module.  If so, the module
+	  will be called as5114-hwmon.
+
 config SENSORS_I5K_AMB
 	tristate "FB-DIMM AMB temperature sensor on Intel 5000 series chipsets"
 	depends on PCI
