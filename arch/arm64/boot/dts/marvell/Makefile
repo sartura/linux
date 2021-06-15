@@ -12,6 +12,7 @@ dtb-$(CONFIG_ARCH_MVEBU) += armada-7040-as5114-48x.dtb
 dtb-$(CONFIG_ARCH_MVEBU) += armada-7040-db.dtb
 dtb-$(CONFIG_ARCH_MVEBU) += armada-7040-tn48m.dtb
 dtb-$(CONFIG_ARCH_MVEBU) += armada-7040-tn4810m.dtb
+dtb-$(CONFIG_ARCH_MVEBU) += armada-7040-tx4810.dtb
 dtb-$(CONFIG_ARCH_MVEBU) += armada-8040-clearfog-gt-8k.dtb
 dtb-$(CONFIG_ARCH_MVEBU) += armada-8040-db.dtb
 dtb-$(CONFIG_ARCH_MVEBU) += armada-8040-mcbin.dtb
