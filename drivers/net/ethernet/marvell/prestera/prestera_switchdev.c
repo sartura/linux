@@ -506,7 +506,7 @@ static int mvsw_pr_port_attr_br_vlan_set(struct prestera_port *port,
 
 static int mvsw_pr_port_attr_br_flags_set(struct prestera_port *port,
 					  struct net_device *orig_dev,
-					  unsigned long flags)
+					  struct switchdev_brport_flags flags)
 {
 	struct prestera_bridge_port *br_port;
 
@@ -514,7 +514,7 @@ static int mvsw_pr_port_attr_br_flags_set(struct prestera_port *port,
 	if (!br_port)
 		return 0;
 
-	memcpy(&br_port->flags, &flags, sizeof(flags));
+	memcpy(&br_port->flags, &flags.val, sizeof(flags.val));
 	return prestera_br_port_flags_set(br_port, port);
 }
 
@@ -642,7 +642,7 @@ static int mvsw_pr_port_obj_attr_set(struct net_device *dev,
 						      attr->u.stp_state);
 		break;
 	case SWITCHDEV_ATTR_ID_PORT_PRE_BRIDGE_FLAGS:
-		if (attr->u.brport_flags &
+		if (attr->u.brport_flags.mask &
 		    ~(BR_LEARNING | BR_FLOOD | BR_MCAST_FLOOD | BR_ISOLATED))
 			err = -EINVAL;
 		break;
