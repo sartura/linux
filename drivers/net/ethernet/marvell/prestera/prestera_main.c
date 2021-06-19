@@ -1639,23 +1639,18 @@ struct prestera_port *prestera_port_find(u32 dev_hw_id, u32 port_hw_id)
 
 static int prestera_sw_init_base_mac(struct prestera_switch *sw)
 {
-	struct device_node *mac_dev_np;
+	struct device_node *base_mac_np;
 	u32 lsb;
 	int err;
 
-	if (sw->np) {
-		mac_dev_np = of_parse_phandle(sw->np, "base-mac-provider", 0);
-		if (mac_dev_np) {
-			const char *base_mac;
+	base_mac_np = of_parse_phandle(sw->np, "base-mac-provider", 0);
 
-			base_mac = of_get_mac_address(mac_dev_np);
-			if (!IS_ERR(base_mac))
-				ether_addr_copy(sw->base_mac, base_mac);
-		}
-	}
-
-	if (!is_valid_ether_addr(sw->base_mac))
+	err = of_get_mac_address(base_mac_np, sw->base_mac);
+	if (err) {
 		eth_random_addr(sw->base_mac);
+		dev_info(prestera_dev(sw), "using random base mac address\n");
+	}
+	of_node_put(base_mac_np);
 
 	lsb = sw->base_mac[ETH_ALEN - 1];
 	if (lsb + sw->port_count + PRESTERA_MAC_ADDR_OFFSET > 0xFF)
