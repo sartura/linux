@@ -23,6 +23,40 @@
 	aliases {
 		ethernet2 = &cp0_eth2;
 	};
+
+	switch-cpu {
+		status = "okay";
+		compatible = "marvell,prestera-switch-rxtx-sdma";
+	};
+
+	prestera {
+		status = "okay";
+		compatible = "marvell,prestera";
+		base-mac-provider = <&onie_eeprom>;
+
+		ports {
+			port49 {
+				prestera,port-num = <49>;
+				sfp = <&sfp49>;
+			};
+
+			port50 {
+				prestera,port-num = <50>;
+				sfp = <&sfp50>;
+			};
+
+			port51 {
+				prestera,port-num = <51>;
+				sfp = <&sfp51>;
+			};
+
+			port52 {
+				prestera,port-num = <52>;
+				sfp = <&sfp52>;
+			};
+		};
+	};
+
 	leds {
 		compatible = "gpio-leds";
 
