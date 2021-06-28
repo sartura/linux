@@ -19,6 +19,10 @@ enum tn48m_gpio_type {
 	TN48M_SFP_TX_DISABLE = 1,
 	TN48M_SFP_PRESENT,
 	TN48M_SFP_LOS,
+	TN4810M_SFP_TX_DISABLE,
+	TN4810M_SFP_TX_FAULT,
+	TN4810M_SFP_PRESENT,
+	TN4810M_SFP_LOS,
 };
 
 static int tn48m_gpio_probe(struct platform_device *pdev)
@@ -46,17 +50,36 @@ static int tn48m_gpio_probe(struct platform_device *pdev)
 
 	config.regmap = regmap;
 	config.parent = &pdev->dev;
-	config.ngpio = 4;
+	config.ngpio_per_reg = 8;
 
 	switch (type) {
 	case TN48M_SFP_TX_DISABLE:
 		config.reg_set_base = base;
+		config.ngpio = 4;
 		break;
 	case TN48M_SFP_PRESENT:
 		config.reg_dat_base = base;
+		config.ngpio = 4;
 		break;
 	case TN48M_SFP_LOS:
 		config.reg_dat_base = base;
+		config.ngpio = 4;
+		break;
+	case TN4810M_SFP_TX_DISABLE:
+		config.reg_set_base = base;
+		config.ngpio = 48;
+		break;
+	case TN4810M_SFP_TX_FAULT:
+		config.reg_dat_base = base;
+		config.ngpio = 48;
+		break;
+	case TN4810M_SFP_PRESENT:
+		config.reg_dat_base = base;
+		config.ngpio = 48;
+		break;
+	case TN4810M_SFP_LOS:
+		config.reg_dat_base = base;
+		config.ngpio = 48;
 		break;
 	default:
 		dev_err(&pdev->dev, "unknown type %d\n", type);
@@ -67,9 +90,34 @@ static int tn48m_gpio_probe(struct platform_device *pdev)
 }
 
 static const struct of_device_id tn48m_gpio_of_match[] = {
-	{ .compatible = "delta,tn48m-gpio-sfp-tx-disable", .data = (void *)TN48M_SFP_TX_DISABLE },
-	{ .compatible = "delta,tn48m-gpio-sfp-present", .data = (void *)TN48M_SFP_PRESENT },
-	{ .compatible = "delta,tn48m-gpio-sfp-los", .data = (void *)TN48M_SFP_LOS },
+	{
+		.compatible = "delta,tn48m-gpio-sfp-tx-disable",
+		.data = (void *)TN48M_SFP_TX_DISABLE
+	},
+	{
+		.compatible = "delta,tn48m-gpio-sfp-present",
+		.data = (void *)TN48M_SFP_PRESENT
+	},
+	{
+		.compatible = "delta,tn48m-gpio-sfp-los",
+		.data = (void *)TN48M_SFP_LOS
+	},
+	{
+		.compatible = "delta,tn4810m-gpio-sfp-tx-disable",
+		.data = (void *)TN4810M_SFP_TX_DISABLE
+	},
+	{
+		.compatible = "delta,tn4810m-gpio-sfp-tx-fault",
+		.data = (void *)TN4810M_SFP_TX_FAULT
+	},
+	{
+		.compatible = "delta,tn4810m-gpio-sfp-present",
+		.data = (void *)TN4810M_SFP_PRESENT
+	},
+	{
+		.compatible = "delta,tn4810m-gpio-sfp-los",
+		.data = (void *)TN4810M_SFP_LOS
+	},
 	{ }
 };
 MODULE_DEVICE_TABLE(of, tn48m_gpio_of_match);
