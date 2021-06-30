@@ -253,6 +253,10 @@
 			compatible = "delta,tn48m-reset";
 			#reset-cells = <1>;
 		};
+
+		cpldinfo {
+			compatible = "delta,cpldinfo";
+		};
 	};
 
 	psu@5a {
