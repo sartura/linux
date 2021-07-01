@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Delta Networks CPLD debug drivers
+#
+menu "Delta Networks CPLD debug drivers"
+
+config DELTA_CPLDINFO
+	tristate "Delta Networks CPLD debug driver"
+	depends on MFD_TN48M_CPLD || COMPILE_TEST
+	help
+	  This driver exposes board specific HW information, CPLD
+	  software information, various PSU related information and
+	  LED testing capabilities provided by the onboard CPLD.
+
+endmenu
