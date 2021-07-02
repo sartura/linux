@@ -926,6 +926,10 @@
 					gpio-controller;
 					#gpio-cells = <2>;
 				};
+
+				cpldinfo {
+					compatible = "delta,cpldinfo";
+				};
 			};
 		};
 	};
