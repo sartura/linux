@@ -135,6 +135,17 @@
 	status = "okay";
 	clock-frequency = <100000>;
 
+	cpld@41 {
+		compatible = "delta,tn48m-cpld";
+		reg = <0x41>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpldinfo {
+			compatible = "delta,cpldinfo";
+		};
+	};
+
 	eeprom_at24: at24@56 {
 		compatible = "atmel,24c64";
 		reg = <0x56>;
