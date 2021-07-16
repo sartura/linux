@@ -24,6 +24,10 @@ properties:
       - delta,tn48m-gpio-sfp-tx-disable
       - delta,tn48m-gpio-sfp-present
       - delta,tn48m-gpio-sfp-los
+      - delta,tn4810m-gpio-sfp-tx-disable
+      - delta,tn4810m-gpio-sfp-tx-fault
+      - delta,tn4810m-gpio-sfp-present
+      - delta,tn4810m-gpio-sfp-los
 
   reg:
     maxItems: 1
