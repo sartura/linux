@@ -1,0 +1,301 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+/*
+ * Copyright (C) 2016 Marvell Technology Group Ltd.
+ * Copyright (C) 2021 Sartura Ltd.
+ *
+ * Device Tree file for Edgecore Networks AS4224-52(T/P) switch
+ */
+
+#include <dt-bindings/leds/common.h>
+#include <dt-bindings/gpio/gpio.h>
+#include "armada-7040.dtsi"
+
+/ {
+	model = "Edgecore Networks AS4224-52";
+	compatible = "edgecore,as4224-52", "marvell,armada7040",
+		     "marvell,armada-ap806-quad", "marvell,armada-ap806";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	aliases {
+		ethernet2 = &cp0_eth2;
+	};
+
+	switch-cpu {
+		status = "okay";
+		compatible = "marvell,prestera-switch-rxtx-sdma";
+	};
+
+	prestera {
+		status = "okay";
+		compatible = "marvell,prestera";
+		base-mac-provider = <&onie_eeprom>;
+
+		ports {
+			port49 {
+				prestera,port-num = <49>;
+				sfp = <&sfp49>;
+			};
+
+			port50 {
+				prestera,port-num = <50>;
+				sfp = <&sfp50>;
+			};
+
+			port51 {
+				prestera,port-num = <51>;
+				sfp = <&sfp51>;
+			};
+
+			port52 {
+				prestera,port-num = <52>;
+				sfp = <&sfp52>;
+			};
+		};
+	};
+
+	onie_eeprom: onie-eeprom {
+		status = "okay";
+		compatible = "onie,nvmem-cells";
+
+		nvmem-name = "1-00563";
+		nvmem = <&eeprom_at24>;
+	};
+
+	sfp49: sfp-49 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp49>;
+		los-gpio = <&sfp_los 0 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpio = <&sfp_present 0 GPIO_ACTIVE_LOW>;
+		tx-disable-gpio = <&sfp_tx_disable 0 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 0 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp50: sfp-50 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp50>;
+		los-gpio = <&sfp_los 1 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpio = <&sfp_present 1 GPIO_ACTIVE_LOW>;
+		tx-disable-gpio = <&sfp_tx_disable 1 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 1 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp51: sfp-51 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp51>;
+		los-gpio = <&sfp_los 2 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpio = <&sfp_present 2 GPIO_ACTIVE_LOW>;
+		tx-disable-gpio = <&sfp_tx_disable 2 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 2 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp52: sfp-52 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp52>;
+		los-gpio = <&sfp_los 3 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpio = <&sfp_present 3 GPIO_ACTIVE_LOW>;
+		tx-disable-gpio = <&sfp_tx_disable 3 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 3 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+};
+
+&uart0 {
+	status = "okay";
+	pinctrl-0 = <&uart0_pins>;
+	pinctrl-names = "default";
+};
+
+&spi0 {
+	status = "okay";
+
+	tpm0: slb9670@0 {
+		compatible = "infineon,slb9670";
+		reg = <0>;
+		spi-max-frequency = <38000000>;
+		status = "okay";
+	};
+};
+
+&cp0_spi0 {
+	status = "okay";
+
+	flash@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <40000000>;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@0 {
+				label = "u-boot";
+				reg = <0x0 0x200000>;
+				read-only;
+			};
+
+			partition@200000 {
+				label = "u-boot-env";
+				reg = <0x200000 0x10000>;
+			};
+
+			partition@210000 {
+				label = "ONIE";
+				reg = <0x210000 0xdf0000>;
+			};
+		};
+	};
+};
+
+&i2c0 {
+	status = "okay";
+	clock-frequency = <100000>;
+
+	cpld: cpld@40 {
+		compatible = "edgecore,as5114-cpld";
+		reg = <0x40>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		sfp_tx_fault: sfp-tx-fault {
+			compatible = "edgecore,as4224-gpio-sfp-tx-fault";
+			reg = <0x40>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		sfp_los: sfp-los {
+			compatible = "edgecore,as4224-gpio-sfp-los";
+			reg = <0x40>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		sfp_present: sfp-present {
+			compatible = "edgecore,as4224-gpio-sfp-present";
+			reg = <0x41>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		sfp_tx_disable: sfp-tx-disable {
+			compatible = "edgecore,as4224-gpio-sfp-tx-disable";
+			reg = <0x42>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		hwmon {
+			compatible = "edgecore,as5114-hwmon";
+		};
+	};
+};
+
+&cp0_i2c0 {
+	status = "okay";
+	clock-frequency = <100000>;
+
+	pd69200@3c {
+		compatible = "microchip,pd69200";
+		reg = <0x3c>;
+	};
+
+	tmp75@48 {
+		compatible = "ti,tmp75";
+		reg = <0x48>;
+	};
+
+	tmp75@49 {
+		compatible = "ti,tmp75";
+		reg = <0x49>;
+	};
+
+	tmp75@4b {
+		compatible = "ti,tmp75";
+		reg = <0x4b>;
+	};
+
+	tmp75@4c {
+		compatible = "ti,tmp75";
+		reg = <0x4c>;
+	};
+
+	eeprom_at24: at24@56 {
+		compatible = "atmel,24c64";
+		reg = <0x56>;
+	};
+};
+
+&cp0_i2c1 {
+	status = "okay";
+	clock-frequency = <100000>;
+
+	pca9548@70 {
+		compatible = "nxp,pca9548";
+		reg = <0x70>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		i2c-mux-idle-disconnect;
+
+		i2c_sfp49: i2c@0 {
+			reg = <0>;
+		};
+
+		i2c_sfp50: i2c@1 {
+			reg = <1>;
+		};
+
+		i2c_sfp51: i2c@2 {
+			reg = <2>;
+		};
+
+		i2c_sfp52: i2c@3 {
+			reg = <3>;
+		};
+	};
+};
+
+&cp0_usb3_0 {
+	status = "okay";
+};
+
+&cp0_sata0 {
+	status = "okay";
+
+	sata-port@0 {
+		phys = <&cp0_comphy1 0>;
+	};
+};
+
+&cp0_mdio {
+	status = "okay";
+
+	ethphy0: ethernet-phy@0 {
+		reg = <0>;
+	};
+};
+
+&cp0_ethernet {
+	status = "okay";
+};
+
+&cp0_eth2 {
+	status = "okay";
+	phy = <&ethphy0>;
+	phy-mode = "sgmii";
+	phys = <&cp0_comphy5 2>;
+};
+
+&cp0_pcie0 {
+	status = "okay";
+	phys = <&cp0_comphy0 0>;
+
+	dma-ranges = <0x42000000 0x0 0x00000000 0x0 0x00000000 0x0 0x40000000>;
+};
