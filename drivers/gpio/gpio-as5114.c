@@ -7,6 +7,7 @@
  * Author: Robert Marko <robert.marko@sartura.hr>
  */
 
+#include <linux/bitfield.h>
 #include <linux/device.h>
 #include <linux/gpio/driver.h>
 #include <linux/gpio/regmap.h>
@@ -19,11 +20,20 @@
 #define AS5114_SFP_LOS_1_MASK_REG	0xB6
 #define AS5114_SFP_MASK_REG_NUM		6
 
+#define AS4224_SFP_MASK_REG		0x36
+#define AS4224_SFP_LOS_MASK		GENMASK(3, 0)
+#define AS4224_SFP_TX_FAULT_MASK	GENMASK(7, 4)
+#define AS4224_SFP_TX_FAULT_OFFSET	4
+
 enum as5114_gpio_type {
 	AS5114_SFP_TX_DISABLE = 1,
 	AS5114_SFP_TX_FAULT,
 	AS5114_SFP_PRESENT,
 	AS5114_SFP_LOS,
+	AS4224_SFP_TX_DISABLE,
+	AS4224_SFP_TX_FAULT,
+	AS4224_SFP_PRESENT,
+	AS4224_SFP_LOS,
 };
 
 static int as5114_gpio_enable(struct regmap *regmap, u8 reg)
@@ -44,6 +54,43 @@ static int as5114_gpio_enable(struct regmap *regmap, u8 reg)
 				AS5114_SFP_MASK_REG_NUM);
 
 	return ret;
+}
+
+static int as4224_gpio_enable(struct regmap *regmap, unsigned int mask)
+{
+	int ret;
+
+	/*
+	 * By default SFP LOS and TX fault pins are disabled.
+	 * So, enable both of them by setting their respective
+	 * mask bits in the SFP mask register to 0.
+	 * There is a shared SFP mask register.
+	 * Bits (0-3) correspond to LOS mask bits, while bits (4-7)
+	 * correspond to the TX fault mask bits.
+	 */
+	ret = regmap_update_bits(regmap,
+				 AS4224_SFP_MASK_REG,
+				 mask,
+				 0);
+
+	return ret;
+}
+
+static int as4224_sfp_tx_disable_xlate(struct gpio_regmap *gpio,
+				       unsigned int base, unsigned int offset,
+				       unsigned int *reg, unsigned int *mask)
+{
+	/*
+	 * SFP LOS and TX fault share the same register.
+	 * Bits (0-3) correspond to LOS control bits, while bits (4-7)
+	 * correspond to the TX fault control bits.
+	 * LOS does not need a translation function as the generic
+	 * one works fine due to using bits (0-3).
+	 */
+	*reg = base;
+	*mask = BIT(AS4224_SFP_TX_FAULT_OFFSET + offset);
+
+	return 0;
 }
 
 static int as5114_gpio_probe(struct platform_device *pdev)
@@ -71,15 +118,17 @@ static int as5114_gpio_probe(struct platform_device *pdev)
 
 	config.regmap = regmap;
 	config.parent = &pdev->dev;
-	config.ngpio = 48;
-	config.ngpio_per_reg = 8;
 
 	switch (type) {
 	case AS5114_SFP_TX_DISABLE:
 		config.reg_set_base = base;
+		config.ngpio = 48;
+		config.ngpio_per_reg = 8;
 		break;
 	case AS5114_SFP_TX_FAULT:
 		config.reg_dat_base = base;
+		config.ngpio = 48;
+		config.ngpio_per_reg = 8;
 
 		ret = as5114_gpio_enable(config.regmap,
 					 AS5114_SFP_TX_FAULT_1_MASK_REG);
@@ -88,12 +137,47 @@ static int as5114_gpio_probe(struct platform_device *pdev)
 		break;
 	case AS5114_SFP_PRESENT:
 		config.reg_dat_base = base;
+		config.ngpio = 48;
+		config.ngpio_per_reg = 8;
 		break;
 	case AS5114_SFP_LOS:
 		config.reg_dat_base = base;
+		config.ngpio = 48;
+		config.ngpio_per_reg = 8;
 
 		ret = as5114_gpio_enable(config.regmap,
 					 AS5114_SFP_LOS_1_MASK_REG);
+		if (ret)
+			return ret;
+		break;
+	case AS4224_SFP_TX_DISABLE:
+		config.reg_set_base = base;
+		config.ngpio = 4;
+		config.ngpio_per_reg = 4;
+		break;
+	case AS4224_SFP_TX_FAULT:
+		config.reg_dat_base = base;
+		config.ngpio = 4;
+		config.ngpio_per_reg = 4;
+		config.reg_mask_xlate = as4224_sfp_tx_disable_xlate;
+
+		ret = as4224_gpio_enable(config.regmap,
+					 AS4224_SFP_TX_FAULT_MASK);
+		if (ret)
+			return ret;
+		break;
+	case AS4224_SFP_PRESENT:
+		config.reg_dat_base = base;
+		config.ngpio = 4;
+		config.ngpio_per_reg = 4;
+		break;
+	case AS4224_SFP_LOS:
+		config.reg_dat_base = base;
+		config.ngpio = 4;
+		config.ngpio_per_reg = 4;
+
+		ret = as4224_gpio_enable(config.regmap,
+					 AS4224_SFP_LOS_MASK);
 		if (ret)
 			return ret;
 		break;
@@ -106,10 +190,38 @@ static int as5114_gpio_probe(struct platform_device *pdev)
 }
 
 static const struct of_device_id as5114_gpio_of_match[] = {
-	{ .compatible = "edgecore,as5114-gpio-sfp-tx-disable", .data = (void *)AS5114_SFP_TX_DISABLE },
-	{ .compatible = "edgecore,as5114-gpio-sfp-tx-fault", .data = (void *)AS5114_SFP_TX_FAULT },
-	{ .compatible = "edgecore,as5114-gpio-sfp-present", .data = (void *)AS5114_SFP_PRESENT },
-	{ .compatible = "edgecore,as5114-gpio-sfp-los", .data = (void *)AS5114_SFP_LOS },
+	{
+		.compatible = "edgecore,as5114-gpio-sfp-tx-disable",
+		.data = (void *)AS5114_SFP_TX_DISABLE
+	},
+	{
+		.compatible = "edgecore,as5114-gpio-sfp-tx-fault",
+		.data = (void *)AS5114_SFP_TX_FAULT
+	},
+	{
+		.compatible = "edgecore,as5114-gpio-sfp-present",
+		.data = (void *)AS5114_SFP_PRESENT
+	},
+	{
+		.compatible = "edgecore,as5114-gpio-sfp-los",
+		.data = (void *)AS5114_SFP_LOS
+	},
+	{
+		.compatible = "edgecore,as4224-gpio-sfp-tx-disable",
+		.data = (void *)AS4224_SFP_TX_DISABLE
+	},
+	{
+		.compatible = "edgecore,as4224-gpio-sfp-tx-fault",
+		.data = (void *)AS4224_SFP_TX_FAULT
+	},
+	{
+		.compatible = "edgecore,as4224-gpio-sfp-present",
+		.data = (void *)AS4224_SFP_PRESENT
+	},
+	{
+		.compatible = "edgecore,as4224-gpio-sfp-los",
+		.data = (void *)AS4224_SFP_LOS
+	},
 	{ }
 };
 MODULE_DEVICE_TABLE(of, as5114_gpio_of_match);
