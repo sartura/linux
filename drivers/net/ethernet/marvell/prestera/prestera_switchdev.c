@@ -408,7 +408,7 @@ static int mvsw_pr_port_vlans_add(struct prestera_port *port,
 	return 0;
 }
 
-static int mvsw_pr_port_obj_add(struct net_device *dev,
+static int mvsw_pr_port_obj_add(struct net_device *dev, const void *ctx,
 				const struct switchdev_obj *obj,
 				struct netlink_ext_ack *extack)
 {
@@ -466,7 +466,7 @@ static int mvsw_pr_port_vlans_del(struct prestera_port *port,
 	return 0;
 }
 
-static int mvsw_pr_port_obj_del(struct net_device *dev,
+static int mvsw_pr_port_obj_del(struct net_device *dev, const void *ctx,
 				const struct switchdev_obj *obj)
 {
 	int err = 0;
@@ -628,7 +628,7 @@ static int mvsw_pr_port_attr_br_mc_disabled_set(struct prestera_port *port,
 	return 0;
 }
 
-static int mvsw_pr_port_obj_attr_set(struct net_device *dev,
+static int mvsw_pr_port_obj_attr_set(struct net_device *dev, const void *ctx,
 				     const struct switchdev_attr *attr,
 				     struct netlink_ext_ack *extack)
 {
