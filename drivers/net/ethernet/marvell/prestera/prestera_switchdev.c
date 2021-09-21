@@ -741,7 +741,7 @@ static void mvsw_pr_bridge_fdb_event_work(struct work_struct *work)
 	switch (switchdev_work->event) {
 	case SWITCHDEV_FDB_ADD_TO_DEVICE:
 		fdb_info = &switchdev_work->fdb_info;
-		if (!fdb_info->added_by_user)
+		if (!fdb_info->added_by_user || fdb_info->is_local)
 			break;
 		err = mvsw_pr_port_fdb_set(port, fdb_info, true);
 		if (err)
