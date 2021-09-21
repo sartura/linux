@@ -1828,16 +1828,19 @@ static int prestera_sw_init_base_mac(struct prestera_switch *sw)
 	if (sw->np) {
 		mac_dev_np = of_parse_phandle(sw->np, "base-mac-provider", 0);
 		if (mac_dev_np) {
-			const char *base_mac;
-
-			base_mac = of_get_mac_address(mac_dev_np);
-			if (!IS_ERR(base_mac))
-				ether_addr_copy(sw->base_mac, base_mac);
+			err = of_get_mac_address(mac_dev_np, sw->base_mac);
+			if (err) {
+				eth_random_addr(sw->base_mac);
+				dev_info(prestera_dev(sw), "using random base mac address\n");
+			}
 		}
+		of_node_put(mac_dev_np);
 	}
 
-	if (!is_valid_ether_addr(sw->base_mac))
+	if (!is_valid_ether_addr(sw->base_mac)) {
 		eth_random_addr(sw->base_mac);
+		dev_info(prestera_dev(sw), "using random base mac address\n");
+	}
 
 	lsb = sw->base_mac[ETH_ALEN - 1];
 	if (lsb + sw->port_count + PRESTERA_MAC_ADDR_OFFSET > 0xFF)
