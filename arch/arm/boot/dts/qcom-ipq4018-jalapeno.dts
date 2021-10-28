@@ -8,6 +8,14 @@
 / {
 	model = "8devices Jalapeno";
 	compatible = "8dev,jalapeno";
+
+	aliases {
+		serial0 = &blsp1_uart1;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
 };
 
 &tlmm {
