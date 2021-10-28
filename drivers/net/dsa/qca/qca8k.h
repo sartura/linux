@@ -280,4 +280,89 @@ struct qca8k_fdb {
 	u8 mac[6];
 };
 
+extern const struct qca8k_mib_desc ar8327_mib[];
+
+int
+qca8k_fdb_read(struct qca8k_priv *priv, struct qca8k_fdb *fdb);
+void
+qca8k_fdb_write(struct qca8k_priv *priv, u16 vid, u8 port_mask, const u8 *mac,
+		u8 aging);
+int
+qca8k_fdb_access(struct qca8k_priv *priv, enum qca8k_fdb_cmd cmd, int port);
+int
+qca8k_fdb_next(struct qca8k_priv *priv, struct qca8k_fdb *fdb, int port);
+int
+qca8k_fdb_add(struct qca8k_priv *priv, const u8 *mac, u16 port_mask,
+	      u16 vid, u8 aging);
+int
+qca8k_fdb_del(struct qca8k_priv *priv, const u8 *mac, u16 port_mask, u16 vid);
+void
+qca8k_fdb_flush(struct qca8k_priv *priv);
+int
+qca8k_vlan_access(struct qca8k_priv *priv, enum qca8k_vlan_cmd cmd, u16 vid);
+int
+qca8k_vlan_add(struct qca8k_priv *priv, u8 port, u16 vid, bool untagged);
+int
+qca8k_vlan_del(struct qca8k_priv *priv, u8 port, u16 vid);
+int
+qca8k_mib_init(struct qca8k_priv *priv);
+int
+qca8k_phylink_mac_link_state(struct dsa_switch *ds, int port,
+			     struct phylink_link_state *state);
+void
+qca8k_phylink_mac_link_down(struct dsa_switch *ds, int port, unsigned int mode,
+			    phy_interface_t interface);
+void
+qca8k_phylink_mac_link_up(struct dsa_switch *ds, int port, unsigned int mode,
+			  phy_interface_t interface, struct phy_device *phydev,
+			  int speed, int duplex, bool tx_pause, bool rx_pause);
+void
+qca8k_get_strings(struct dsa_switch *ds, int port, u32 stringset, uint8_t *data);
+void
+qca8k_get_ethtool_stats(struct dsa_switch *ds, int port,
+			uint64_t *data);
+int
+qca8k_get_sset_count(struct dsa_switch *ds, int port, int sset);
+int
+qca8k_set_mac_eee(struct dsa_switch *ds, int port, struct ethtool_eee *eee);
+int
+qca8k_get_mac_eee(struct dsa_switch *ds, int port, struct ethtool_eee *e);
+void
+qca8k_port_stp_state_set(struct dsa_switch *ds, int port, u8 state);
+int
+qca8k_port_bridge_join(struct dsa_switch *ds, int port, struct net_device *br);
+void
+qca8k_port_bridge_leave(struct dsa_switch *ds, int port, struct net_device *br);
+int
+qca8k_port_enable(struct dsa_switch *ds, int port,
+		  struct phy_device *phy);
+void
+qca8k_port_disable(struct dsa_switch *ds, int port);
+int
+qca8k_port_change_mtu(struct dsa_switch *ds, int port, int new_mtu);
+int
+qca8k_port_max_mtu(struct dsa_switch *ds, int port);
+int
+qca8k_port_fdb_insert(struct qca8k_priv *priv, const u8 *addr,
+		      u16 port_mask, u16 vid);
+int
+qca8k_port_fdb_add(struct dsa_switch *ds, int port,
+		   const unsigned char *addr, u16 vid);
+int
+qca8k_port_fdb_del(struct dsa_switch *ds, int port,
+		   const unsigned char *addr, u16 vid);
+int
+qca8k_port_fdb_dump(struct dsa_switch *ds, int port,
+		    dsa_fdb_dump_cb_t *cb, void *data);
+int
+qca8k_port_vlan_filtering(struct dsa_switch *ds, int port, bool vlan_filtering,
+			  struct netlink_ext_ack *extack);
+int
+qca8k_port_vlan_add(struct dsa_switch *ds, int port,
+		    const struct switchdev_obj_port_vlan *vlan,
+		    struct netlink_ext_ack *extack);
+int
+qca8k_port_vlan_del(struct dsa_switch *ds, int port,
+		    const struct switchdev_obj_port_vlan *vlan);
+
 #endif /* __QCA8K_H */
