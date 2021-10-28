@@ -57,6 +57,12 @@ config NET_DSA_TAG_HELLCREEK
 	  Say Y or M if you want to enable support for tagging frames
 	  for the Hirschmann Hellcreek TSN switches.
 
+config NET_DSA_TAG_IPQ4019
+	tristate "Tag driver for Qualcomm Atheros IPQ4019 SoC built-in switch"
+	help
+	  Say Y or M if you want to enable support for tagging frames for
+	  the built-in switch of the Qualcomm Atheros IPQ4019 SoC-s.
+
 config NET_DSA_TAG_GSWIP
 	tristate "Tag driver for Lantiq / Intel GSWIP switches"
 	help
