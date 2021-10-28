@@ -223,6 +223,16 @@
 	pinctrl-names = "default";
 };
 
+&ethphy3 {
+	gpio-controller;
+	#gpio-cells = <2>;
+};
+
+&ethphy4 {
+	gpio-controller;
+	#gpio-cells = <2>;
+};
+
 &wifi0 {
 	status = "okay";
 };
