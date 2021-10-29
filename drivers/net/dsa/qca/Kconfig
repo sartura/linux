@@ -15,3 +15,11 @@ config NET_DSA_QCA8K
 	help
 	  This enables support for the Qualcomm Atheros QCA8K Ethernet
 	  switch chips.
+
+config NET_DSA_QCA8K_IPQ4019
+	tristate "Qualcomm Atheros IPQ4019 built-in Ethernet switch support"
+	select NET_DSA_TAG_IPQ4019
+	select REGMAP
+	help
+	  This enables support for the Qualcomm Atheros IPQ4019 SoC built-in
+	  Ethernet switch.
