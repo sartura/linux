@@ -306,7 +306,7 @@ qca8k_vlan_del(struct qca8k_priv *priv, u8 port, u16 vid)
 
 	/* Check if we're the last member to be removed */
 	del = true;
-	for (i = 0; i < QCA8K_NUM_PORTS; i++) {
+	for (i = 0; i < priv->ds->num_ports; i++) {
 		mask = QCA8K_VTU_FUNC0_EG_MODE_NOT;
 		mask <<= QCA8K_VTU_FUNC0_EG_MODE_S(i);
 
@@ -567,7 +567,7 @@ qca8k_port_bridge_join(struct dsa_switch *ds, int port, struct net_device *br)
 	int port_mask = BIT(QCA8K_CPU_PORT);
 	int i, ret;
 
-	for (i = 1; i < QCA8K_NUM_PORTS; i++) {
+	for (i = 1; i < priv->ds->num_ports; i++) {
 		if (dsa_to_port(ds, i)->bridge_dev != br)
 			continue;
 		/* Add this port to the portvlan mask of the other ports
@@ -595,7 +595,7 @@ qca8k_port_bridge_leave(struct dsa_switch *ds, int port, struct net_device *br)
 	struct qca8k_priv *priv = (struct qca8k_priv *)ds->priv;
 	int i;
 
-	for (i = 1; i < QCA8K_NUM_PORTS; i++) {
+	for (i = 1; i < priv->ds->num_ports; i++) {
 		if (dsa_to_port(ds, i)->bridge_dev != br)
 			continue;
 		/* Remove this port to the portvlan mask of the other ports
@@ -645,7 +645,7 @@ qca8k_port_change_mtu(struct dsa_switch *ds, int port, int new_mtu)
 
 	priv->port_mtu[port] = new_mtu;
 
-	for (i = 0; i < QCA8K_NUM_PORTS; i++)
+	for (i = 0; i < priv->ds->num_ports; i++)
 		if (priv->port_mtu[i] > mtu)
 			mtu = priv->port_mtu[i];
 
