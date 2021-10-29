@@ -13,6 +13,7 @@
 #include <linux/gpio.h>
 
 #define QCA8K_NUM_PORTS					7
+#define QCA8K_IPQ4019_NUM_PORTS				6
 #define QCA8K_MAX_MTU					9000
 
 #define PHY_ID_QCA8327					0x004dd034
@@ -265,6 +266,14 @@ struct qca8k_priv {
 	struct dsa_switch_ops ops;
 	struct gpio_desc *reset_gpio;
 	unsigned int port_mtu[QCA8K_NUM_PORTS];
+
+	/* IPQ4019 specific */
+	struct regmap *psgmii;
+	struct clk *ess_clk;
+	struct reset_control *ess_rst;
+	u32 mac_mode;
+	struct delayed_work dsa_init;
+	u32 phy_t_status;
 };
 
 struct qca8k_mib_desc {
