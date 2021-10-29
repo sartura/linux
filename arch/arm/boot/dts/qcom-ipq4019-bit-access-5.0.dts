@@ -12,6 +12,7 @@
 
 	aliases {
 		serial0 = &blsp1_uart1;
+		ethernet1 = &swport5;
 	};
 
 	chosen {
@@ -388,11 +389,39 @@
 };
 
 &ethphy4 {
-	#address-cells = <1>;
-	#size-cells = <0>;
-
-	qcom,fiber-enable;
 	sfp = <&sfp>;
+};
+
+&gmac {
+	status = "okay";
+};
+
+&switch {
+	status = "okay";
+};
+
+&swport1 {
+	status = "okay";
+};
+
+&swport2 {
+	status = "okay";
+};
+
+&swport3 {
+	status = "okay";
+};
+
+&swport4 {
+	status = "okay";
+};
+
+&swport5 {
+	status = "okay";
+};
+
+&psgmii_phy {
+	status = "okay";
 };
 
 &pcie0 {
