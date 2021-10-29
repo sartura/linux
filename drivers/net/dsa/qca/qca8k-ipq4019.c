@@ -211,9 +211,9 @@ qca8k_ipq4019_setup(struct dsa_switch *ds)
 	/* Forward all unknown frames to CPU port for Linux processing */
 	ret = qca8k_write(priv, QCA8K_REG_GLOBAL_FW_CTRL1,
 			  BIT(0) << QCA8K_GLOBAL_FW_CTRL1_IGMP_DP_S |
-			  BIT(0) << QCA8K_GLOBAL_FW_CTRL1_BC_DP_S |
-			  BIT(0) << QCA8K_GLOBAL_FW_CTRL1_MC_DP_S |
-			  BIT(0) << QCA8K_GLOBAL_FW_CTRL1_UC_DP_S);
+			  GENMASK(5, 0) << QCA8K_GLOBAL_FW_CTRL1_BC_DP_S |
+			  GENMASK(5, 0) << QCA8K_GLOBAL_FW_CTRL1_MC_DP_S |
+			  GENMASK(5, 0) << QCA8K_GLOBAL_FW_CTRL1_UC_DP_S);
 	if (ret)
 		return ret;
 
