@@ -189,10 +189,12 @@ qca8k_ipq4019_setup(struct dsa_switch *ds)
 	if (ret)
 		dev_warn(priv->dev, "MIB init failed");
 
-	/* Disable QCA header mode on the cpu port */
-	ret = qca8k_write(priv, QCA8K_REG_PORT_HDR_CTRL(QCA8K_CPU_PORT), 0);
+	/* Enable QCA header mode on the cpu port */
+	ret = qca8k_write(priv, QCA8K_REG_PORT_HDR_CTRL(QCA8K_CPU_PORT),
+			  QCA8K_PORT_HDR_CTRL_ALL << QCA8K_PORT_HDR_CTRL_TX_S |
+			  QCA8K_PORT_HDR_CTRL_ALL << QCA8K_PORT_HDR_CTRL_RX_S);
 	if (ret) {
-		dev_err(priv->dev, "failed disabling QCA header mode");
+		dev_err(priv->dev, "failed enabling QCA header mode");
 		return ret;
 	}
 
