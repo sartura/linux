@@ -86,6 +86,14 @@ static struct regmap_config qca8k_ipq4019_regmap_config = {
 	.rd_table = &qca8k_readable_table,
 };
 
+static struct regmap_config qca8k_ipq4019_psgmii_phy_regmap_config = {
+	.name = "psgmii-phy",
+	.reg_bits = 32,
+	.val_bits = 32,
+	.reg_stride = 4,
+	.max_register = 0x7fc,
+};
+
 int
 qca8k_busy_wait(struct qca8k_priv *priv, u32 reg, u32 mask)
 {
@@ -787,7 +795,7 @@ static int
 qca8k_ipq4019_probe(struct platform_device *pdev)
 {
 	struct qca8k_priv *priv;
-	void __iomem *base;
+	void __iomem *base, *psgmii;
 	struct device_node *np = pdev->dev.of_node, *mdio_np;
 	int ret;
 
@@ -797,7 +805,7 @@ qca8k_ipq4019_probe(struct platform_device *pdev)
 
 	priv->dev = &pdev->dev;
 
-	base = devm_platform_get_and_ioremap_resource(pdev, 0, NULL);
+	base = devm_platform_ioremap_resource_byname(pdev, "base");
 	if (IS_ERR(base))
 		return PTR_ERR(base);
 
@@ -805,7 +813,19 @@ qca8k_ipq4019_probe(struct platform_device *pdev)
 					     &qca8k_ipq4019_regmap_config);
 	if (IS_ERR(priv->regmap)) {
 		ret = PTR_ERR(priv->regmap);
-		dev_err(priv->dev, "regmap initialization failed, %d\n", ret);
+		dev_err(priv->dev, "base regmap initialization failed, %d\n", ret);
+		return ret;
+	}
+
+	psgmii = devm_platform_ioremap_resource_byname(pdev, "psgmii_phy");
+	if (IS_ERR(psgmii))
+		return PTR_ERR(psgmii);
+
+	priv->psgmii = devm_regmap_init_mmio(priv->dev, psgmii,
+					     &qca8k_ipq4019_psgmii_phy_regmap_config);
+	if (IS_ERR(priv->psgmii)) {
+		ret = PTR_ERR(priv->psgmii);
+		dev_err(priv->dev, "PSGMII regmap initialization failed, %d\n", ret);
 		return ret;
 	}
 
@@ -824,12 +844,6 @@ qca8k_ipq4019_probe(struct platform_device *pdev)
 	ret = of_property_read_u32(np, "mac-mode", &priv->mac_mode);
 	if (ret < 0) {
 		dev_err(&pdev->dev, "unable to get 'mac-mode' property\n");
-		return -EINVAL;
-	}
-
-	priv->psgmii = syscon_regmap_lookup_by_phandle(np, "psgmii-phy");
-	if (IS_ERR_OR_NULL(priv->psgmii)) {
-		dev_err(&pdev->dev, "unable to get 'psgmii-phy' base\n");
 		return -EINVAL;
 	}
 
