@@ -593,12 +593,12 @@
 
 		switch: switch@c000000 {
 			compatible = "qca,ipq4019-qca8337n";
-			reg = <0xc000000 0x80000>;
-			resets = <&gcc ESS_RESET>;
-			reset-names = "ess_rst";
+			reg = <0xc000000 0x80000>, <0x98000 0x800>;
+			reg-names = "base", "psgmii_phy";
+			resets = <&gcc ESS_RESET>, <&gcc ESS_PSGMII_ARES>;
+			reset-names = "ess_rst", "psgmii_rst";
 			clocks = <&gcc GCC_ESS_CLK>;
 			clock-names = "ess_clk";
-			psgmii-phy = <&psgmii_phy>;
 			mdio = <&mdio>;
 			mac-mode = <0>; /* 0 = PSGMII, 1 = RGMII5 */
 
@@ -759,15 +759,6 @@
 				qcom,tx-driver-strength = <300>;
 				qcom,psgmii-az;
 			};
-		};
-
-		psgmii_phy: psgmii-phy@98000 {
-			compatible = "qcom,ipq4019-psgmii-phy", "syscon";
-			reg = <0x98000 0x800>;
-			resets = <&gcc ESS_PSGMII_ARES>;
-			reset-names = "psgmii_rst";
-
-			status = "disabled";
 		};
 
 		usb3_ss_phy: ssphy@9a000 {
