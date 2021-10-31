@@ -403,10 +403,6 @@
 	status = "okay";
 };
 
-&psgmii_phy {
-	status = "okay";
-};
-
 &pcie0 {
 	status = "okay";
 
