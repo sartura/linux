@@ -79,7 +79,7 @@ static const struct regmap_access_table qca8k_readable_table = {
 };
 
 static struct regmap_config qca8k_ipq4019_regmap_config = {
-	.reg_bits = 16,
+	.reg_bits = 32,
 	.val_bits = 32,
 	.reg_stride = 4,
 	.max_register = 0x16ac, /* end MIB - Port6 range */
