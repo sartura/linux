@@ -140,33 +140,33 @@
 	sfp49: sfp-49 {
 		compatible = "sff,sfp";
 		i2c-bus = <&i2c1_sfp49>;
-		los-gpio = <&sfp_los 0 GPIO_ACTIVE_HIGH>;
-		mod-def0-gpio = <&sfp_present 0 GPIO_ACTIVE_LOW>;
-		tx-disable-gpio = <&sfp_tx_disable 0 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpio = <&sfp_gpi 0 GPIO_ACTIVE_LOW>;
+		los-gpio = <&sfp_gpi 4 GPIO_ACTIVE_HIGH>;
+		tx-disable-gpio = <&sfp_gpo 0 GPIO_ACTIVE_HIGH>;
 	};
 
 	sfp50: sfp-50 {
 		compatible = "sff,sfp";
 		i2c-bus = <&i2c1_sfp50>;
-		los-gpio = <&sfp_los 1 GPIO_ACTIVE_HIGH>;
-		mod-def0-gpio = <&sfp_present 1 GPIO_ACTIVE_LOW>;
-		tx-disable-gpio = <&sfp_tx_disable 1 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpio = <&sfp_gpi 1 GPIO_ACTIVE_LOW>;
+		los-gpio = <&sfp_gpi 5 GPIO_ACTIVE_HIGH>;
+		tx-disable-gpio = <&sfp_gpo 1 GPIO_ACTIVE_HIGH>;
 	};
 
 	sfp51: sfp-51 {
 		compatible = "sff,sfp";
 		i2c-bus = <&i2c1_sfp51>;
-		los-gpio = <&sfp_los 2 GPIO_ACTIVE_HIGH>;
-		mod-def0-gpio = <&sfp_present 2 GPIO_ACTIVE_LOW>;
-		tx-disable-gpio = <&sfp_tx_disable 2 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpio = <&sfp_gpi 2 GPIO_ACTIVE_LOW>;
+		los-gpio = <&sfp_gpi 6 GPIO_ACTIVE_HIGH>;
+		tx-disable-gpio = <&sfp_gpo 2 GPIO_ACTIVE_HIGH>;
 	};
 
 	sfp52: sfp-52 {
 		compatible = "sff,sfp";
 		i2c-bus = <&i2c1_sfp52>;
-		los-gpio = <&sfp_los 3 GPIO_ACTIVE_HIGH>;
-		mod-def0-gpio = <&sfp_present 3 GPIO_ACTIVE_LOW>;
-		tx-disable-gpio = <&sfp_tx_disable 3 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpio = <&sfp_gpi 3 GPIO_ACTIVE_LOW>;
+		los-gpio = <&sfp_gpi 7 GPIO_ACTIVE_HIGH>;
+		tx-disable-gpio = <&sfp_gpo 3 GPIO_ACTIVE_HIGH>;
 	};
 };
 
@@ -228,23 +228,14 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		sfp_tx_disable: gpio@31 {
-			compatible = "delta,tn48m-gpio-sfp-tx-disable";
-			reg = <0x31>;
+		sfp_gpo: gpo {
+			compatible = "delta,tn48m-gpo";
 			gpio-controller;
 			#gpio-cells = <2>;
 		};
 
-		sfp_present: gpio@3a {
-			compatible = "delta,tn48m-gpio-sfp-present";
-			reg = <0x3a>;
-			gpio-controller;
-			#gpio-cells = <2>;
-		};
-
-		sfp_los: gpio@40 {
-			compatible = "delta,tn48m-gpio-sfp-los";
-			reg = <0x40>;
+		sfp_gpi: gpi {
+			compatible = "delta,tn48m-gpi";
 			gpio-controller;
 			#gpio-cells = <2>;
 		};
