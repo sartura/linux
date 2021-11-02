@@ -15,34 +15,37 @@
 #include <linux/platform_device.h>
 #include <linux/regmap.h>
 
-enum tn48m_gpio_type {
-	TN48M_SFP_TX_DISABLE = 1,
-	TN48M_SFP_PRESENT,
-	TN48M_SFP_LOS,
-	TN4810M_SFP_TX_DISABLE,
-	TN4810M_SFP_TX_FAULT,
-	TN4810M_SFP_PRESENT,
-	TN4810M_SFP_LOS,
+struct tn48m_gpio_config {
+	int ngpio;
+	int ngpio_per_reg;
+	unsigned int reg_dat_base;
+	unsigned int reg_set_base;
+};
+
+static const struct tn48m_gpio_config tn48m_gpo_config = {
+	.ngpio = 4,
+	.ngpio_per_reg = 4,
+	.reg_set_base = 0x31,
+};
+
+static const struct tn48m_gpio_config tn48m_gpi_config = {
+	.ngpio = 8,
+	.ngpio_per_reg = 4,
+	.reg_dat_base = 0x3a,
 };
 
 static int tn48m_gpio_probe(struct platform_device *pdev)
 {
+	const struct tn48m_gpio_config *gpio_config = NULL;
 	struct gpio_regmap_config config = {0};
-	enum tn48m_gpio_type type;
 	struct regmap *regmap;
-	u32 base;
-	int ret;
 
 	if (!pdev->dev.parent)
 		return -ENODEV;
 
-	type = (uintptr_t)device_get_match_data(&pdev->dev);
-	if (!type)
+	gpio_config = device_get_match_data(&pdev->dev);
+	if (!gpio_config)
 		return -ENODEV;
-
-	ret = device_property_read_u32(&pdev->dev, "reg", &base);
-	if (ret)
-		return ret;
 
 	regmap = dev_get_regmap(pdev->dev.parent, NULL);
 	if (!regmap)
@@ -50,74 +53,19 @@ static int tn48m_gpio_probe(struct platform_device *pdev)
 
 	config.regmap = regmap;
 	config.parent = &pdev->dev;
-	config.ngpio_per_reg = 8;
-
-	switch (type) {
-	case TN48M_SFP_TX_DISABLE:
-		config.reg_set_base = base;
-		config.ngpio = 4;
-		break;
-	case TN48M_SFP_PRESENT:
-		config.reg_dat_base = base;
-		config.ngpio = 4;
-		break;
-	case TN48M_SFP_LOS:
-		config.reg_dat_base = base;
-		config.ngpio = 4;
-		break;
-	case TN4810M_SFP_TX_DISABLE:
-		config.reg_set_base = base;
-		config.ngpio = 48;
-		break;
-	case TN4810M_SFP_TX_FAULT:
-		config.reg_dat_base = base;
-		config.ngpio = 48;
-		break;
-	case TN4810M_SFP_PRESENT:
-		config.reg_dat_base = base;
-		config.ngpio = 48;
-		break;
-	case TN4810M_SFP_LOS:
-		config.reg_dat_base = base;
-		config.ngpio = 48;
-		break;
-	default:
-		dev_err(&pdev->dev, "unknown type %d\n", type);
-		return -ENODEV;
-	}
+	config.ngpio = gpio_config->ngpio;
+	config.ngpio_per_reg = gpio_config->ngpio_per_reg;
+	if (gpio_config->reg_dat_base)
+		config.reg_dat_base = gpio_config->reg_dat_base;
+	if (gpio_config->reg_set_base)
+		config.reg_set_base = gpio_config->reg_set_base;
 
 	return PTR_ERR_OR_ZERO(devm_gpio_regmap_register(&pdev->dev, &config));
 }
 
 static const struct of_device_id tn48m_gpio_of_match[] = {
-	{
-		.compatible = "delta,tn48m-gpio-sfp-tx-disable",
-		.data = (void *)TN48M_SFP_TX_DISABLE
-	},
-	{
-		.compatible = "delta,tn48m-gpio-sfp-present",
-		.data = (void *)TN48M_SFP_PRESENT
-	},
-	{
-		.compatible = "delta,tn48m-gpio-sfp-los",
-		.data = (void *)TN48M_SFP_LOS
-	},
-	{
-		.compatible = "delta,tn4810m-gpio-sfp-tx-disable",
-		.data = (void *)TN4810M_SFP_TX_DISABLE
-	},
-	{
-		.compatible = "delta,tn4810m-gpio-sfp-tx-fault",
-		.data = (void *)TN4810M_SFP_TX_FAULT
-	},
-	{
-		.compatible = "delta,tn4810m-gpio-sfp-present",
-		.data = (void *)TN4810M_SFP_PRESENT
-	},
-	{
-		.compatible = "delta,tn4810m-gpio-sfp-los",
-		.data = (void *)TN4810M_SFP_LOS
-	},
+	{ .compatible = "delta,tn48m-gpo", .data = &tn48m_gpo_config },
+	{ .compatible = "delta,tn48m-gpi", .data = &tn48m_gpi_config },
 	{ }
 };
 MODULE_DEVICE_TABLE(of, tn48m_gpio_of_match);
