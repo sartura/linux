@@ -71,6 +71,16 @@
 		enable-active-high;
 		regulator-always-on;
 	};
+
+	sfp: sfp {
+		compatible = "sff,sfp";
+		i2c-bus = <&cp0_i2c1>;
+		los-gpios = <&expander0 15 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&expander0 3 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&expander0 2 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&cp0_gpio1 24 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
 };
 
 &uart0 {
@@ -184,6 +194,118 @@
 	status = "okay";
 	phy0: ethernet-phy@0 {
 		reg = <0>;
+	};
+
+	switch: switch@6 {
+		compatible = "marvell,mv88e6190";
+		reg = <6>;
+
+		interrupt-parent = <&cp0_gpio1>;
+		interrupts = <28 IRQ_TYPE_LEVEL_LOW>;
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@1 {
+				reg = <1>;
+				label = "lan1";
+				phy-handle = <&swphy1>;
+			};
+
+			port@2 {
+				reg = <2>;
+				label = "lan2";
+				phy-handle = <&swphy2>;
+			};
+
+			port@3 {
+				reg = <3>;
+				label = "lan3";
+				phy-handle = <&swphy3>;
+			};
+
+			port@4 {
+				reg = <4>;
+				label = "lan4";
+				phy-handle = <&swphy4>;
+			};
+
+			port@5 {
+				reg = <5>;
+				label = "lan5";
+				phy-handle = <&swphy5>;
+			};
+
+			port@6 {
+				reg = <6>;
+				label = "lan6";
+				phy-handle = <&swphy6>;
+			};
+
+			port@7 {
+				reg = <7>;
+				label = "lan7";
+				phy-handle = <&swphy7>;
+			};
+
+			port@8 {
+				reg = <8>;
+				label = "lan8";
+				phy-handle = <&swphy8>;
+			};
+
+			port@9 {
+				reg = <9>;
+				label = "sfp";
+				phy-mode = "10gbase-r";
+				managed = "in-band-status";
+				sfp = <&sfp>;
+			};
+
+			port@10 {
+				reg = <10>;
+				label = "cpu";
+				ethernet = <&cp0_eth0>;
+			};
+		};
+
+		mdio {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			swphy1: swphy1@1 {
+				reg = <1>;
+			};
+
+			swphy2: swphy2@2 {
+				reg = <2>;
+			};
+
+			swphy3: swphy3@3 {
+				reg = <3>;
+			};
+
+			swphy4: swphy4@4 {
+				reg = <4>;
+			};
+
+			swphy5: swphy5@5 {
+				reg = <5>;
+			};
+
+			swphy6: swphy6@6 {
+				reg = <6>;
+			};
+
+			swphy7: swphy7@7 {
+				reg = <7>;
+			};
+
+			swphy8: swphy8@8 {
+				reg = <8>;
+			};
+		};
 	};
 };
 
