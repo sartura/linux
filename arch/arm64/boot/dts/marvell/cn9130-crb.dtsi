@@ -141,6 +141,16 @@
 		compatible = "ti,lm73";
 		reg = <0x4c>;
 	};
+
+	eeprom@50 {
+		compatible = "atmel,24c64";
+		reg = <0x50>;
+	};
+
+	eeprom@57 {
+		compatible = "atmel,24c256";
+		reg = <0x57>;
+	};
 };
 
 &cp0_i2c1 {
