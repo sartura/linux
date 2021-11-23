@@ -298,9 +298,7 @@ struct qca8k_priv {
 	struct regmap *psgmii;
 	struct clk *ess_clk;
 	struct reset_control *ess_rst;
-	u32 mac_mode;
 	struct delayed_work dsa_init;
-	u32 phy_t_status;
 	bool psgmii_calibrated;
 	struct phy_device *psgmii_ethphy;
 };
