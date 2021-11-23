@@ -255,13 +255,113 @@ qca8k_ipq4019_setup(struct dsa_switch *ds)
 	return 0;
 }
 
+static int psgmii_vco_calibrate(struct dsa_switch *ds)
+{
+	struct qca8k_priv *priv = ds->priv;
+	int val, ret;
+
+	/* Fix PSGMII RX 20bit */
+	ret = phy_write(priv->psgmii_ethphy, MII_BMCR, 0x5b);
+	/* Reset PSGMII PHY */
+	ret = phy_write(priv->psgmii_ethphy, MII_BMCR, 0x1b);
+	/* Release reset */
+	ret = phy_write(priv->psgmii_ethphy, MII_BMCR, 0x5b);
+
+	/* Poll for VCO PLL calibration finish */
+	ret = phy_read_mmd_poll_timeout(priv->psgmii_ethphy,
+					MDIO_MMD_PMAPMD,
+					0x28, val,
+					(val & BIT(0)),
+					10000, 1000000,
+					false);
+	if (ret) {
+		dev_err(ds->dev, "QCA807x PSGMII VCO calibration PLL not ready\n");
+		return ret;
+	}
+
+	/* Freeze PSGMII RX CDR */
+	ret = phy_write(priv->psgmii_ethphy, MII_RESV2, 0x2230);
+
+	/* Start PSGMIIPHY VCO PLL calibration */
+	ret = regmap_set_bits(priv->psgmii,
+			PSGMIIPHY_VCO_CALIBRATION_CONTROL_REGISTER_1,
+			PSGMIIPHY_REG_PLL_VCO_CALIB_RESTART);
+
+	/* Poll for PSGMIIPHY PLL calibration finish */
+	ret = regmap_read_poll_timeout(priv->psgmii,
+				       PSGMIIPHY_VCO_CALIBRATION_CONTROL_REGISTER_2,
+				       val, val & PSGMIIPHY_REG_PLL_VCO_CALIB_READY,
+				       10000, 1000000);
+	if (ret) {
+		dev_err(ds->dev, "PSGMIIPHY VCO calibration PLL not ready\n");
+		return ret;
+	}
+
+	/* Release PSGMII RX CDR */
+	ret = phy_write(priv->psgmii_ethphy, MII_RESV2, 0x3230);
+
+	/* Release PSGMII RX 20bit */
+	ret = phy_write(priv->psgmii_ethphy, MII_BMCR, 0x5f);
+
+	return ret;
+}
+
+static int ipq4019_psgmii_configure(struct dsa_switch *ds)
+{
+	struct qca8k_priv *priv = ds->priv;
+	int ret;
+
+	if (!priv->psgmii_calibrated) {
+		ret = psgmii_vco_calibrate(ds);
+
+		ret = regmap_clear_bits(priv->psgmii, PSGMIIPHY_MODE_CONTROL,
+					PSGMIIPHY_MODE_ATHR_CSCO_MODE_25M);
+		ret = regmap_write(priv->psgmii, PSGMIIPHY_TX_CONTROL,
+				   PSGMIIPHY_TX_CONTROL_MAGIC_VALUE);
+
+		priv->psgmii_calibrated = true;
+
+		return ret;
+	}
+
+	return 0;
+}
+
 static void
 qca8k_ipq4019_phylink_mac_config(struct dsa_switch *ds, int port, unsigned int mode,
 				 const struct phylink_link_state *state)
 {
-	/* Nothing to configure
-	 * TODO: Look into moving PHY calibration here
-	 */
+	struct qca8k_priv *priv = ds->priv;
+
+	switch (port) {
+	case 0:
+		/* CPU port, no configuration needed */
+		return;
+	case 1:
+	case 2:
+	case 3:
+		if (state->interface == PHY_INTERFACE_MODE_PSGMII)
+			if (ipq4019_psgmii_configure(ds))
+				dev_err(ds->dev, "PSGMII configuration failed!\n");
+		return;
+	case 4:
+	case 5:
+		if (state->interface == PHY_INTERFACE_MODE_RGMII ||
+		    state->interface == PHY_INTERFACE_MODE_RGMII_ID ||
+		    state->interface == PHY_INTERFACE_MODE_RGMII_RXID ||
+		    state->interface == PHY_INTERFACE_MODE_RGMII_TXID) {
+			qca8k_reg_set(priv, QCA8K_IPQ4019_REG_RGMII_CTRL,
+				      QCA8K_IPQ4019_RGMII_CTRL_CLK);
+		}
+
+		if (state->interface == PHY_INTERFACE_MODE_PSGMII)
+			if (ipq4019_psgmii_configure(ds))
+				dev_err(ds->dev, "PSGMII configuration failed!\n");
+		return;
+	default:
+		dev_err(ds->dev, "%s: unsupported port: %i\n", __func__, port);
+		return;
+	}
 }
 
 static void
@@ -279,10 +379,18 @@ qca8k_ipq4019_phylink_validate(struct dsa_switch *ds, int port,
 	case 1:
 	case 2:
 	case 3:
+		/* Only PSGMII mode is supported */
+		if (state->interface != PHY_INTERFACE_MODE_PSGMII)
+			goto unsupported;
+		break;
 	case 4:
 	case 5:
-		/* User ports, only PSGMII mode is supported for now */
-		if (state->interface != PHY_INTERFACE_MODE_PSGMII)
+		/* PSGMII and RGMII modes are supported */
+		if (state->interface != PHY_INTERFACE_MODE_PSGMII &&
+		    state->interface != PHY_INTERFACE_MODE_RGMII &&
+		    state->interface != PHY_INTERFACE_MODE_RGMII_ID &&
+		    state->interface != PHY_INTERFACE_MODE_RGMII_RXID &&
+		    state->interface != PHY_INTERFACE_MODE_RGMII_TXID)
 			goto unsupported;
 		break;
 	default:
