@@ -600,7 +600,6 @@
 			clocks = <&gcc GCC_ESS_CLK>;
 			clock-names = "ess_clk";
 			mdio = <&mdio>;
-			mac-mode = <0>; /* 0 = PSGMII, 1 = RGMII5 */
 			psgmii-ethphy = <&psgmiiphy>;
 
 			status = "disabled";
