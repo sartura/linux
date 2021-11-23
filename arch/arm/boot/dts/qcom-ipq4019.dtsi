@@ -757,7 +757,6 @@
 				reg = <5>;
 
 				qcom,tx-driver-strength = <300>;
-				qcom,psgmii-az;
 			};
 		};
 
