@@ -291,6 +291,7 @@ struct qca8k_priv {
 	u32 mac_mode;
 	struct delayed_work dsa_init;
 	u32 phy_t_status;
+	struct phy_device *psgmii_ethphy;
 };
 
 struct qca8k_mib_desc {
