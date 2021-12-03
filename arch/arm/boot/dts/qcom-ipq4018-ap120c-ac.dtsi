@@ -218,22 +218,6 @@
 		compatible = "spi-nand";
 		reg = <1>;
 		spi-max-frequency = <40000000>;
-
-		partitions {
-			compatible = "fixed-partitions";
-			#address-cells = <1>;
-			#size-cells = <1>;
-
-			partition@0 {
-				label = "ubi1";
-				reg = <0x00000000 0x04000000>;
-			};
-
-			partition@4000000 {
-				label = "ubi2";
-				reg = <0x04000000 0x04000000>;
-			};
-		};
 	};
 };
 

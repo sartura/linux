@@ -36,3 +36,23 @@
 		};
 	};
 };
+
+&blsp1_spi1 {
+	nand@1 {
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@0 {
+				label = "ubi1";
+				reg = <0x00000000 0x10000000>;
+			};
+
+			partition@10000000 {
+				label = "ubi2";
+				reg = <0x10000000 0x10000000>;
+			};
+		};
+	};
+};
