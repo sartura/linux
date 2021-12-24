@@ -38,6 +38,18 @@ static const struct tn48m_gpio_config tn48m_gpi_config = {
 	.type = TN48M_GPI,
 };
 
+static const struct tn48m_gpio_config tn4810m_gpo_config = {
+	.ngpio = 48,
+	.ngpio_per_reg = 8,
+	.type = TN48M_GP0,
+};
+
+static const struct tn48m_gpio_config tn4810m_gpi_config = {
+	.ngpio = 48,
+	.ngpio_per_reg = 8,
+	.type = TN48M_GPI,
+};
+
 static int tn48m_gpio_probe(struct platform_device *pdev)
 {
 	const struct tn48m_gpio_config *gpio_config;
@@ -82,6 +94,8 @@ static int tn48m_gpio_probe(struct platform_device *pdev)
 static const struct of_device_id tn48m_gpio_of_match[] = {
 	{ .compatible = "delta,tn48m-gpo", .data = &tn48m_gpo_config },
 	{ .compatible = "delta,tn48m-gpi", .data = &tn48m_gpi_config },
+	{ .compatible = "delta,tn4810m-gpo", .data = &tn4810m_gpo_config },
+	{ .compatible = "delta,tn4810m-gpi", .data = &tn4810m_gpi_config },
 	{ }
 };
 MODULE_DEVICE_TABLE(of, tn48m_gpio_of_match);
