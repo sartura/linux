@@ -1,0 +1,1241 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+/*
+ * Copyright (C) 2016 Marvell Technology Group Ltd.
+ * Copyright (C) 2021 Sartura Ltd.
+ *
+ * Device Tree file for Delta TN4810M switch
+ */
+
+#include <dt-bindings/reset/delta,tn48m-reset.h>
+#include <dt-bindings/leds/common.h>
+#include <dt-bindings/gpio/gpio.h>
+#include "armada-7040.dtsi"
+
+/ {
+	model = "Delta TN4810M";
+	compatible = "delta,tn4810m", "marvell,armada7040",
+		     "marvell,armada-ap806-quad", "marvell,armada-ap806";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	aliases {
+		ethernet2 = &cp0_eth2;
+	};
+
+	switch-cpu {
+		status = "okay";
+		compatible = "marvell,prestera-switch-rxtx-sdma";
+	};
+
+	prestera {
+		status = "okay";
+		compatible = "marvell,prestera";
+		base-mac-provider = <&onie_eeprom>;
+
+		ports {
+			port1 {
+				prestera,port-num = <1>;
+				sfp = <&sfp1>;
+			};
+
+			port2 {
+				prestera,port-num = <2>;
+				sfp = <&sfp2>;
+			};
+
+			port3 {
+				prestera,port-num = <3>;
+				sfp = <&sfp3>;
+			};
+
+			port4 {
+				prestera,port-num = <4>;
+				sfp = <&sfp4>;
+			};
+
+			port5 {
+				prestera,port-num = <5>;
+				sfp = <&sfp5>;
+			};
+
+			port6 {
+				prestera,port-num = <6>;
+				sfp = <&sfp6>;
+			};
+
+			port7 {
+				prestera,port-num = <7>;
+				sfp = <&sfp7>;
+			};
+
+			port8 {
+				prestera,port-num = <8>;
+				sfp = <&sfp8>;
+			};
+
+			port9 {
+				prestera,port-num = <9>;
+				sfp = <&sfp9>;
+			};
+
+			port10 {
+				prestera,port-num = <10>;
+				sfp = <&sfp10>;
+			};
+
+			port11 {
+				prestera,port-num = <11>;
+				sfp = <&sfp11>;
+			};
+
+			port12 {
+				prestera,port-num = <12>;
+				sfp = <&sfp12>;
+			};
+
+			port13 {
+				prestera,port-num = <13>;
+				sfp = <&sfp13>;
+			};
+
+			port14 {
+				prestera,port-num = <14>;
+				sfp = <&sfp14>;
+			};
+
+			port15 {
+				prestera,port-num = <15>;
+				sfp = <&sfp15>;
+			};
+
+			port16 {
+				prestera,port-num = <16>;
+				sfp = <&sfp16>;
+			};
+
+			port17 {
+				prestera,port-num = <17>;
+				sfp = <&sfp17>;
+			};
+
+			port18 {
+				prestera,port-num = <18>;
+				sfp = <&sfp18>;
+			};
+
+			port19 {
+				prestera,port-num = <19>;
+				sfp = <&sfp19>;
+			};
+
+			port20 {
+				prestera,port-num = <20>;
+				sfp = <&sfp20>;
+			};
+
+			port21 {
+				prestera,port-num = <21>;
+				sfp = <&sfp21>;
+			};
+
+			port22 {
+				prestera,port-num = <22>;
+				sfp = <&sfp22>;
+			};
+
+			port23 {
+				prestera,port-num = <23>;
+				sfp = <&sfp23>;
+			};
+
+			port24 {
+				prestera,port-num = <24>;
+				sfp = <&sfp24>;
+			};
+
+			port25 {
+				prestera,port-num = <25>;
+				sfp = <&sfp25>;
+			};
+
+			port26 {
+				prestera,port-num = <26>;
+				sfp = <&sfp26>;
+			};
+
+			port27 {
+				prestera,port-num = <27>;
+				sfp = <&sfp27>;
+			};
+
+			port28 {
+				prestera,port-num = <28>;
+				sfp = <&sfp28>;
+			};
+
+			port29 {
+				prestera,port-num = <29>;
+				sfp = <&sfp29>;
+			};
+
+			port30 {
+				prestera,port-num = <30>;
+				sfp = <&sfp30>;
+			};
+
+			port31 {
+				prestera,port-num = <31>;
+				sfp = <&sfp31>;
+			};
+
+			port32 {
+				prestera,port-num = <32>;
+				sfp = <&sfp32>;
+			};
+
+			port33 {
+				prestera,port-num = <33>;
+				sfp = <&sfp33>;
+			};
+
+			port34 {
+				prestera,port-num = <34>;
+				sfp = <&sfp34>;
+			};
+
+			port35 {
+				prestera,port-num = <35>;
+				sfp = <&sfp35>;
+			};
+
+			port36 {
+				prestera,port-num = <36>;
+				sfp = <&sfp36>;
+			};
+
+			port37 {
+				prestera,port-num = <37>;
+				sfp = <&sfp37>;
+			};
+
+			port38 {
+				prestera,port-num = <38>;
+				sfp = <&sfp38>;
+			};
+
+			port39 {
+				prestera,port-num = <39>;
+				sfp = <&sfp39>;
+			};
+
+			port40 {
+				prestera,port-num = <40>;
+				sfp = <&sfp40>;
+			};
+
+			port41 {
+				prestera,port-num = <41>;
+				sfp = <&sfp41>;
+			};
+
+			port42 {
+				prestera,port-num = <42>;
+				sfp = <&sfp42>;
+			};
+
+			port43 {
+				prestera,port-num = <43>;
+				sfp = <&sfp43>;
+			};
+
+			port44 {
+				prestera,port-num = <44>;
+				sfp = <&sfp44>;
+			};
+
+			port45 {
+				prestera,port-num = <45>;
+				sfp = <&sfp45>;
+			};
+
+			port46 {
+				prestera,port-num = <46>;
+				sfp = <&sfp46>;
+			};
+
+			port47 {
+				prestera,port-num = <47>;
+				sfp = <&sfp47>;
+			};
+
+			port48 {
+				prestera,port-num = <48>;
+				sfp = <&sfp48>;
+			};
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		sys-amber {
+			gpios = <&cp0_gpio2 2 GPIO_ACTIVE_HIGH>;
+			color = <LED_COLOR_ID_AMBER>;
+			label = "system:amber";
+			default-state = "off";
+			panic-indicator;
+		};
+
+		sys-green {
+			gpios = <&cp0_gpio1 31 GPIO_ACTIVE_HIGH>;
+			color = <LED_COLOR_ID_GREEN>;
+			label = "system:green";
+			default-state = "on";
+		};
+
+		fan-amber {
+			gpios = <&cp0_gpio1 11 GPIO_ACTIVE_HIGH>;
+			color = <LED_COLOR_ID_AMBER>;
+			label = "fan:amber";
+			default-state = "off";
+		};
+
+		fan-green {
+			gpios = <&cp0_gpio1 14 GPIO_ACTIVE_HIGH>;
+			color = <LED_COLOR_ID_GREEN>;
+			label = "fan:green";
+			default-state = "on";
+		};
+
+		psu-amber {
+			gpios = <&cp0_gpio1 2 GPIO_ACTIVE_HIGH>;
+			color = <LED_COLOR_ID_AMBER>;
+			label = "psu:amber";
+			default-state = "off";
+		};
+
+		psu-green {
+			gpios = <&cp0_gpio1 3 GPIO_ACTIVE_HIGH>;
+			color = <LED_COLOR_ID_GREEN>;
+			label = "psu:green";
+			default-state = "on";
+		};
+	};
+
+	onie_eeprom: onie-eeprom {
+		status = "okay";
+		compatible = "onie,nvmem-cells";
+
+		nvmem-name = "1-00563";
+		nvmem = <&eeprom_at24>;
+	};
+
+	sfp1: sfp-1 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp1>;
+		los-gpios = <&sfp_los 0 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 0 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 0 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 0 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp2: sfp-2 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp2>;
+		los-gpios = <&sfp_los 1 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 1 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 1 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 1 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp3: sfp-3 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp3>;
+		los-gpios = <&sfp_los 2 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 2 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 2 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 2 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp4: sfp-4 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp4>;
+		los-gpios = <&sfp_los 3 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 3 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 3 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 3 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp5: sfp-5 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp5>;
+		los-gpios = <&sfp_los 4 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 4 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 4 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 4 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp6: sfp-6 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp6>;
+		los-gpios = <&sfp_los 5 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 5 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 5 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 5 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp7: sfp-7 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp7>;
+		los-gpios = <&sfp_los 6 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 6 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 6 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 6 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp8: sfp-8 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp8>;
+		los-gpios = <&sfp_los 7 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 7 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 7 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 7 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp9: sfp-9 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp9>;
+		los-gpios = <&sfp_los 8 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 8 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 8 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 8 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp10: sfp-10 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp10>;
+		los-gpios = <&sfp_los 9 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 9 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 9 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 9 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp11: sfp-11 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp11>;
+		los-gpios = <&sfp_los 10 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 10 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 10 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 10 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp12: sfp-12 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp12>;
+		los-gpios = <&sfp_los 11 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 11 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 11 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 11 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp13: sfp-13 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp13>;
+		los-gpios = <&sfp_los 12 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 12 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 12 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 12 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp14: sfp-14 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp14>;
+		los-gpios = <&sfp_los 13 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 13 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 13 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 13 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp15: sfp-15 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp15>;
+		los-gpios = <&sfp_los 14 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 14 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 14 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 14 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp16: sfp-16 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp16>;
+		los-gpios = <&sfp_los 15 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 15 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 15 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 15 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp17: sfp-17 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp17>;
+		los-gpios = <&sfp_los 16 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 16 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 16 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 16 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp18: sfp-18 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp18>;
+		los-gpios = <&sfp_los 17 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 17 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 17 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 17 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp19: sfp-19 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp19>;
+		los-gpios = <&sfp_los 18 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 18 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 18 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 18 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp20: sfp-20 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp20>;
+		los-gpios = <&sfp_los 19 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 19 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 19 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 19 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp21: sfp-21 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp21>;
+		los-gpios = <&sfp_los 20 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 20 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 20 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 20 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp22: sfp-22 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp22>;
+		los-gpios = <&sfp_los 21 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 21 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 21 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 21 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp23: sfp-23 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp23>;
+		los-gpios = <&sfp_los 22 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 22 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 22 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 22 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp24: sfp-24 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp24>;
+		los-gpios = <&sfp_los 23 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 23 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 23 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 23 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp25: sfp-25 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp25>;
+		los-gpios = <&sfp_los 24 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 24 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 24 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 24 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp26: sfp-26 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp26>;
+		los-gpios = <&sfp_los 25 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 25 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 25 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 25 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp27: sfp-27 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp27>;
+		los-gpios = <&sfp_los 26 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 26 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 26 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 26 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp28: sfp-28 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp28>;
+		los-gpios = <&sfp_los 27 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 27 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 27 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 27 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp29: sfp-29 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp29>;
+		los-gpios = <&sfp_los 28 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 28 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 28 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 28 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp30: sfp-30 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp30>;
+		los-gpios = <&sfp_los 29 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 29 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 29 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 29 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp31: sfp-31 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp31>;
+		los-gpios = <&sfp_los 30 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 30 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 30 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 30 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp32: sfp-32 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp32>;
+		los-gpios = <&sfp_los 31 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 31 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 31 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 31 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp33: sfp-33 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp33>;
+		los-gpios = <&sfp_los 32 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 32 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 32 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 32 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp34: sfp-34 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp34>;
+		los-gpios = <&sfp_los 33 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 33 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 33 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 33 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp35: sfp-35 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp35>;
+		los-gpios = <&sfp_los 34 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 34 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 34 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 34 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp36: sfp-36 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp36>;
+		los-gpios = <&sfp_los 35 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 35 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 35 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 35 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp37: sfp-37 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp37>;
+		los-gpios = <&sfp_los 36 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 36 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 36 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 36 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp38: sfp-38 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp38>;
+		los-gpios = <&sfp_los 37 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 37 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 37 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 37 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp39: sfp-39 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp39>;
+		los-gpios = <&sfp_los 38 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 38 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 38 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 38 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp40: sfp-40 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp40>;
+		los-gpios = <&sfp_los 39 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 39 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 39 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 39 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp41: sfp-41 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp41>;
+		los-gpios = <&sfp_los 40 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 40 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 40 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 40 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp42: sfp-42 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp42>;
+		los-gpios = <&sfp_los 41 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 41 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 41 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 41 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp43: sfp-43 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp43>;
+		los-gpios = <&sfp_los 42 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 42 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 42 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 42 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp44: sfp-44 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp44>;
+		los-gpios = <&sfp_los 43 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 43 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 43 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 43 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp45: sfp-45 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp45>;
+		los-gpios = <&sfp_los 44 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 44 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 44 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 44 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp46: sfp-46 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp46>;
+		los-gpios = <&sfp_los 45 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 45 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 45 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 45 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp47: sfp-47 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp47>;
+		los-gpios = <&sfp_los 46 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 46 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 46 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 46 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+
+	sfp48: sfp-48 {
+		compatible = "sff,sfp";
+		i2c-bus = <&i2c_sfp48>;
+		los-gpios = <&sfp_los 47 GPIO_ACTIVE_HIGH>;
+		mod-def0-gpios = <&sfp_present 47 GPIO_ACTIVE_LOW>;
+		tx-disable-gpios = <&sfp_tx_disable 47 GPIO_ACTIVE_HIGH>;
+		tx-fault-gpios = <&sfp_tx_fault 47 GPIO_ACTIVE_HIGH>;
+		maximum-power-milliwatt = <2000>;
+	};
+};
+
+&uart0 {
+	status = "okay";
+	pinctrl-0 = <&uart0_pins>;
+	pinctrl-names = "default";
+};
+
+&spi0 {
+	status = "okay";
+
+	slb9670@0 {
+		compatible = "infineon,slb9670";
+		reg = <0>;
+		spi-max-frequency = <38000000>;
+	};
+};
+
+&cp0_spi0 {
+	status = "okay";
+
+	flash@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <20000000>;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@0 {
+				label = "u-boot";
+				reg = <0x0 0x3f0000>;
+				read-only;
+			};
+
+			partition@3f0000 {
+				label = "u-boot-env";
+				reg = <0x3f0000 0x010000>;
+			};
+
+			partition@400000 {
+				label = "ONIE";
+				reg = <0x400000 0xc00000>;
+			};
+		};
+	};
+};
+
+&i2c0 {
+	status = "okay";
+	clock-frequency = <100000>;
+
+	pca9546@77 {
+		compatible = "nxp,pca9546";
+		reg = <0x77>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		i2c-mux-idle-disconnect;
+
+		i2c@0 {
+			reg = <0>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			//DPS200 PSU1 goes here at 0x50
+		};
+
+		i2c@1 {
+			reg = <1>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			//DPS200 PSU2 goes here at 0x51
+		};
+
+		i2c@2 {
+			reg = <2>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			cpld@41 {
+				compatible = "delta,tn48m-cpld";
+				reg = <0x41>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				sfp_tx_disable: gpio@31 {
+					compatible = "delta,tn4810m-gpo";
+					reg = <0x31>;
+					gpio-controller;
+					#gpio-cells = <2>;
+				};
+
+				sfp_present: gpio@3a {
+					compatible = "delta,tn4810m-gpi";
+					reg = <0x3a>;
+					gpio-controller;
+					#gpio-cells = <2>;
+				};
+
+				sfp_los: gpio@40 {
+					compatible = "delta,tn4810m-gpi";
+					reg = <0x40>;
+					gpio-controller;
+					#gpio-cells = <2>;
+				};
+
+				sfp_tx_fault: gpio@4a {
+					compatible = "delta,tn4810m-gpi";
+					reg = <0x4a>;
+					gpio-controller;
+					#gpio-cells = <2>;
+				};
+			};
+		};
+	};
+};
+
+&cp0_i2c0 {
+	status = "okay";
+	clock-frequency = <100000>;
+
+	eeprom_at24: at24@56 {
+		compatible = "atmel,24c64";
+		reg = <0x56>;
+	};
+
+	adt7473@2e {
+		compatible = "adi,adt7473";
+		reg = <0x2e>;
+	};
+
+	tmp1075@4a {
+		compatible = "ti,tmp1075";
+		reg = <0x4a>;
+	};
+
+	tmp1075@4b {
+		compatible = "ti,tmp1075";
+		reg = <0x4b>;
+	};
+};
+
+&cp0_i2c1 {
+	status = "okay";
+	clock-frequency = <100000>;
+
+	pca9548@70 {
+		compatible = "nxp,pca9548";
+		reg = <0x70>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		i2c-mux-idle-disconnect;
+
+		i2c_sfp1: i2c@0 {
+			reg = <0>;
+		};
+
+		i2c_sfp2: i2c@1 {
+			reg = <1>;
+		};
+
+		i2c_sfp3: i2c@2 {
+			reg = <2>;
+		};
+
+		i2c_sfp4: i2c@3 {
+			reg = <3>;
+		};
+
+		i2c_sfp5: i2c@4 {
+			reg = <4>;
+		};
+
+		i2c_sfp6: i2c@5 {
+			reg = <5>;
+		};
+
+		i2c_sfp7: i2c@6 {
+			reg = <6>;
+		};
+
+		i2c_sfp8: i2c@7 {
+			reg = <7>;
+		};
+	};
+
+	pca9548@71 {
+		compatible = "nxp,pca9548";
+		reg = <0x71>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		i2c-mux-idle-disconnect;
+
+		i2c_sfp9: i2c@0 {
+			reg = <0>;
+		};
+
+		i2c_sfp10: i2c@1 {
+			reg = <1>;
+		};
+
+		i2c_sfp11: i2c@2 {
+			reg = <2>;
+		};
+
+		i2c_sfp12: i2c@3 {
+			reg = <3>;
+		};
+
+		i2c_sfp13: i2c@4 {
+			reg = <4>;
+		};
+
+		i2c_sfp14: i2c@5 {
+			reg = <5>;
+		};
+
+		i2c_sfp15: i2c@6 {
+			reg = <6>;
+		};
+
+		i2c_sfp16: i2c@7 {
+			reg = <7>;
+		};
+	};
+
+	pca9548@72 {
+		compatible = "nxp,pca9548";
+		reg = <0x72>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		i2c-mux-idle-disconnect;
+
+		i2c_sfp17: i2c@0 {
+			reg = <0>;
+		};
+
+		i2c_sfp18: i2c@1 {
+			reg = <1>;
+		};
+
+		i2c_sfp19: i2c@2 {
+			reg = <2>;
+		};
+
+		i2c_sfp20: i2c@3 {
+			reg = <3>;
+		};
+
+		i2c_sfp21: i2c@4 {
+			reg = <4>;
+		};
+
+		i2c_sfp22: i2c@5 {
+			reg = <5>;
+		};
+
+		i2c_sfp23: i2c@6 {
+			reg = <6>;
+		};
+
+		i2c_sfp24: i2c@7 {
+			reg = <7>;
+		};
+	};
+
+	pca9548@73 {
+		compatible = "nxp,pca9548";
+		reg = <0x73>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		i2c-mux-idle-disconnect;
+
+		i2c_sfp25: i2c@0 {
+			reg = <0>;
+		};
+
+		i2c_sfp26: i2c@1 {
+			reg = <1>;
+		};
+
+		i2c_sfp27: i2c@2 {
+			reg = <2>;
+		};
+
+		i2c_sfp28: i2c@3 {
+			reg = <3>;
+		};
+
+		i2c_sfp29: i2c@4 {
+			reg = <4>;
+		};
+
+		i2c_sfp30: i2c@5 {
+			reg = <5>;
+		};
+
+		i2c_sfp31: i2c@6 {
+			reg = <6>;
+		};
+
+		i2c_sfp32: i2c@7 {
+			reg = <7>;
+		};
+	};
+
+	pca9548@74 {
+		compatible = "nxp,pca9548";
+		reg = <0x74>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		i2c-mux-idle-disconnect;
+
+		i2c_sfp33: i2c@0 {
+			reg = <0>;
+		};
+
+		i2c_sfp34: i2c@1 {
+			reg = <1>;
+		};
+
+		i2c_sfp35: i2c@2 {
+			reg = <2>;
+		};
+
+		i2c_sfp36: i2c@3 {
+			reg = <3>;
+		};
+
+		i2c_sfp37: i2c@4 {
+			reg = <4>;
+		};
+
+		i2c_sfp38: i2c@5 {
+			reg = <5>;
+		};
+
+		i2c_sfp39: i2c@6 {
+			reg = <6>;
+		};
+
+		i2c_sfp40: i2c@7 {
+			reg = <7>;
+		};
+	};
+
+	pca9548@75 {
+		compatible = "nxp,pca9548";
+		reg = <0x75>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		i2c-mux-idle-disconnect;
+
+		i2c_sfp41: i2c@0 {
+			reg = <0>;
+		};
+
+		i2c_sfp42: i2c@1 {
+			reg = <1>;
+		};
+
+		i2c_sfp43: i2c@2 {
+			reg = <2>;
+		};
+
+		i2c_sfp44: i2c@3 {
+			reg = <3>;
+		};
+
+		i2c_sfp45: i2c@4 {
+			reg = <4>;
+		};
+
+		i2c_sfp46: i2c@5 {
+			reg = <5>;
+		};
+
+		i2c_sfp47: i2c@6 {
+			reg = <6>;
+		};
+
+		i2c_sfp48: i2c@7 {
+			reg = <7>;
+		};
+	};
+};
+
+&cp0_usb3_0 {
+	status = "okay";
+};
+
+&cp0_sata0 {
+	status = "okay";
+
+	sata-port@0 {
+		status = "okay";
+		phys = <&cp0_comphy1 0>;
+	};
+};
+
+&cp0_mdio {
+	status = "okay";
+
+	ethphy0: ethernet-phy@0 {
+		reg = <0>;
+	};
+};
+
+&cp0_ethernet {
+	status = "okay";
+};
+
+&cp0_eth2 {
+	status = "okay";
+	phy = <&ethphy0>;
+	phy-mode = "sgmii";
+	phys = <&cp0_comphy5 2>;
+};
+
+&cp0_pcie0 {
+	status = "okay";
+	phys = <&cp0_comphy0 0>;
+
+	dma-ranges = <0x42000000 0x0 0x00000000 0x0 0x00000000 0x0 0x40000000>;
+};
