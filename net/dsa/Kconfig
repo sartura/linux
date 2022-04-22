@@ -57,6 +57,14 @@ config NET_DSA_TAG_HELLCREEK
 	  Say Y or M if you want to enable support for tagging frames
 	  for the Hirschmann Hellcreek TSN switches.
 
+config NET_DSA_TAG_OOB
+	select SKB_EXTENSIONS
+	tristate "Tag driver for Out-of-band tagging drivers"
+	help
+	  Say Y or M if you want to enable support for tagging out-of-band. In
+	  that case, the MAC driver becomes responsible for sending the tag to
+	  the switch, outside the inband data.
+
 config NET_DSA_TAG_GSWIP
 	tristate "Tag driver for Lantiq / Intel GSWIP switches"
 	help
