@@ -27,6 +27,7 @@
 #define QCA8K_ID_QCA8327				0x12
 #define PHY_ID_QCA8337					0x004dd036
 #define QCA8K_ID_QCA8337				0x13
+#define QCA8K_ID_IPQ4019				0x14
 
 #define QCA8K_QCA832X_MIB_COUNT				39
 #define QCA8K_QCA833X_MIB_COUNT				41
@@ -412,6 +413,9 @@ struct qca8k_priv {
 	struct qca8k_pcs pcs_port_0;
 	struct qca8k_pcs pcs_port_6;
 	const struct qca8k_match_data *info;
+
+	/* IPQ4019 specific */
+	struct regmap *psgmii;
 };
 
 struct qca8k_mib_desc {
