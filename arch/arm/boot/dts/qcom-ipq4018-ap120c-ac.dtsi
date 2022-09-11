@@ -8,6 +8,10 @@
 	model = "ALFA Network AP120C-AC";
 	compatible = "alfa-network,ap120c-ac";
 
+	aliases {
+		ethernet1 = &swport5;
+	};
+
 	keys {
 		compatible = "gpio-keys";
 
@@ -221,6 +225,24 @@
 
 	pinctrl-0 = <&mdio_pins>;
 	pinctrl-names = "default";
+};
+
+&gmac {
+	status = "okay";
+};
+
+&switch {
+	status = "okay";
+};
+
+&swport4 {
+	status = "okay";
+
+	label = "lan";
+};
+
+&swport5 {
+	status = "okay";
 };
 
 &wifi0 {
