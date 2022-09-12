@@ -44,6 +44,133 @@ qca8k_ipq4019_get_tag_protocol(struct dsa_switch *ds, int port,
 	return DSA_TAG_PROTO_OOB;
 }
 
+static struct phylink_pcs *
+qca8k_ipq4019_phylink_mac_select_pcs(struct dsa_switch *ds, int port,
+				     phy_interface_t interface)
+{
+	struct qca8k_priv *priv = ds->priv;
+	struct phylink_pcs *pcs = NULL;
+
+	switch (interface) {
+	case PHY_INTERFACE_MODE_PSGMII:
+		switch (port) {
+		case 0:
+			pcs = &priv->pcs_port_0.pcs;
+			break;
+		}
+		break;
+	default:
+		break;
+	}
+
+	return pcs;
+}
+
+static int qca8k_ipq4019_pcs_config(struct phylink_pcs *pcs, unsigned int mode,
+				    phy_interface_t interface,
+				    const unsigned long *advertising,
+				    bool permit_pause_to_mac)
+{
+	return 0;
+}
+
+static void qca8k_ipq4019_pcs_an_restart(struct phylink_pcs *pcs)
+{
+}
+
+static struct qca8k_pcs *pcs_to_qca8k_pcs(struct phylink_pcs *pcs)
+{
+	return container_of(pcs, struct qca8k_pcs, pcs);
+}
+
+static void qca8k_ipq4019_pcs_get_state(struct phylink_pcs *pcs,
+					struct phylink_link_state *state)
+{
+	struct qca8k_priv *priv = pcs_to_qca8k_pcs(pcs)->priv;
+	int port = pcs_to_qca8k_pcs(pcs)->port;
+	u32 reg;
+	int ret;
+
+	ret = qca8k_read(priv, QCA8K_REG_PORT_STATUS(port), &reg);
+	if (ret < 0) {
+		state->link = false;
+		return;
+	}
+
+	state->link = !!(reg & QCA8K_PORT_STATUS_LINK_UP);
+	state->an_complete = state->link;
+	state->an_enabled = !!(reg & QCA8K_PORT_STATUS_LINK_AUTO);
+	state->duplex = (reg & QCA8K_PORT_STATUS_DUPLEX) ? DUPLEX_FULL :
+							   DUPLEX_HALF;
+
+	switch (reg & QCA8K_PORT_STATUS_SPEED) {
+	case QCA8K_PORT_STATUS_SPEED_10:
+		state->speed = SPEED_10;
+		break;
+	case QCA8K_PORT_STATUS_SPEED_100:
+		state->speed = SPEED_100;
+		break;
+	case QCA8K_PORT_STATUS_SPEED_1000:
+		state->speed = SPEED_1000;
+		break;
+	default:
+		state->speed = SPEED_UNKNOWN;
+		break;
+	}
+
+	if (reg & QCA8K_PORT_STATUS_RXFLOW)
+		state->pause |= MLO_PAUSE_RX;
+	if (reg & QCA8K_PORT_STATUS_TXFLOW)
+		state->pause |= MLO_PAUSE_TX;
+}
+
+static const struct phylink_pcs_ops qca8k_pcs_ops = {
+	.pcs_get_state = qca8k_ipq4019_pcs_get_state,
+	.pcs_config = qca8k_ipq4019_pcs_config,
+	.pcs_an_restart = qca8k_ipq4019_pcs_an_restart,
+};
+
+static void qca8k_ipq4019_setup_pcs(struct qca8k_priv *priv,
+				    struct qca8k_pcs *qpcs,
+				    int port)
+{
+	qpcs->pcs.ops = &qca8k_pcs_ops;
+
+	/* We don't have interrupts for link changes, so we need to poll */
+	qpcs->pcs.poll = true;
+	qpcs->priv = priv;
+	qpcs->port = port;
+}
+
+static void qca8k_ipq4019_phylink_get_caps(struct dsa_switch *ds, int port,
+					   struct phylink_config *config)
+{
+	switch (port) {
+	case 0: /* CPU port */
+		__set_bit(PHY_INTERFACE_MODE_INTERNAL,
+			  config->supported_interfaces);
+		break;
+
+	case 1:
+	case 2:
+	case 3:
+		__set_bit(PHY_INTERFACE_MODE_PSGMII,
+			  config->supported_interfaces);
+		break;
+	case 4:
+	case 5:
+		phy_interface_set_rgmii(config->supported_interfaces);
+		__set_bit(PHY_INTERFACE_MODE_PSGMII,
+			  config->supported_interfaces);
+		break;
+	}
+
+	config->mac_capabilities = MAC_ASYM_PAUSE | MAC_SYM_PAUSE |
+		MAC_10 | MAC_100 | MAC_1000FD;
+
+	config->legacy_pre_march2020 = false;
+}
+
 static int
 qca8k_ipq4019_setup_port(struct dsa_switch *ds, int port)
 {
@@ -110,6 +237,8 @@ qca8k_ipq4019_setup(struct dsa_switch *ds)
 			QCA8K_IPQ4019_CPU_PORT);
 		return -EINVAL;
 	}
+
+	qca8k_ipq4019_setup_pcs(priv, &priv->pcs_port_0, 0);
 
 	/* Enable CPU Port */
 	ret = regmap_set_bits(priv->regmap, QCA8K_REG_GLOBAL_FW_CTRL0,
@@ -211,9 +340,9 @@ static const struct dsa_switch_ops qca8k_ipq4019_switch_ops = {
 	.port_vlan_filtering	= qca8k_port_vlan_filtering,
 	.port_vlan_add		= qca8k_port_vlan_add,
 	.port_vlan_del		= qca8k_port_vlan_del,
-	/*.phylink_get_caps	= qca8k_phylink_get_caps,
-	.phylink_mac_select_pcs	= qca8k_phylink_mac_select_pcs,
-	.phylink_mac_config	= qca8k_phylink_mac_config,
+	.phylink_mac_select_pcs	= qca8k_ipq4019_phylink_mac_select_pcs,
+	.phylink_get_caps	= qca8k_ipq4019_phylink_get_caps,
+	/*.phylink_mac_config	= qca8k_phylink_mac_config,
 	.phylink_mac_link_down	= qca8k_phylink_mac_link_down,
 	.phylink_mac_link_up	= qca8k_phylink_mac_link_up,*/
 	.port_lag_join		= qca8k_port_lag_join,
