@@ -10,7 +10,12 @@
 	compatible = "8dev,habanero-dvk";
 
 	aliases {
+		serial0 = &blsp1_uart1;
 		ethernet1 = &swport5;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
 	};
 
 	soc {
