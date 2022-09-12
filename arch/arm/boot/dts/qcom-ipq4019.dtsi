@@ -711,6 +711,12 @@
 			status = "disabled";
 
 			phy-mode = "internal";
+			fixed-link {
+				speed = <1000>;
+				full-duplex;
+				pause;
+				asym-pause;
+			};
 		};
 
 		mdio: mdio@90000 {
