@@ -18,7 +18,10 @@
 #define QCA8K_ETHERNET_TIMEOUT				5
 
 #define QCA8K_NUM_PORTS					7
+#define QCA8K_IPQ4019_NUM_PORTS				6
 #define QCA8K_NUM_CPU_PORTS				2
+#define QCA8K_IPQ4019_NUM_CPU_PORTS			1
+#define QCA8K_IPQ4019_CPU_PORT				0
 #define QCA8K_MAX_MTU					9000
 #define QCA8K_NUM_LAGS					4
 #define QCA8K_NUM_PORTS_FOR_LAG				4
@@ -416,6 +419,7 @@ struct qca8k_priv {
 
 	/* IPQ4019 specific */
 	struct regmap *psgmii;
+	struct phy_device *psgmii_ethphy;
 };
 
 struct qca8k_mib_desc {
