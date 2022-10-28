@@ -9,6 +9,7 @@
 
 #include <linux/efi.h>
 #include <linux/init.h>
+#include <linux/percpu.h>
 
 #include <asm/efi.h>
 
@@ -72,10 +73,11 @@ static __init pteval_t create_mapping_protection(efi_memory_desc_t *md)
 static u64 __initdata max_virt_addr;
 
 efi_status_t (* efi_rt_asm_wrapper)(void *, const char *, ...) __ro_after_init;
+static efi_status_t (* efi_rt_asm_recover)(void) __ro_after_init;
 
 static int __init efi_map_rt_wrapper(void)
 {
-	extern const __le32 __efi_rt_asm_wrapper[];
+	extern const __le32 __efi_rt_asm_wrapper[], __efi_rt_asm_recover[];
 
 	u64 phys_base = __pa_symbol(__efi_rt_asm_wrapper) & PAGE_MASK;
 	u64 virt_base = max_virt_addr ?: phys_base;
@@ -96,6 +98,7 @@ static int __init efi_map_rt_wrapper(void)
 			   false);
 
 	efi_rt_asm_wrapper = (void *)__pa_symbol(__efi_rt_asm_wrapper) + offset;
+	efi_rt_asm_recover = (void *)__pa_symbol(__efi_rt_asm_recover) + offset;
 	return 0;
 }
 core_initcall(efi_map_rt_wrapper);
@@ -182,4 +185,27 @@ asmlinkage efi_status_t efi_handle_corrupted_x18(efi_status_t s, const char *f)
 {
 	pr_err_ratelimited(FW_BUG "register x18 corrupted by EFI %s\n", f);
 	return s;
+}
+
+asmlinkage DEFINE_PER_CPU(u64, __efi_rt_asm_recover_sp);
+
+asmlinkage efi_status_t efi_handle_runtime_exception(const char *f)
+{
+	pr_err(FW_BUG "Synchronous exception occurred in EFI runtime service %s()\n", f);
+	clear_bit(EFI_RUNTIME_SERVICES, &efi.flags);
+	return EFI_ABORTED;
+}
+
+bool efi_runtime_fixup_exception(struct pt_regs *regs, const char *msg)
+{
+	 /* Check whether the exception occurred while running the firmware */
+	if (current_work() != &efi_rts_work.work || regs->pc >= TASK_SIZE_64)
+		return false;
+
+	pr_err(FW_BUG "Unable to handle %s in EFI runtime service\n", msg);
+	add_taint(TAINT_FIRMWARE_WORKAROUND, LOCKDEP_STILL_OK);
+	dump_stack();
+
+	regs->pc = (u64)efi_rt_asm_recover;
+	return true;
 }
