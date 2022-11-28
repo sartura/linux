@@ -511,6 +511,20 @@ static int ovl_mmap(struct file *file, struct vm_area_struct *vma)
 	return ret;
 }
 
+static int ovl_remove_privs_unlocked(struct file *file)
+{
+	struct inode *inode = file_inode(file);
+	int err;
+
+	inode_lock(inode);
+	/* Update mode */
+	ovl_copyattr(inode);
+	err = file_remove_privs(file);
+	inode_unlock(inode);
+
+	return err;
+}
+
 static long ovl_fallocate(struct file *file, int mode, loff_t offset, loff_t len)
 {
 	struct inode *inode = file_inode(file);
@@ -522,6 +536,10 @@ static long ovl_fallocate(struct file *file, int mode, loff_t offset, loff_t len
 	if (ret)
 		return ret;
 
+	ret = ovl_remove_privs_unlocked(file);
+	if (ret)
+		goto out_fdput;
+
 	old_cred = ovl_override_creds(file_inode(file)->i_sb);
 	ret = vfs_fallocate(real.file, mode, offset, len);
 	revert_creds(old_cred);
@@ -529,6 +547,7 @@ static long ovl_fallocate(struct file *file, int mode, loff_t offset, loff_t len
 	/* Update size */
 	ovl_copyattr(inode);
 
+out_fdput:
 	fdput(real);
 
 	return ret;
@@ -578,6 +597,12 @@ static loff_t ovl_copyfile(struct file *file_in, loff_t pos_in,
 		return ret;
 	}
 
+	if (op != OVL_DEDUPE) {
+		ret = ovl_remove_privs_unlocked(file_out);
+		if (ret)
+			goto out_fdput;
+	}
+
 	old_cred = ovl_override_creds(file_inode(file_out)->i_sb);
 	switch (op) {
 	case OVL_COPY:
@@ -601,6 +626,7 @@ static loff_t ovl_copyfile(struct file *file_in, loff_t pos_in,
 	/* Update size */
 	ovl_copyattr(inode_out);
 
+out_fdput:
 	fdput(real_in);
 	fdput(real_out);
 
