@@ -860,7 +860,7 @@ bool io_aux_cqe(struct io_ring_ctx *ctx, bool defer, u64 user_data, s32 res, u32
 		io_cq_lock(ctx);
 		__io_flush_post_cqes(ctx);
 		/* no need to flush - flush is deferred */
-		spin_unlock(&ctx->completion_lock);
+		io_cq_unlock(ctx);
 	}
 
 	/* For defered completions this is not as strict as it is otherwise,
@@ -1808,8 +1808,6 @@ static int io_issue_sqe(struct io_kiocb *req, unsigned int issue_flags)
 int io_poll_issue(struct io_kiocb *req, bool *locked)
 {
 	io_tw_lock(req->ctx, locked);
-	if (unlikely(req->task->flags & PF_EXITING))
-		return -EFAULT;
 	return io_issue_sqe(req, IO_URING_F_NONBLOCK|IO_URING_F_MULTISHOT|
 				 IO_URING_F_COMPLETE_DEFER);
 }
