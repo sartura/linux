@@ -672,6 +672,14 @@ This is the default behavior.
 an oops event is detected.
 
 
+oops_limit
+==========
+
+Number of kernel oopses after which the kernel should panic when
+``panic_on_oops`` is not set. Setting this to 0 or 1 has the same effect
+as setting ``panic_on_oops=1``.
+
+
 osrelease, ostype & version
 ===========================
 
@@ -1532,6 +1540,15 @@ entry will default to 2 instead of 0.
 1 Unprivileged calls to ``bpf()`` are disabled without recovery
 2 Unprivileged calls to ``bpf()`` are disabled
 = =============================================================
+
+
+warn_limit
+==========
+
+Number of kernel warnings after which the kernel should panic when
+``panic_on_warn`` is not set. Setting this to 0 or 1 has the same effect
+as setting ``panic_on_warn=1``.
+
 
 watchdog
 ========
