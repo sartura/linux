@@ -6,7 +6,10 @@
 #include <linux/dsa/oob.h>
 #include <linux/skbuff.h>
 
-#include "dsa_priv.h"
+#include "slave.h"
+#include "tag.h"
+
+#define OOB_NAME "oob"
 
 static struct sk_buff *oob_tag_xmit(struct sk_buff *skb,
 				    struct net_device *dev)
@@ -35,7 +38,7 @@ static struct sk_buff *oob_tag_rcv(struct sk_buff *skb,
 }
 
 static const struct dsa_device_ops oob_tag_dsa_ops = {
-	.name	= "oob",
+	.name	= OOB_NAME,
 	.proto	= DSA_TAG_PROTO_OOB,
 	.xmit	= oob_tag_xmit,
 	.rcv	= oob_tag_rcv,
@@ -44,6 +47,6 @@ static const struct dsa_device_ops oob_tag_dsa_ops = {
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("DSA tag driver for out-of-band tagging");
 MODULE_AUTHOR("Maxime Chevallier <maxime.chevallier@bootlin.com>");
-MODULE_ALIAS_DSA_TAG_DRIVER(DSA_TAG_PROTO_OOB);
+MODULE_ALIAS_DSA_TAG_DRIVER(DSA_TAG_PROTO_OOB, OOB_NAME);
 
 module_dsa_tag_driver(oob_tag_dsa_ops);
