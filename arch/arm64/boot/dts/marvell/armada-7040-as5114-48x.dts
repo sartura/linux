@@ -19,271 +19,6 @@
 		stdout-path = "serial0:115200n8";
 	};
 
-	aliases {
-		ethernet2 = &cp0_eth2;
-	};
-
-	switch-cpu {
-		status = "okay";
-		compatible = "marvell,prestera-switch-rxtx-sdma";
-	};
-
-	prestera {
-		status = "okay";
-		compatible = "marvell,prestera";
-		base-mac-provider = <&onie_eeprom>;
-
-		ports {
-			port1 {
-				prestera,port-num = <1>;
-				sfp = <&sfp1>;
-			};
-
-			port2 {
-				prestera,port-num = <2>;
-				sfp = <&sfp2>;
-			};
-
-			port3 {
-				prestera,port-num = <3>;
-				sfp = <&sfp3>;
-			};
-
-			port4 {
-				prestera,port-num = <4>;
-				sfp = <&sfp4>;
-			};
-
-			port5 {
-				prestera,port-num = <5>;
-				sfp = <&sfp5>;
-			};
-
-			port6 {
-				prestera,port-num = <6>;
-				sfp = <&sfp6>;
-			};
-
-			port7 {
-				prestera,port-num = <7>;
-				sfp = <&sfp7>;
-			};
-
-			port8 {
-				prestera,port-num = <8>;
-				sfp = <&sfp8>;
-			};
-
-			port9 {
-				prestera,port-num = <9>;
-				sfp = <&sfp9>;
-			};
-
-			port10 {
-				prestera,port-num = <10>;
-				sfp = <&sfp10>;
-			};
-
-			port11 {
-				prestera,port-num = <11>;
-				sfp = <&sfp11>;
-			};
-
-			port12 {
-				prestera,port-num = <12>;
-				sfp = <&sfp12>;
-			};
-
-			port13 {
-				prestera,port-num = <13>;
-				sfp = <&sfp13>;
-			};
-
-			port14 {
-				prestera,port-num = <14>;
-				sfp = <&sfp14>;
-			};
-
-			port15 {
-				prestera,port-num = <15>;
-				sfp = <&sfp15>;
-			};
-
-			port16 {
-				prestera,port-num = <16>;
-				sfp = <&sfp16>;
-			};
-
-			port17 {
-				prestera,port-num = <17>;
-				sfp = <&sfp17>;
-			};
-
-			port18 {
-				prestera,port-num = <18>;
-				sfp = <&sfp18>;
-			};
-
-			port19 {
-				prestera,port-num = <19>;
-				sfp = <&sfp19>;
-			};
-
-			port20 {
-				prestera,port-num = <20>;
-				sfp = <&sfp20>;
-			};
-
-			port21 {
-				prestera,port-num = <21>;
-				sfp = <&sfp21>;
-			};
-
-			port22 {
-				prestera,port-num = <22>;
-				sfp = <&sfp22>;
-			};
-
-			port23 {
-				prestera,port-num = <23>;
-				sfp = <&sfp23>;
-			};
-
-			port24 {
-				prestera,port-num = <24>;
-				sfp = <&sfp24>;
-			};
-
-			port25 {
-				prestera,port-num = <25>;
-				sfp = <&sfp25>;
-			};
-
-			port26 {
-				prestera,port-num = <26>;
-				sfp = <&sfp26>;
-			};
-
-			port27 {
-				prestera,port-num = <27>;
-				sfp = <&sfp27>;
-			};
-
-			port28 {
-				prestera,port-num = <28>;
-				sfp = <&sfp28>;
-			};
-
-			port29 {
-				prestera,port-num = <29>;
-				sfp = <&sfp29>;
-			};
-
-			port30 {
-				prestera,port-num = <30>;
-				sfp = <&sfp30>;
-			};
-
-			port31 {
-				prestera,port-num = <31>;
-				sfp = <&sfp31>;
-			};
-
-			port32 {
-				prestera,port-num = <32>;
-				sfp = <&sfp32>;
-			};
-
-			port33 {
-				prestera,port-num = <33>;
-				sfp = <&sfp33>;
-			};
-
-			port34 {
-				prestera,port-num = <34>;
-				sfp = <&sfp34>;
-			};
-
-			port35 {
-				prestera,port-num = <35>;
-				sfp = <&sfp35>;
-			};
-
-			port36 {
-				prestera,port-num = <36>;
-				sfp = <&sfp36>;
-			};
-
-			port37 {
-				prestera,port-num = <37>;
-				sfp = <&sfp37>;
-			};
-
-			port38 {
-				prestera,port-num = <38>;
-				sfp = <&sfp38>;
-			};
-
-			port39 {
-				prestera,port-num = <39>;
-				sfp = <&sfp39>;
-			};
-
-			port40 {
-				prestera,port-num = <40>;
-				sfp = <&sfp40>;
-			};
-
-			port41 {
-				prestera,port-num = <41>;
-				sfp = <&sfp41>;
-			};
-
-			port42 {
-				prestera,port-num = <42>;
-				sfp = <&sfp42>;
-			};
-
-			port43 {
-				prestera,port-num = <43>;
-				sfp = <&sfp43>;
-			};
-
-			port44 {
-				prestera,port-num = <44>;
-				sfp = <&sfp44>;
-			};
-
-			port45 {
-				prestera,port-num = <45>;
-				sfp = <&sfp45>;
-			};
-
-			port46 {
-				prestera,port-num = <46>;
-				sfp = <&sfp46>;
-			};
-
-			port47 {
-				prestera,port-num = <47>;
-				sfp = <&sfp47>;
-			};
-
-			port48 {
-				prestera,port-num = <48>;
-				sfp = <&sfp48>;
-			};
-		};
-	};
-
-	onie_eeprom: onie-eeprom {
-		status = "okay";
-		compatible = "onie-nvmem-cells";
-
-		nvmem-name = "1-00563";
-		nvmem = <&eeprom_at24>;
-	};
-
 	sfp1: sfp-1 {
 		compatible = "sff,sfp";
 		i2c-bus = <&i2c_sfp1>;
@@ -796,7 +531,7 @@
 			#size-cells = <1>;
 
 			partition@0 {
-				label = "u-boot";
+				label = "firmware";
 				reg = <0x0 0x200000>;
 				read-only;
 			};
@@ -882,9 +617,17 @@
 		reg = <0x4c>;
 	};
 
-	eeprom_at24: at24@56 {
+	eeprom_at24: eeprom@56 {
 		compatible = "atmel,24c64";
 		reg = <0x56>;
+
+		nvmem-layout {
+			compatible = "onie,tlv-layout";
+
+			mac_address: mac-address {
+				#nvmem-cell-cells = <1>;
+			};
+		};
 	};
 };
 
@@ -1162,6 +905,8 @@
 	phy = <&ethphy0>;
 	phy-mode = "sgmii";
 	phys = <&cp0_comphy5 2>;
+	nvmem-cells = <&mac_address 2>;
+	nvmem-cell-names = "mac-address";
 };
 
 &cp0_pcie0 {
@@ -1169,4 +914,263 @@
 	phys = <&cp0_comphy0 0>;
 
 	dma-ranges = <0x42000000 0x0 0x00000000 0x0 0x00000000 0x0 0x40000000>;
+
+	pci@0,0 {
+		device_type = "pci";
+		reg = <0x0 0x0 0x0 0x0 0x0>;
+		ranges;
+		#address-cells = <3>;
+		#size-cells = <2>;
+		bus-range = <0x0 0x0>;
+
+		switch@0,0 {
+			reg = <0x0 0x0 0x0 0x0 0x0>;
+			compatible = "pci11ab,cc1e";
+
+			nvmem-cells = <&mac_address 4>;
+			nvmem-cell-names = "mac-address";
+
+			ports {
+				port1 {
+					prestera,port-num = <1>;
+					sfp = <&sfp1>;
+				};
+
+				port2 {
+					prestera,port-num = <2>;
+					sfp = <&sfp2>;
+				};
+
+				port3 {
+					prestera,port-num = <3>;
+					sfp = <&sfp3>;
+				};
+
+				port4 {
+					prestera,port-num = <4>;
+					sfp = <&sfp4>;
+				};
+
+				port5 {
+					prestera,port-num = <5>;
+					sfp = <&sfp5>;
+				};
+
+				port6 {
+					prestera,port-num = <6>;
+					sfp = <&sfp6>;
+				};
+
+				port7 {
+					prestera,port-num = <7>;
+					sfp = <&sfp7>;
+				};
+
+				port8 {
+					prestera,port-num = <8>;
+					sfp = <&sfp8>;
+				};
+
+				port9 {
+					prestera,port-num = <9>;
+					sfp = <&sfp9>;
+				};
+
+				port10 {
+					prestera,port-num = <10>;
+					sfp = <&sfp10>;
+				};
+
+				port11 {
+					prestera,port-num = <11>;
+					sfp = <&sfp11>;
+				};
+
+				port12 {
+					prestera,port-num = <12>;
+					sfp = <&sfp12>;
+				};
+
+				port13 {
+					prestera,port-num = <13>;
+					sfp = <&sfp13>;
+				};
+
+				port14 {
+					prestera,port-num = <14>;
+					sfp = <&sfp14>;
+				};
+
+				port15 {
+					prestera,port-num = <15>;
+					sfp = <&sfp15>;
+				};
+
+				port16 {
+					prestera,port-num = <16>;
+					sfp = <&sfp16>;
+				};
+
+				port17 {
+					prestera,port-num = <17>;
+					sfp = <&sfp17>;
+				};
+
+				port18 {
+					prestera,port-num = <18>;
+					sfp = <&sfp18>;
+				};
+
+				port19 {
+					prestera,port-num = <19>;
+					sfp = <&sfp19>;
+				};
+
+				port20 {
+					prestera,port-num = <20>;
+					sfp = <&sfp20>;
+				};
+
+				port21 {
+					prestera,port-num = <21>;
+					sfp = <&sfp21>;
+				};
+
+				port22 {
+					prestera,port-num = <22>;
+					sfp = <&sfp22>;
+				};
+
+				port23 {
+					prestera,port-num = <23>;
+					sfp = <&sfp23>;
+				};
+
+				port24 {
+					prestera,port-num = <24>;
+					sfp = <&sfp24>;
+				};
+
+				port25 {
+					prestera,port-num = <25>;
+					sfp = <&sfp25>;
+				};
+
+				port26 {
+					prestera,port-num = <26>;
+					sfp = <&sfp26>;
+				};
+
+				port27 {
+					prestera,port-num = <27>;
+					sfp = <&sfp27>;
+				};
+
+				port28 {
+					prestera,port-num = <28>;
+					sfp = <&sfp28>;
+				};
+
+				port29 {
+					prestera,port-num = <29>;
+					sfp = <&sfp29>;
+				};
+
+				port30 {
+					prestera,port-num = <30>;
+					sfp = <&sfp30>;
+				};
+
+				port31 {
+					prestera,port-num = <31>;
+					sfp = <&sfp31>;
+				};
+
+				port32 {
+					prestera,port-num = <32>;
+					sfp = <&sfp32>;
+				};
+
+				port33 {
+					prestera,port-num = <33>;
+					sfp = <&sfp33>;
+				};
+
+				port34 {
+					prestera,port-num = <34>;
+					sfp = <&sfp34>;
+				};
+
+				port35 {
+					prestera,port-num = <35>;
+					sfp = <&sfp35>;
+				};
+
+				port36 {
+					prestera,port-num = <36>;
+					sfp = <&sfp36>;
+				};
+
+				port37 {
+					prestera,port-num = <37>;
+					sfp = <&sfp37>;
+				};
+
+				port38 {
+					prestera,port-num = <38>;
+					sfp = <&sfp38>;
+				};
+
+				port39 {
+					prestera,port-num = <39>;
+					sfp = <&sfp39>;
+				};
+
+				port40 {
+					prestera,port-num = <40>;
+					sfp = <&sfp40>;
+				};
+
+				port41 {
+					prestera,port-num = <41>;
+					sfp = <&sfp41>;
+				};
+
+				port42 {
+					prestera,port-num = <42>;
+					sfp = <&sfp42>;
+				};
+
+				port43 {
+					prestera,port-num = <43>;
+					sfp = <&sfp43>;
+				};
+
+				port44 {
+					prestera,port-num = <44>;
+					sfp = <&sfp44>;
+				};
+
+				port45 {
+					prestera,port-num = <45>;
+					sfp = <&sfp45>;
+				};
+
+				port46 {
+					prestera,port-num = <46>;
+					sfp = <&sfp46>;
+				};
+
+				port47 {
+					prestera,port-num = <47>;
+					sfp = <&sfp47>;
+				};
+
+				port48 {
+					prestera,port-num = <48>;
+					sfp = <&sfp48>;
+				};
+			};
+		};
+	};
 };
