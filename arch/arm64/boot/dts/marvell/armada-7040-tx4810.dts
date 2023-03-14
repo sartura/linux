@@ -19,10 +19,6 @@
 		stdout-path = "serial0:115200n8";
 	};
 
-	aliases {
-		ethernet2 = &cp0_eth2;
-	};
-
 	leds {
 		compatible = "gpio-leds";
 
@@ -102,7 +98,7 @@
 			#size-cells = <1>;
 
 			partition@0 {
-				label = "u-boot";
+				label = "firmware";
 				reg = <0x0 0x3f0000>;
 				read-only;
 			};
@@ -146,9 +142,17 @@
 		};
 	};
 
-	eeprom_at24: at24@56 {
+	eeprom_at24: eeprom@56 {
 		compatible = "atmel,24c64";
 		reg = <0x56>;
+
+		nvmem-layout {
+			compatible = "onie,tlv-layout";
+
+			mac_address: mac-address {
+				#nvmem-cell-cells = <1>;
+			};
+		};
 	};
 
 	adt7473@2e {
@@ -207,6 +211,8 @@
 	phy = <&ethphy0>;
 	phy-mode = "sgmii";
 	phys = <&cp0_comphy5 2>;
+	nvmem-cells = <&mac_address 2>;
+	nvmem-cell-names = "mac-address";
 };
 
 &cp0_pcie0 {
