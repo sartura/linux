@@ -19,51 +19,6 @@
 		stdout-path = "serial0:115200n8";
 	};
 
-	aliases {
-		ethernet2 = &cp0_eth2;
-	};
-
-	switch-cpu {
-		status = "okay";
-		compatible = "marvell,prestera-switch-rxtx-sdma";
-	};
-
-	prestera {
-		status = "okay";
-		compatible = "marvell,prestera";
-		base-mac-provider = <&onie_eeprom>;
-
-		ports {
-			port49 {
-				prestera,port-num = <49>;
-				sfp = <&sfp49>;
-			};
-
-			port50 {
-				prestera,port-num = <50>;
-				sfp = <&sfp50>;
-			};
-
-			port51 {
-				prestera,port-num = <51>;
-				sfp = <&sfp51>;
-			};
-
-			port52 {
-				prestera,port-num = <52>;
-				sfp = <&sfp52>;
-			};
-		};
-	};
-
-	onie_eeprom: onie-eeprom {
-		status = "okay";
-		compatible = "onie-nvmem-cells";
-
-		nvmem-name = "1-00563";
-		nvmem = <&eeprom_at24>;
-	};
-
 	sfp49: sfp-49 {
 		compatible = "sff,sfp";
 		i2c-bus = <&i2c_sfp49>;
@@ -136,7 +91,7 @@
 			#size-cells = <1>;
 
 			partition@0 {
-				label = "u-boot";
+				label = "firmware";
 				reg = <0x0 0x200000>;
 				read-only;
 			};
@@ -227,9 +182,17 @@
 		reg = <0x4c>;
 	};
 
-	eeprom_at24: at24@56 {
+	eeprom_at24: eeprom@56 {
 		compatible = "atmel,24c64";
 		reg = <0x56>;
+
+		nvmem-layout {
+			compatible = "onie,tlv-layout";
+
+			mac_address: mac-address {
+				#nvmem-cell-cells = <1>;
+			};
+		};
 	};
 };
 
@@ -291,6 +254,8 @@
 	phy = <&ethphy0>;
 	phy-mode = "sgmii";
 	phys = <&cp0_comphy5 2>;
+	nvmem-cells = <&mac_address 2>;
+	nvmem-cell-names = "mac-address";
 };
 
 &cp0_pcie0 {
@@ -298,4 +263,43 @@
 	phys = <&cp0_comphy0 0>;
 
 	dma-ranges = <0x42000000 0x0 0x00000000 0x0 0x00000000 0x0 0x40000000>;
+
+	pci@0,0 {
+		device_type = "pci";
+		reg = <0x0 0x0 0x0 0x0 0x0>;
+		ranges;
+		#address-cells = <3>;
+		#size-cells = <2>;
+		bus-range = <0x0 0x0>;
+
+		switch@0,0 {
+			reg = <0x0 0x0 0x0 0x0 0x0>;
+			compatible = "pci11ab,c80c";
+
+			nvmem-cells = <&mac_address 4>;
+			nvmem-cell-names = "mac-address";
+
+			ports {
+				port49 {
+					prestera,port-num = <49>;
+					sfp = <&sfp49>;
+				};
+
+				port50 {
+					prestera,port-num = <50>;
+					sfp = <&sfp50>;
+				};
+
+				port51 {
+					prestera,port-num = <51>;
+					sfp = <&sfp51>;
+				};
+
+				port52 {
+					prestera,port-num = <52>;
+					sfp = <&sfp52>;
+				};
+			};
+		};
+	};
 };
