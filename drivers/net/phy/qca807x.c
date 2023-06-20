@@ -13,7 +13,7 @@
 #include <linux/phy.h>
 #include <linux/bitfield.h>
 #include <linux/ethtool_netlink.h>
-#include <linux/gpio.h>
+#include <linux/gpio/driver.h>
 #include <linux/sfp.h>
 
 #include <dt-bindings/net/qcom-qca807x.h>
