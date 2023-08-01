@@ -30,14 +30,6 @@
 			reg = <0x4a1000 0x4>;
 		};
 
-		usb2: usb2@60f8800 {
-			status = "okay";
-		};
-
-		usb3: usb3@8af8800 {
-			status = "okay";
-		};
-
 		crypto@8e3a000 {
 			status = "okay";
 		};
@@ -351,6 +343,14 @@
 	status = "okay";
 };
 
+&usb3 {
+	status = "okay";
+};
+
 &usb2_hs_phy {
+	status = "okay";
+};
+
+&usb2 {
 	status = "okay";
 };
