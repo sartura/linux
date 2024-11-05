@@ -61,7 +61,7 @@
 	};
 
 	clks: clock-controller@e00c00a8 {
-		compatible = "microchip,lan969x-gck";
+		compatible = "microchip,lan9691-gck";
 		#clock-cells = <1>;
 		clocks = <&cpu_clk>, <&ddr_clk>, <&fx100_clk>;
 		clock-names = "cpu", "ddr", "sys";
