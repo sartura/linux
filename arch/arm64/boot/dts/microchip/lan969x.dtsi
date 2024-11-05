@@ -322,6 +322,7 @@
 			compatible = "microchip,sama7g5-dma";
 			reg = <0xe0068000 0x1000>;
 			interrupts = <GIC_SPI 44 IRQ_TYPE_LEVEL_HIGH>;
+			dma-channels = <16>;
 			#dma-cells = <1>;
 			clocks = <&fabric_clk>;
 			clock-names = "dma_clk";
