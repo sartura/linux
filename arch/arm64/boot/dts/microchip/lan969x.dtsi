@@ -540,7 +540,7 @@
 		};
 
 		serdes: serdes@e3410000 {
-			compatible = "microchip,lan969x-serdes";
+			compatible = "microchip,lan9691-serdes";
 			#phy-cells = <1>;
 			clocks = <&fabric_clk>;
 			reg = <0xe3410000 0x150000>;
