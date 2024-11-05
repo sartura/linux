@@ -723,6 +723,7 @@
 			microchip,bandwidth = <1000>;
 			phy-handle = <&phy3>;
 			phy-mode = "rgmii";
+			status = "disabled";
 		};
 	};
 };
