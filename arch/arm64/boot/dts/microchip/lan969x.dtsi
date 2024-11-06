@@ -76,11 +76,6 @@
 			     <GIC_PPI 10 IRQ_TYPE_LEVEL_LOW>; /* Hyp IRQ */
 	};
 
-	uio0: mscc_switch@e0000000 {
-		compatible = "microchip,uio_lan969x_irqmux";
-		reg = <0xe0000000 0x4000000>;
-	};
-
 	axi: axi {
 		compatible = "simple-bus";
 		#address-cells = <1>;
