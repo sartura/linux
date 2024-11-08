@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-only
 config SND_SOC_SOF_INTEL_TOPLEVEL
 	bool "SOF support for Intel audio DSPs"
-	depends on X86 || COMPILE_TEST
+	depends on X86
 	help
 	  This adds support for Sound Open Firmware for Intel(R) platforms.
 	  Say Y if you have such a device.

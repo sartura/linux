@@ -2,7 +2,7 @@
 config SND_SOC_INTEL_SST_TOPLEVEL
 	bool "Intel ASoC SST drivers"
 	default y
-	depends on X86 || COMPILE_TEST
+	depends on X86
 	select SND_SOC_INTEL_MACH
 	help
 	  Intel ASoC SST Platform Drivers. If you have a Intel machine that
