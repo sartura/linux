@@ -747,8 +747,6 @@ static void guc_exec_queue_free_job(struct drm_sched_job *drm_job)
 {
 	struct xe_sched_job *job = to_xe_sched_job(drm_job);
 
-	xe_exec_queue_update_run_ticks(job->q);
-
 	trace_xe_sched_job_free(job);
 	xe_sched_job_put(job);
 }
@@ -1884,15 +1882,14 @@ static void handle_sched_done(struct xe_guc *guc, struct xe_exec_queue *q,
 
 int xe_guc_sched_done_handler(struct xe_guc *guc, u32 *msg, u32 len)
 {
-	struct xe_device *xe = guc_to_xe(guc);
 	struct xe_exec_queue *q;
-	u32 guc_id = msg[0];
-	u32 runnable_state = msg[1];
+	u32 guc_id, runnable_state;
 
-	if (unlikely(len < 2)) {
-		drm_err(&xe->drm, "Invalid length %u", len);
+	if (unlikely(len < 2))
 		return -EPROTO;
-	}
+
+	guc_id = msg[0];
+	runnable_state = msg[1];
 
 	q = g2h_exec_queue_lookup(guc, guc_id);
 	if (unlikely(!q))
@@ -1926,14 +1923,13 @@ static void handle_deregister_done(struct xe_guc *guc, struct xe_exec_queue *q)
 
 int xe_guc_deregister_done_handler(struct xe_guc *guc, u32 *msg, u32 len)
 {
-	struct xe_device *xe = guc_to_xe(guc);
 	struct xe_exec_queue *q;
-	u32 guc_id = msg[0];
+	u32 guc_id;
 
-	if (unlikely(len < 1)) {
-		drm_err(&xe->drm, "Invalid length %u", len);
+	if (unlikely(len < 1))
 		return -EPROTO;
-	}
+
+	guc_id = msg[0];
 
 	q = g2h_exec_queue_lookup(guc, guc_id);
 	if (unlikely(!q))
@@ -1955,14 +1951,13 @@ int xe_guc_deregister_done_handler(struct xe_guc *guc, u32 *msg, u32 len)
 int xe_guc_exec_queue_reset_handler(struct xe_guc *guc, u32 *msg, u32 len)
 {
 	struct xe_gt *gt = guc_to_gt(guc);
-	struct xe_device *xe = guc_to_xe(guc);
 	struct xe_exec_queue *q;
-	u32 guc_id = msg[0];
+	u32 guc_id;
 
-	if (unlikely(len < 1)) {
-		drm_err(&xe->drm, "Invalid length %u", len);
+	if (unlikely(len < 1))
 		return -EPROTO;
-	}
+
+	guc_id = msg[0];
 
 	q = g2h_exec_queue_lookup(guc, guc_id);
 	if (unlikely(!q))
@@ -2002,10 +1997,8 @@ int xe_guc_error_capture_handler(struct xe_guc *guc, u32 *msg, u32 len)
 {
 	u32 status;
 
-	if (unlikely(len != XE_GUC_ACTION_STATE_CAPTURE_NOTIFICATION_DATA_LEN)) {
-		xe_gt_dbg(guc_to_gt(guc), "Invalid length %u", len);
+	if (unlikely(len != XE_GUC_ACTION_STATE_CAPTURE_NOTIFICATION_DATA_LEN))
 		return -EPROTO;
-	}
 
 	status = msg[0] & XE_GUC_STATE_CAPTURE_EVENT_STATUS_MASK;
 	if (status == XE_GUC_STATE_CAPTURE_EVENT_STATUS_NOSPACE)
@@ -2020,13 +2013,21 @@ int xe_guc_exec_queue_memory_cat_error_handler(struct xe_guc *guc, u32 *msg,
 					       u32 len)
 {
 	struct xe_gt *gt = guc_to_gt(guc);
-	struct xe_device *xe = guc_to_xe(guc);
 	struct xe_exec_queue *q;
-	u32 guc_id = msg[0];
+	u32 guc_id;
 
-	if (unlikely(len < 1)) {
-		drm_err(&xe->drm, "Invalid length %u", len);
+	if (unlikely(len < 1))
 		return -EPROTO;
+
+	guc_id = msg[0];
+
+	if (guc_id == GUC_ID_UNKNOWN) {
+		/*
+		 * GuC uses GUC_ID_UNKNOWN if it can not map the CAT fault to any PF/VF
+		 * context. In such case only PF will be notified about that fault.
+		 */
+		xe_gt_err_ratelimited(gt, "Memory CAT error reported by GuC!\n");
+		return 0;
 	}
 
 	q = g2h_exec_queue_lookup(guc, guc_id);
@@ -2052,10 +2053,8 @@ int xe_guc_exec_queue_reset_failure_handler(struct xe_guc *guc, u32 *msg, u32 le
 	u8 guc_class, instance;
 	u32 reason;
 
-	if (unlikely(len != 3)) {
-		drm_err(&xe->drm, "Invalid length %u", len);
+	if (unlikely(len != 3))
 		return -EPROTO;
-	}
 
 	guc_class = msg[0];
 	instance = msg[1];
