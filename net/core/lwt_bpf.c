@@ -10,6 +10,7 @@
 #include <linux/bpf.h>
 #include <net/lwtunnel.h>
 #include <net/gre.h>
+#include <net/ip.h>
 #include <net/ip6_route.h>
 #include <net/ipv6_stubs.h>
 #include <net/inet_dscp.h>
@@ -87,16 +88,18 @@ static int run_lwt_bpf(struct sk_buff *skb, struct bpf_lwt_prog *lwt,
 
 static int bpf_lwt_input_reroute(struct sk_buff *skb)
 {
+	enum skb_drop_reason reason;
 	int err = -EINVAL;
 
 	if (skb->protocol == htons(ETH_P_IP)) {
 		struct net_device *dev = skb_dst(skb)->dev;
-		struct iphdr *iph = ip_hdr(skb);
+		const struct iphdr *iph = ip_hdr(skb);
 
 		dev_hold(dev);
 		skb_dst_drop(skb);
-		err = ip_route_input_noref(skb, iph->daddr, iph->saddr,
-					   iph->tos, dev);
+		reason = ip_route_input_noref(skb, iph->daddr, iph->saddr,
+					      ip4h_dscp(iph), dev);
+		err = reason ? -EINVAL : 0;
 		dev_put(dev);
 	} else if (skb->protocol == htons(ETH_P_IPV6)) {
 		skb_dst_drop(skb);
