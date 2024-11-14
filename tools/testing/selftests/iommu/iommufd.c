@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /* Copyright (c) 2021-2022, NVIDIA CORPORATION & AFFILIATES */
+#include <asm/unistd.h>
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <sys/eventfd.h>
@@ -49,6 +50,9 @@ static __attribute__((constructor)) void setup_sizes(void)
 	vrc = mmap(buffer, BUFFER_SIZE, PROT_READ | PROT_WRITE,
 		   MAP_SHARED | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
 	assert(vrc == buffer);
+
+	mfd_buffer = memfd_mmap(BUFFER_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED,
+				&mfd);
 }
 
 FIXTURE(iommufd)
@@ -128,6 +132,9 @@ TEST_F(iommufd, cmd_length)
 	TEST_LENGTH(iommu_ioas_unmap, IOMMU_IOAS_UNMAP, length);
 	TEST_LENGTH(iommu_option, IOMMU_OPTION, val64);
 	TEST_LENGTH(iommu_vfio_ioas, IOMMU_VFIO_IOAS, __reserved);
+	TEST_LENGTH(iommu_ioas_map_file, IOMMU_IOAS_MAP_FILE, iova);
+	TEST_LENGTH(iommu_viommu_alloc, IOMMU_VIOMMU_ALLOC, out_viommu_id);
+	TEST_LENGTH(iommu_vdevice_alloc, IOMMU_VDEVICE_ALLOC, virt_id);
 #undef TEST_LENGTH
 }
 
@@ -220,6 +227,8 @@ FIXTURE_SETUP(iommufd_ioas)
 	for (i = 0; i != variant->mock_domains; i++) {
 		test_cmd_mock_domain(self->ioas_id, &self->stdev_id,
 				     &self->hwpt_id, &self->device_id);
+		test_cmd_dev_check_cache_all(self->device_id,
+					     IOMMU_TEST_DEV_CACHE_DEFAULT);
 		self->base_iova = MOCK_APERTURE_START;
 	}
 }
@@ -360,9 +369,9 @@ TEST_F(iommufd_ioas, alloc_hwpt_nested)
 		EXPECT_ERRNO(EBUSY,
 			     _test_ioctl_destroy(self->fd, parent_hwpt_id));
 
-		/* hwpt_invalidate only supports a user-managed hwpt (nested) */
+		/* hwpt_invalidate does not support a parent hwpt */
 		num_inv = 1;
-		test_err_hwpt_invalidate(ENOENT, parent_hwpt_id, inv_reqs,
+		test_err_hwpt_invalidate(EINVAL, parent_hwpt_id, inv_reqs,
 					 IOMMU_HWPT_INVALIDATE_DATA_SELFTEST,
 					 sizeof(*inv_reqs), &num_inv);
 		assert(!num_inv);
@@ -1372,6 +1381,7 @@ FIXTURE_VARIANT(iommufd_mock_domain)
 {
 	unsigned int mock_domains;
 	bool hugepages;
+	bool file;
 };
 
 FIXTURE_SETUP(iommufd_mock_domain)
@@ -1384,9 +1394,12 @@ FIXTURE_SETUP(iommufd_mock_domain)
 
 	ASSERT_GE(ARRAY_SIZE(self->hwpt_ids), variant->mock_domains);
 
-	for (i = 0; i != variant->mock_domains; i++)
+	for (i = 0; i != variant->mock_domains; i++) {
 		test_cmd_mock_domain(self->ioas_id, &self->stdev_ids[i],
 				     &self->hwpt_ids[i], &self->idev_ids[i]);
+		test_cmd_dev_check_cache_all(self->idev_ids[0],
+					     IOMMU_TEST_DEV_CACHE_DEFAULT);
+	}
 	self->hwpt_id = self->hwpt_ids[0];
 
 	self->mmap_flags = MAP_SHARED | MAP_ANONYMOUS;
@@ -1410,25 +1423,44 @@ FIXTURE_VARIANT_ADD(iommufd_mock_domain, one_domain)
 {
 	.mock_domains = 1,
 	.hugepages = false,
+	.file = false,
 };
 
 FIXTURE_VARIANT_ADD(iommufd_mock_domain, two_domains)
 {
 	.mock_domains = 2,
 	.hugepages = false,
+	.file = false,
 };
 
 FIXTURE_VARIANT_ADD(iommufd_mock_domain, one_domain_hugepage)
 {
 	.mock_domains = 1,
 	.hugepages = true,
+	.file = false,
 };
 
 FIXTURE_VARIANT_ADD(iommufd_mock_domain, two_domains_hugepage)
 {
 	.mock_domains = 2,
 	.hugepages = true,
+	.file = false,
 };
+
+FIXTURE_VARIANT_ADD(iommufd_mock_domain, one_domain_file)
+{
+	.mock_domains = 1,
+	.hugepages = false,
+	.file = true,
+};
+
+FIXTURE_VARIANT_ADD(iommufd_mock_domain, one_domain_file_hugepage)
+{
+	.mock_domains = 1,
+	.hugepages = true,
+	.file = true,
+};
+
 
 /* Have the kernel check that the user pages made it to the iommu_domain */
 #define check_mock_iova(_ptr, _iova, _length)                                \
@@ -1455,7 +1487,10 @@ FIXTURE_VARIANT_ADD(iommufd_mock_domain, two_domains_hugepage)
 		}                                                            \
 	})
 
-TEST_F(iommufd_mock_domain, basic)
+static void
+test_basic_mmap(struct __test_metadata *_metadata,
+		struct _test_data_iommufd_mock_domain *self,
+		const struct _fixture_variant_iommufd_mock_domain *variant)
 {
 	size_t buf_size = self->mmap_buf_size;
 	uint8_t *buf;
@@ -1476,6 +1511,40 @@ TEST_F(iommufd_mock_domain, basic)
 	/* EFAULT on first page */
 	ASSERT_EQ(0, munmap(buf, buf_size / 2));
 	test_err_ioctl_ioas_map(EFAULT, buf, buf_size, &iova);
+}
+
+static void
+test_basic_file(struct __test_metadata *_metadata,
+		struct _test_data_iommufd_mock_domain *self,
+		const struct _fixture_variant_iommufd_mock_domain *variant)
+{
+	size_t buf_size = self->mmap_buf_size;
+	uint8_t *buf;
+	__u64 iova;
+	int mfd_tmp;
+	int prot = PROT_READ | PROT_WRITE;
+
+	/* Simple one page map */
+	test_ioctl_ioas_map_file(mfd, 0, PAGE_SIZE, &iova);
+	check_mock_iova(mfd_buffer, iova, PAGE_SIZE);
+
+	buf = memfd_mmap(buf_size, prot, MAP_SHARED, &mfd_tmp);
+	ASSERT_NE(MAP_FAILED, buf);
+
+	test_err_ioctl_ioas_map_file(EINVAL, mfd_tmp, 0, buf_size + 1, &iova);
+
+	ASSERT_EQ(0, ftruncate(mfd_tmp, 0));
+	test_err_ioctl_ioas_map_file(EINVAL, mfd_tmp, 0, buf_size, &iova);
+
+	close(mfd_tmp);
+}
+
+TEST_F(iommufd_mock_domain, basic)
+{
+	if (variant->file)
+		test_basic_file(_metadata, self, variant);
+	else
+		test_basic_mmap(_metadata, self, variant);
 }
 
 TEST_F(iommufd_mock_domain, ro_unshare)
@@ -1513,9 +1582,13 @@ TEST_F(iommufd_mock_domain, all_aligns)
 	unsigned int start;
 	unsigned int end;
 	uint8_t *buf;
+	int prot = PROT_READ | PROT_WRITE;
+	int mfd;
 
-	buf = mmap(0, buf_size, PROT_READ | PROT_WRITE, self->mmap_flags, -1,
-		   0);
+	if (variant->file)
+		buf = memfd_mmap(buf_size, prot, MAP_SHARED, &mfd);
+	else
+		buf = mmap(0, buf_size, prot, self->mmap_flags, -1, 0);
 	ASSERT_NE(MAP_FAILED, buf);
 	check_refs(buf, buf_size, 0);
 
@@ -1532,7 +1605,12 @@ TEST_F(iommufd_mock_domain, all_aligns)
 			size_t length = end - start;
 			__u64 iova;
 
-			test_ioctl_ioas_map(buf + start, length, &iova);
+			if (variant->file) {
+				test_ioctl_ioas_map_file(mfd, start, length,
+							 &iova);
+			} else {
+				test_ioctl_ioas_map(buf + start, length, &iova);
+			}
 			check_mock_iova(buf + start, iova, length);
 			check_refs(buf + start / PAGE_SIZE * PAGE_SIZE,
 				   end / PAGE_SIZE * PAGE_SIZE -
@@ -1544,6 +1622,8 @@ TEST_F(iommufd_mock_domain, all_aligns)
 	}
 	check_refs(buf, buf_size, 0);
 	ASSERT_EQ(0, munmap(buf, buf_size));
+	if (variant->file)
+		close(mfd);
 }
 
 TEST_F(iommufd_mock_domain, all_aligns_copy)
@@ -1554,9 +1634,13 @@ TEST_F(iommufd_mock_domain, all_aligns_copy)
 	unsigned int start;
 	unsigned int end;
 	uint8_t *buf;
+	int prot = PROT_READ | PROT_WRITE;
+	int mfd;
 
-	buf = mmap(0, buf_size, PROT_READ | PROT_WRITE, self->mmap_flags, -1,
-		   0);
+	if (variant->file)
+		buf = memfd_mmap(buf_size, prot, MAP_SHARED, &mfd);
+	else
+		buf = mmap(0, buf_size, prot, self->mmap_flags, -1, 0);
 	ASSERT_NE(MAP_FAILED, buf);
 	check_refs(buf, buf_size, 0);
 
@@ -1575,7 +1659,12 @@ TEST_F(iommufd_mock_domain, all_aligns_copy)
 			uint32_t mock_stdev_id;
 			__u64 iova;
 
-			test_ioctl_ioas_map(buf + start, length, &iova);
+			if (variant->file) {
+				test_ioctl_ioas_map_file(mfd, start, length,
+							 &iova);
+			} else {
+				test_ioctl_ioas_map(buf + start, length, &iova);
+			}
 
 			/* Add and destroy a domain while the area exists */
 			old_id = self->hwpt_ids[1];
@@ -1596,15 +1685,18 @@ TEST_F(iommufd_mock_domain, all_aligns_copy)
 	}
 	check_refs(buf, buf_size, 0);
 	ASSERT_EQ(0, munmap(buf, buf_size));
+	if (variant->file)
+		close(mfd);
 }
 
 TEST_F(iommufd_mock_domain, user_copy)
 {
+	void *buf = variant->file ? mfd_buffer : buffer;
 	struct iommu_test_cmd access_cmd = {
 		.size = sizeof(access_cmd),
 		.op = IOMMU_TEST_OP_ACCESS_PAGES,
 		.access_pages = { .length = BUFFER_SIZE,
-				  .uptr = (uintptr_t)buffer },
+				  .uptr = (uintptr_t)buf },
 	};
 	struct iommu_ioas_copy copy_cmd = {
 		.size = sizeof(copy_cmd),
@@ -1623,9 +1715,13 @@ TEST_F(iommufd_mock_domain, user_copy)
 
 	/* Pin the pages in an IOAS with no domains then copy to an IOAS with domains */
 	test_ioctl_ioas_alloc(&ioas_id);
-	test_ioctl_ioas_map_id(ioas_id, buffer, BUFFER_SIZE,
-			       &copy_cmd.src_iova);
-
+	if (variant->file) {
+		test_ioctl_ioas_map_id_file(ioas_id, mfd, 0, BUFFER_SIZE,
+					    &copy_cmd.src_iova);
+	} else {
+		test_ioctl_ioas_map_id(ioas_id, buf, BUFFER_SIZE,
+				       &copy_cmd.src_iova);
+	}
 	test_cmd_create_access(ioas_id, &access_cmd.id,
 			       MOCK_FLAGS_ACCESS_CREATE_NEEDS_PIN_PAGES);
 
@@ -1635,12 +1731,17 @@ TEST_F(iommufd_mock_domain, user_copy)
 			&access_cmd));
 	copy_cmd.src_ioas_id = ioas_id;
 	ASSERT_EQ(0, ioctl(self->fd, IOMMU_IOAS_COPY, &copy_cmd));
-	check_mock_iova(buffer, MOCK_APERTURE_START, BUFFER_SIZE);
+	check_mock_iova(buf, MOCK_APERTURE_START, BUFFER_SIZE);
 
 	/* Now replace the ioas with a new one */
 	test_ioctl_ioas_alloc(&new_ioas_id);
-	test_ioctl_ioas_map_id(new_ioas_id, buffer, BUFFER_SIZE,
-			       &copy_cmd.src_iova);
+	if (variant->file) {
+		test_ioctl_ioas_map_id_file(new_ioas_id, mfd, 0, BUFFER_SIZE,
+					    &copy_cmd.src_iova);
+	} else {
+		test_ioctl_ioas_map_id(new_ioas_id, buf, BUFFER_SIZE,
+				       &copy_cmd.src_iova);
+	}
 	test_cmd_access_replace_ioas(access_cmd.id, new_ioas_id);
 
 	/* Destroy the old ioas and cleanup copied mapping */
@@ -1654,7 +1755,7 @@ TEST_F(iommufd_mock_domain, user_copy)
 			&access_cmd));
 	copy_cmd.src_ioas_id = new_ioas_id;
 	ASSERT_EQ(0, ioctl(self->fd, IOMMU_IOAS_COPY, &copy_cmd));
-	check_mock_iova(buffer, MOCK_APERTURE_START, BUFFER_SIZE);
+	check_mock_iova(buf, MOCK_APERTURE_START, BUFFER_SIZE);
 
 	test_cmd_destroy_access_pages(
 		access_cmd.id, access_cmd.access_pages.out_access_pages_id);
@@ -2383,6 +2484,334 @@ TEST_F(vfio_compat_mock_domain, huge_map)
 				     ioctl(self->fd, VFIO_IOMMU_UNMAP_DMA,
 					   &unmap_cmd));
 		}
+	}
+}
+
+FIXTURE(iommufd_viommu)
+{
+	int fd;
+	uint32_t ioas_id;
+	uint32_t stdev_id;
+	uint32_t hwpt_id;
+	uint32_t nested_hwpt_id;
+	uint32_t device_id;
+	uint32_t viommu_id;
+};
+
+FIXTURE_VARIANT(iommufd_viommu)
+{
+	unsigned int viommu;
+};
+
+FIXTURE_SETUP(iommufd_viommu)
+{
+	self->fd = open("/dev/iommu", O_RDWR);
+	ASSERT_NE(-1, self->fd);
+	test_ioctl_ioas_alloc(&self->ioas_id);
+	test_ioctl_set_default_memory_limit();
+
+	if (variant->viommu) {
+		struct iommu_hwpt_selftest data = {
+			.iotlb = IOMMU_TEST_IOTLB_DEFAULT,
+		};
+
+		test_cmd_mock_domain(self->ioas_id, &self->stdev_id, NULL,
+				     &self->device_id);
+
+		/* Allocate a nesting parent hwpt */
+		test_cmd_hwpt_alloc(self->device_id, self->ioas_id,
+				    IOMMU_HWPT_ALLOC_NEST_PARENT,
+				    &self->hwpt_id);
+
+		/* Allocate a vIOMMU taking refcount of the parent hwpt */
+		test_cmd_viommu_alloc(self->device_id, self->hwpt_id,
+				      IOMMU_VIOMMU_TYPE_SELFTEST,
+				      &self->viommu_id);
+
+		/* Allocate a regular nested hwpt */
+		test_cmd_hwpt_alloc_nested(self->device_id, self->viommu_id, 0,
+					   &self->nested_hwpt_id,
+					   IOMMU_HWPT_DATA_SELFTEST, &data,
+					   sizeof(data));
+	}
+}
+
+FIXTURE_TEARDOWN(iommufd_viommu)
+{
+	teardown_iommufd(self->fd, _metadata);
+}
+
+FIXTURE_VARIANT_ADD(iommufd_viommu, no_viommu)
+{
+	.viommu = 0,
+};
+
+FIXTURE_VARIANT_ADD(iommufd_viommu, mock_viommu)
+{
+	.viommu = 1,
+};
+
+TEST_F(iommufd_viommu, viommu_auto_destroy)
+{
+}
+
+TEST_F(iommufd_viommu, viommu_negative_tests)
+{
+	uint32_t device_id = self->device_id;
+	uint32_t ioas_id = self->ioas_id;
+	uint32_t hwpt_id;
+
+	if (self->device_id) {
+		/* Negative test -- invalid hwpt (hwpt_id=0) */
+		test_err_viommu_alloc(ENOENT, device_id, 0,
+				      IOMMU_VIOMMU_TYPE_SELFTEST, NULL);
+
+		/* Negative test -- not a nesting parent hwpt */
+		test_cmd_hwpt_alloc(device_id, ioas_id, 0, &hwpt_id);
+		test_err_viommu_alloc(EINVAL, device_id, hwpt_id,
+				      IOMMU_VIOMMU_TYPE_SELFTEST, NULL);
+		test_ioctl_destroy(hwpt_id);
+
+		/* Negative test -- unsupported viommu type */
+		test_err_viommu_alloc(EOPNOTSUPP, device_id, self->hwpt_id,
+				      0xdead, NULL);
+		EXPECT_ERRNO(EBUSY,
+			     _test_ioctl_destroy(self->fd, self->hwpt_id));
+		EXPECT_ERRNO(EBUSY,
+			     _test_ioctl_destroy(self->fd, self->viommu_id));
+	} else {
+		test_err_viommu_alloc(ENOENT, self->device_id, self->hwpt_id,
+				      IOMMU_VIOMMU_TYPE_SELFTEST, NULL);
+	}
+}
+
+TEST_F(iommufd_viommu, viommu_alloc_nested_iopf)
+{
+	struct iommu_hwpt_selftest data = {
+		.iotlb = IOMMU_TEST_IOTLB_DEFAULT,
+	};
+	uint32_t viommu_id = self->viommu_id;
+	uint32_t dev_id = self->device_id;
+	uint32_t iopf_hwpt_id;
+	uint32_t fault_id;
+	uint32_t fault_fd;
+
+	if (self->device_id) {
+		test_ioctl_fault_alloc(&fault_id, &fault_fd);
+		test_err_hwpt_alloc_iopf(
+			ENOENT, dev_id, viommu_id, UINT32_MAX,
+			IOMMU_HWPT_FAULT_ID_VALID, &iopf_hwpt_id,
+			IOMMU_HWPT_DATA_SELFTEST, &data, sizeof(data));
+		test_err_hwpt_alloc_iopf(
+			EOPNOTSUPP, dev_id, viommu_id, fault_id,
+			IOMMU_HWPT_FAULT_ID_VALID | (1 << 31), &iopf_hwpt_id,
+			IOMMU_HWPT_DATA_SELFTEST, &data, sizeof(data));
+		test_cmd_hwpt_alloc_iopf(
+			dev_id, viommu_id, fault_id, IOMMU_HWPT_FAULT_ID_VALID,
+			&iopf_hwpt_id, IOMMU_HWPT_DATA_SELFTEST, &data,
+			sizeof(data));
+
+		test_cmd_mock_domain_replace(self->stdev_id, iopf_hwpt_id);
+		EXPECT_ERRNO(EBUSY,
+			     _test_ioctl_destroy(self->fd, iopf_hwpt_id));
+		test_cmd_trigger_iopf(dev_id, fault_fd);
+
+		test_cmd_mock_domain_replace(self->stdev_id, self->ioas_id);
+		test_ioctl_destroy(iopf_hwpt_id);
+		close(fault_fd);
+		test_ioctl_destroy(fault_id);
+	}
+}
+
+TEST_F(iommufd_viommu, vdevice_alloc)
+{
+	uint32_t viommu_id = self->viommu_id;
+	uint32_t dev_id = self->device_id;
+	uint32_t vdev_id = 0;
+
+	if (dev_id) {
+		/* Set vdev_id to 0x99, unset it, and set to 0x88 */
+		test_cmd_vdevice_alloc(viommu_id, dev_id, 0x99, &vdev_id);
+		test_err_vdevice_alloc(EEXIST, viommu_id, dev_id, 0x99,
+				       &vdev_id);
+		test_ioctl_destroy(vdev_id);
+		test_cmd_vdevice_alloc(viommu_id, dev_id, 0x88, &vdev_id);
+		test_ioctl_destroy(vdev_id);
+	} else {
+		test_err_vdevice_alloc(ENOENT, viommu_id, dev_id, 0x99, NULL);
+	}
+}
+
+TEST_F(iommufd_viommu, vdevice_cache)
+{
+	struct iommu_viommu_invalidate_selftest inv_reqs[2] = {};
+	uint32_t viommu_id = self->viommu_id;
+	uint32_t dev_id = self->device_id;
+	uint32_t vdev_id = 0;
+	uint32_t num_inv;
+
+	if (dev_id) {
+		test_cmd_vdevice_alloc(viommu_id, dev_id, 0x99, &vdev_id);
+
+		test_cmd_dev_check_cache_all(dev_id,
+					     IOMMU_TEST_DEV_CACHE_DEFAULT);
+
+		/* Check data_type by passing zero-length array */
+		num_inv = 0;
+		test_cmd_viommu_invalidate(viommu_id, inv_reqs,
+					   sizeof(*inv_reqs), &num_inv);
+		assert(!num_inv);
+
+		/* Negative test: Invalid data_type */
+		num_inv = 1;
+		test_err_viommu_invalidate(EINVAL, viommu_id, inv_reqs,
+					   IOMMU_VIOMMU_INVALIDATE_DATA_SELFTEST_INVALID,
+					   sizeof(*inv_reqs), &num_inv);
+		assert(!num_inv);
+
+		/* Negative test: structure size sanity */
+		num_inv = 1;
+		test_err_viommu_invalidate(EINVAL, viommu_id, inv_reqs,
+					   IOMMU_VIOMMU_INVALIDATE_DATA_SELFTEST,
+					   sizeof(*inv_reqs) + 1, &num_inv);
+		assert(!num_inv);
+
+		num_inv = 1;
+		test_err_viommu_invalidate(EINVAL, viommu_id, inv_reqs,
+					   IOMMU_VIOMMU_INVALIDATE_DATA_SELFTEST,
+					   1, &num_inv);
+		assert(!num_inv);
+
+		/* Negative test: invalid flag is passed */
+		num_inv = 1;
+		inv_reqs[0].flags = 0xffffffff;
+		inv_reqs[0].vdev_id = 0x99;
+		test_err_viommu_invalidate(EOPNOTSUPP, viommu_id, inv_reqs,
+					   IOMMU_VIOMMU_INVALIDATE_DATA_SELFTEST,
+					   sizeof(*inv_reqs), &num_inv);
+		assert(!num_inv);
+
+		/* Negative test: invalid data_uptr when array is not empty */
+		num_inv = 1;
+		inv_reqs[0].flags = 0;
+		inv_reqs[0].vdev_id = 0x99;
+		test_err_viommu_invalidate(EINVAL, viommu_id, NULL,
+					   IOMMU_VIOMMU_INVALIDATE_DATA_SELFTEST,
+					   sizeof(*inv_reqs), &num_inv);
+		assert(!num_inv);
+
+		/* Negative test: invalid entry_len when array is not empty */
+		num_inv = 1;
+		inv_reqs[0].flags = 0;
+		inv_reqs[0].vdev_id = 0x99;
+		test_err_viommu_invalidate(EINVAL, viommu_id, inv_reqs,
+					   IOMMU_VIOMMU_INVALIDATE_DATA_SELFTEST,
+					   0, &num_inv);
+		assert(!num_inv);
+
+		/* Negative test: invalid cache_id */
+		num_inv = 1;
+		inv_reqs[0].flags = 0;
+		inv_reqs[0].vdev_id = 0x99;
+		inv_reqs[0].cache_id = MOCK_DEV_CACHE_ID_MAX + 1;
+		test_err_viommu_invalidate(EINVAL, viommu_id, inv_reqs,
+					   IOMMU_VIOMMU_INVALIDATE_DATA_SELFTEST,
+					   sizeof(*inv_reqs), &num_inv);
+		assert(!num_inv);
+
+		/* Negative test: invalid vdev_id */
+		num_inv = 1;
+		inv_reqs[0].flags = 0;
+		inv_reqs[0].vdev_id = 0x9;
+		inv_reqs[0].cache_id = 0;
+		test_err_viommu_invalidate(EINVAL, viommu_id, inv_reqs,
+					   IOMMU_VIOMMU_INVALIDATE_DATA_SELFTEST,
+					   sizeof(*inv_reqs), &num_inv);
+		assert(!num_inv);
+
+		/*
+		 * Invalidate the 1st cache entry but fail the 2nd request
+		 * due to invalid flags configuration in the 2nd request.
+		 */
+		num_inv = 2;
+		inv_reqs[0].flags = 0;
+		inv_reqs[0].vdev_id = 0x99;
+		inv_reqs[0].cache_id = 0;
+		inv_reqs[1].flags = 0xffffffff;
+		inv_reqs[1].vdev_id = 0x99;
+		inv_reqs[1].cache_id = 1;
+		test_err_viommu_invalidate(EOPNOTSUPP, viommu_id, inv_reqs,
+					   IOMMU_VIOMMU_INVALIDATE_DATA_SELFTEST,
+					   sizeof(*inv_reqs), &num_inv);
+		assert(num_inv == 1);
+		test_cmd_dev_check_cache(dev_id, 0, 0);
+		test_cmd_dev_check_cache(dev_id, 1,
+					 IOMMU_TEST_DEV_CACHE_DEFAULT);
+		test_cmd_dev_check_cache(dev_id, 2,
+					 IOMMU_TEST_DEV_CACHE_DEFAULT);
+		test_cmd_dev_check_cache(dev_id, 3,
+					 IOMMU_TEST_DEV_CACHE_DEFAULT);
+
+		/*
+		 * Invalidate the 1st cache entry but fail the 2nd request
+		 * due to invalid cache_id configuration in the 2nd request.
+		 */
+		num_inv = 2;
+		inv_reqs[0].flags = 0;
+		inv_reqs[0].vdev_id = 0x99;
+		inv_reqs[0].cache_id = 0;
+		inv_reqs[1].flags = 0;
+		inv_reqs[1].vdev_id = 0x99;
+		inv_reqs[1].cache_id = MOCK_DEV_CACHE_ID_MAX + 1;
+		test_err_viommu_invalidate(EINVAL, viommu_id, inv_reqs,
+					   IOMMU_VIOMMU_INVALIDATE_DATA_SELFTEST,
+					   sizeof(*inv_reqs), &num_inv);
+		assert(num_inv == 1);
+		test_cmd_dev_check_cache(dev_id, 0, 0);
+		test_cmd_dev_check_cache(dev_id, 1,
+					 IOMMU_TEST_DEV_CACHE_DEFAULT);
+		test_cmd_dev_check_cache(dev_id, 2,
+					 IOMMU_TEST_DEV_CACHE_DEFAULT);
+		test_cmd_dev_check_cache(dev_id, 3,
+					 IOMMU_TEST_DEV_CACHE_DEFAULT);
+
+		/* Invalidate the 2nd cache entry and verify */
+		num_inv = 1;
+		inv_reqs[0].flags = 0;
+		inv_reqs[0].vdev_id = 0x99;
+		inv_reqs[0].cache_id = 1;
+		test_cmd_viommu_invalidate(viommu_id, inv_reqs,
+					   sizeof(*inv_reqs), &num_inv);
+		assert(num_inv == 1);
+		test_cmd_dev_check_cache(dev_id, 0, 0);
+		test_cmd_dev_check_cache(dev_id, 1, 0);
+		test_cmd_dev_check_cache(dev_id, 2,
+					 IOMMU_TEST_DEV_CACHE_DEFAULT);
+		test_cmd_dev_check_cache(dev_id, 3,
+					 IOMMU_TEST_DEV_CACHE_DEFAULT);
+
+		/* Invalidate the 3rd and 4th cache entries and verify */
+		num_inv = 2;
+		inv_reqs[0].flags = 0;
+		inv_reqs[0].vdev_id = 0x99;
+		inv_reqs[0].cache_id = 2;
+		inv_reqs[1].flags = 0;
+		inv_reqs[1].vdev_id = 0x99;
+		inv_reqs[1].cache_id = 3;
+		test_cmd_viommu_invalidate(viommu_id, inv_reqs,
+					   sizeof(*inv_reqs), &num_inv);
+		assert(num_inv == 2);
+		test_cmd_dev_check_cache_all(dev_id, 0);
+
+		/* Invalidate all cache entries for nested_dev_id[1] and verify */
+		num_inv = 1;
+		inv_reqs[0].vdev_id = 0x99;
+		inv_reqs[0].flags = IOMMU_TEST_INVALIDATE_FLAG_ALL;
+		test_cmd_viommu_invalidate(viommu_id, inv_reqs,
+					   sizeof(*inv_reqs), &num_inv);
+		assert(num_inv == 1);
+		test_cmd_dev_check_cache_all(dev_id, 0);
+		test_ioctl_destroy(vdev_id);
 	}
 }
 
