@@ -374,6 +374,8 @@ struct xe_device {
 
 		/** @sriov.pf: PF specific data */
 		struct xe_device_pf pf;
+		/** @sriov.vf: VF specific data */
+		struct xe_device_vf vf;
 
 		/** @sriov.wq: workqueue used by the virtualization workers */
 		struct workqueue_struct *wq;
@@ -588,7 +590,7 @@ struct xe_file {
 		/** @vm.xe: xarray to store VMs */
 		struct xarray xa;
 		/**
-		 * @vm.lock: Protects VM lookup + reference and removal a from
+		 * @vm.lock: Protects VM lookup + reference and removal from
 		 * file xarray. Not an intended to be an outer lock which does
 		 * thing while being held.
 		 */
@@ -601,10 +603,15 @@ struct xe_file {
 		struct xarray xa;
 		/**
 		 * @exec_queue.lock: Protects exec queue lookup + reference and
-		 * removal a frommfile xarray. Not an intended to be an outer
-		 * lock which does thing while being held.
+		 * removal from file xarray. Not intended to be an outer lock
+		 * which does things while being held.
 		 */
 		struct mutex lock;
+		/**
+		 * @exec_queue.pending_removal: items pending to be removed to
+		 * synchronize GPU state update with ongoing query.
+		 */
+		atomic_t pending_removal;
 	} exec_queue;
 
 	/** @run_ticks: hw engine class run time in ticks for this drm client */
