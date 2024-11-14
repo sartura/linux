@@ -724,6 +724,8 @@
 			microchip,bandwidth = <1000>;
 			phy-handle = <&phy3>;
 			phy-mode = "rgmii";
+			rx-internal-delay-ps = <1000>;
+			tx-internal-delay-ps = <1000>;
 		};
 	};
 };
