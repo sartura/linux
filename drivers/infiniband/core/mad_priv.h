@@ -95,12 +95,16 @@ struct ib_mad_agent_private {
 
 	spinlock_t lock;
 	struct list_head send_list;
+	unsigned int sol_fc_send_count;
 	struct list_head wait_list;
+	unsigned int sol_fc_wait_count;
 	struct delayed_work timed_work;
 	unsigned long timeout;
 	struct list_head local_list;
 	struct work_struct local_work;
 	struct list_head rmpp_list;
+	unsigned int sol_fc_max;
+	struct list_head backlog_list;
 
 	refcount_t refcount;
 	union {
@@ -118,6 +122,7 @@ struct ib_mad_snoop_private {
 };
 
 enum ib_mad_state {
+	IB_MAD_STATE_QUEUED,
 	IB_MAD_STATE_SEND_START,
 	IB_MAD_STATE_WAIT_RESP,
 	IB_MAD_STATE_EARLY_RESP,
@@ -150,6 +155,9 @@ struct ib_mad_send_wr_private {
 	int pad;
 
 	enum ib_mad_state state;
+
+	/* Solicited MAD flow control */
+	bool is_solicited_fc;
 };
 
 struct ib_mad_local_private {
