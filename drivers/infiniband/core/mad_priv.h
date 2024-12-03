@@ -118,6 +118,13 @@ struct ib_mad_snoop_private {
 	struct completion comp;
 };
 
+enum ib_mad_state {
+	IB_MAD_STATE_SEND_START,
+	IB_MAD_STATE_WAIT_RESP,
+	IB_MAD_STATE_EARLY_RESP,
+	IB_MAD_STATE_DONE
+};
+
 struct ib_mad_send_wr_private {
 	struct ib_mad_list_head mad_list;
 	struct list_head agent_list;
@@ -132,7 +139,6 @@ struct ib_mad_send_wr_private {
 	int max_retries;
 	int retries_left;
 	int retry;
-	int refcount;
 	enum ib_wc_status status;
 
 	/* RMPP control */
@@ -143,6 +149,8 @@ struct ib_mad_send_wr_private {
 	int seg_num;
 	int newwin;
 	int pad;
+
+	enum ib_mad_state state;
 };
 
 struct ib_mad_local_private {
