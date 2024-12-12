@@ -6,18 +6,20 @@
 #include <linux/swapops.h> /* depends on mm.h include */
 
 static DEFINE_MUTEX(swap_cgroup_mutex);
+
+/* Pack two cgroup id (short) of two entries in one swap_cgroup (atomic_t) */
+#define ID_PER_SC (sizeof(atomic_t) / sizeof(unsigned short))
+#define ID_SHIFT (BITS_PER_TYPE(unsigned short))
+#define ID_MASK (BIT(ID_SHIFT) - 1)
+struct swap_cgroup {
+	atomic_t ids;
+};
+
 struct swap_cgroup_ctrl {
-	struct page **map;
-	unsigned long length;
-	spinlock_t	lock;
+	struct swap_cgroup *map;
 };
 
 static struct swap_cgroup_ctrl swap_cgroup_ctrl[MAX_SWAPFILES];
-
-struct swap_cgroup {
-	unsigned short		id;
-};
-#define SC_PER_PAGE	(PAGE_SIZE/sizeof(struct swap_cgroup))
 
 /*
  * SwapCgroup implements "lookup" and "exchange" operations.
@@ -29,89 +31,32 @@ struct swap_cgroup {
  *    SwapCache(and its swp_entry) is under lock.
  *  - When called via swap_free(), there is no user of this entry and no race.
  * Then, we don't need lock around "exchange".
- *
- * TODO: we can push these buffers out to HIGHMEM.
  */
-
-/*
- * allocate buffer for swap_cgroup.
- */
-static int swap_cgroup_prepare(int type)
+static unsigned short __swap_cgroup_id_lookup(struct swap_cgroup *map,
+					      pgoff_t offset)
 {
-	struct page *page;
-	struct swap_cgroup_ctrl *ctrl;
-	unsigned long idx, max;
+	unsigned int shift = (offset & 1) ? 0 : ID_SHIFT;
+	unsigned int old_ids = atomic_read(&map[offset / ID_PER_SC].ids);
 
-	ctrl = &swap_cgroup_ctrl[type];
-
-	for (idx = 0; idx < ctrl->length; idx++) {
-		page = alloc_page(GFP_KERNEL | __GFP_ZERO);
-		if (!page)
-			goto not_enough_page;
-		ctrl->map[idx] = page;
-
-		if (!(idx % SWAP_CLUSTER_MAX))
-			cond_resched();
-	}
-	return 0;
-not_enough_page:
-	max = idx;
-	for (idx = 0; idx < max; idx++)
-		__free_page(ctrl->map[idx]);
-
-	return -ENOMEM;
+	return (old_ids & (ID_MASK << shift)) >> shift;
 }
 
-static struct swap_cgroup *__lookup_swap_cgroup(struct swap_cgroup_ctrl *ctrl,
-						pgoff_t offset)
+static unsigned short __swap_cgroup_id_xchg(struct swap_cgroup *map,
+					    pgoff_t offset,
+					    unsigned short new_id)
 {
-	struct page *mappage;
-	struct swap_cgroup *sc;
+	unsigned short old_id;
+	unsigned int shift = (offset & 1) ? 0 : ID_SHIFT;
+	struct swap_cgroup *sc = &map[offset / ID_PER_SC];
+	unsigned int new_ids, old_ids = atomic_read(&sc->ids);
 
-	mappage = ctrl->map[offset / SC_PER_PAGE];
-	sc = page_address(mappage);
-	return sc + offset % SC_PER_PAGE;
-}
+	do {
+		old_id = (old_ids & (ID_MASK << shift)) >> shift;
+		new_ids = (old_ids & ~(ID_MASK << shift));
+		new_ids |= ((unsigned int)new_id) << shift;
+	} while (!atomic_try_cmpxchg(&sc->ids, &old_ids, new_ids));
 
-static struct swap_cgroup *lookup_swap_cgroup(swp_entry_t ent,
-					struct swap_cgroup_ctrl **ctrlp)
-{
-	pgoff_t offset = swp_offset(ent);
-	struct swap_cgroup_ctrl *ctrl;
-
-	ctrl = &swap_cgroup_ctrl[swp_type(ent)];
-	if (ctrlp)
-		*ctrlp = ctrl;
-	return __lookup_swap_cgroup(ctrl, offset);
-}
-
-/**
- * swap_cgroup_cmpxchg - cmpxchg mem_cgroup's id for this swp_entry.
- * @ent: swap entry to be cmpxchged
- * @old: old id
- * @new: new id
- *
- * Returns old id at success, 0 at failure.
- * (There is no mem_cgroup using 0 as its id)
- */
-unsigned short swap_cgroup_cmpxchg(swp_entry_t ent,
-					unsigned short old, unsigned short new)
-{
-	struct swap_cgroup_ctrl *ctrl;
-	struct swap_cgroup *sc;
-	unsigned long flags;
-	unsigned short retval;
-
-	sc = lookup_swap_cgroup(ent, &ctrl);
-
-	spin_lock_irqsave(&ctrl->lock, flags);
-	retval = sc->id;
-	if (retval == old)
-		sc->id = new;
-	else
-		retval = 0;
-	spin_unlock_irqrestore(&ctrl->lock, flags);
-	return retval;
+	return old_id;
 }
 
 /**
@@ -127,28 +72,19 @@ unsigned short swap_cgroup_record(swp_entry_t ent, unsigned short id,
 				  unsigned int nr_ents)
 {
 	struct swap_cgroup_ctrl *ctrl;
-	struct swap_cgroup *sc;
-	unsigned short old;
-	unsigned long flags;
 	pgoff_t offset = swp_offset(ent);
 	pgoff_t end = offset + nr_ents;
+	unsigned short old, iter;
+	struct swap_cgroup *map;
 
-	sc = lookup_swap_cgroup(ent, &ctrl);
+	ctrl = &swap_cgroup_ctrl[swp_type(ent)];
+	map = ctrl->map;
 
-	spin_lock_irqsave(&ctrl->lock, flags);
-	old = sc->id;
-	for (;;) {
-		VM_BUG_ON(sc->id != old);
-		sc->id = id;
-		offset++;
-		if (offset == end)
-			break;
-		if (offset % SC_PER_PAGE)
-			sc++;
-		else
-			sc = __lookup_swap_cgroup(ctrl, offset);
-	}
-	spin_unlock_irqrestore(&ctrl->lock, flags);
+	old = __swap_cgroup_id_lookup(map, offset);
+	do {
+		iter = __swap_cgroup_id_xchg(map, offset, id);
+		VM_BUG_ON(iter != old);
+	} while (++offset != end);
 
 	return old;
 }
@@ -161,39 +97,32 @@ unsigned short swap_cgroup_record(swp_entry_t ent, unsigned short id,
  */
 unsigned short lookup_swap_cgroup_id(swp_entry_t ent)
 {
-	if (mem_cgroup_disabled())
-		return 0;
-	return lookup_swap_cgroup(ent, NULL)->id;
-}
-
-int swap_cgroup_swapon(int type, unsigned long max_pages)
-{
-	void *array;
-	unsigned long length;
 	struct swap_cgroup_ctrl *ctrl;
 
 	if (mem_cgroup_disabled())
 		return 0;
 
-	length = DIV_ROUND_UP(max_pages, SC_PER_PAGE);
+	ctrl = &swap_cgroup_ctrl[swp_type(ent)];
+	return __swap_cgroup_id_lookup(ctrl->map, swp_offset(ent));
+}
 
-	array = vcalloc(length, sizeof(void *));
-	if (!array)
+int swap_cgroup_swapon(int type, unsigned long max_pages)
+{
+	struct swap_cgroup *map;
+	struct swap_cgroup_ctrl *ctrl;
+
+	if (mem_cgroup_disabled())
+		return 0;
+
+	BUILD_BUG_ON(!ID_PER_SC);
+	map = vcalloc(DIV_ROUND_UP(max_pages, ID_PER_SC),
+		      sizeof(struct swap_cgroup));
+	if (!map)
 		goto nomem;
 
 	ctrl = &swap_cgroup_ctrl[type];
 	mutex_lock(&swap_cgroup_mutex);
-	ctrl->length = length;
-	ctrl->map = array;
-	spin_lock_init(&ctrl->lock);
-	if (swap_cgroup_prepare(type)) {
-		/* memory shortage */
-		ctrl->map = NULL;
-		ctrl->length = 0;
-		mutex_unlock(&swap_cgroup_mutex);
-		vfree(array);
-		goto nomem;
-	}
+	ctrl->map = map;
 	mutex_unlock(&swap_cgroup_mutex);
 
 	return 0;
@@ -205,8 +134,7 @@ nomem:
 
 void swap_cgroup_swapoff(int type)
 {
-	struct page **map;
-	unsigned long i, length;
+	struct swap_cgroup *map;
 	struct swap_cgroup_ctrl *ctrl;
 
 	if (mem_cgroup_disabled())
@@ -215,19 +143,8 @@ void swap_cgroup_swapoff(int type)
 	mutex_lock(&swap_cgroup_mutex);
 	ctrl = &swap_cgroup_ctrl[type];
 	map = ctrl->map;
-	length = ctrl->length;
 	ctrl->map = NULL;
-	ctrl->length = 0;
 	mutex_unlock(&swap_cgroup_mutex);
 
-	if (map) {
-		for (i = 0; i < length; i++) {
-			struct page *page = map[i];
-			if (page)
-				__free_page(page);
-			if (!(i % SWAP_CLUSTER_MAX))
-				cond_resched();
-		}
-		vfree(map);
-	}
+	vfree(map);
 }
