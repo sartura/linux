@@ -55,7 +55,7 @@ struct aux_payload;
 struct set_config_cmd_payload;
 struct dmub_notification;
 
-#define DC_VER "3.2.310"
+#define DC_VER "3.2.313"
 
 #define MAX_SURFACES 3
 #define MAX_PLANES 6
@@ -463,6 +463,7 @@ struct dc_config {
 	bool enable_auto_dpm_test_logs;
 	unsigned int disable_ips;
 	unsigned int disable_ips_in_vpb;
+	bool disable_ips_in_dpms_off;
 	bool usb4_bw_alloc_support;
 	bool allow_0_dtb_clk;
 	bool use_assr_psp_message;
@@ -1526,6 +1527,7 @@ struct dc_surface_update {
 	const struct dc_cm2_parameters *cm2_params;
 	const struct dc_csc_transform *cursor_csc_color_matrix;
 	unsigned int sdr_white_level_nits;
+	struct dc_bias_and_scale bias_and_scale;
 };
 
 /*
