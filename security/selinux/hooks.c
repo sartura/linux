@@ -407,7 +407,7 @@ static const struct {
 
 static int match_opt_prefix(char *s, int l, char **arg)
 {
-	int i;
+	unsigned int i;
 
 	for (i = 0; i < ARRAY_SIZE(tokens); i++) {
 		size_t len = tokens[i].len;
@@ -4836,7 +4836,7 @@ out:
 	return err;
 err_af:
 	/* Note that SCTP services expect -EINVAL, others -EAFNOSUPPORT. */
-	if (sksec->sclass == SECCLASS_SCTP_SOCKET)
+	if (sk->sk_protocol == IPPROTO_SCTP)
 		return -EINVAL;
 	return -EAFNOSUPPORT;
 }
