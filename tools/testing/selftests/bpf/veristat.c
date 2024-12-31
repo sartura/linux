@@ -26,6 +26,14 @@
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 #endif
 
+#ifndef max
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#endif
+
+#ifndef min
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
 enum stat_id {
 	VERDICT,
 	DURATION,
@@ -904,7 +912,7 @@ static int line_cnt_cmp(const void *a, const void *b)
 	const struct line_cnt *b_cnt = (const struct line_cnt *)b;
 
 	if (a_cnt->cnt != b_cnt->cnt)
-		return a_cnt->cnt < b_cnt->cnt ? -1 : 1;
+		return a_cnt->cnt > b_cnt->cnt ? -1 : 1;
 	return strcmp(a_cnt->line, b_cnt->line);
 }
 
@@ -1664,7 +1672,10 @@ static int parse_stat_value(const char *str, enum stat_id id, struct verif_stats
 	case TOTAL_STATES:
 	case PEAK_STATES:
 	case MAX_STATES_PER_INSN:
-	case MARK_READ_MAX_LEN: {
+	case MARK_READ_MAX_LEN:
+	case SIZE:
+	case JITED_SIZE:
+	case STACK: {
 		long val;
 		int err, n;
 
@@ -1677,6 +1688,9 @@ static int parse_stat_value(const char *str, enum stat_id id, struct verif_stats
 		st->stats[id] = val;
 		break;
 	}
+	case PROG_TYPE:
+	case ATTACH_TYPE:
+		break;
 	default:
 		fprintf(stderr, "Unrecognized stat #%d\n", id);
 		return -EINVAL;
