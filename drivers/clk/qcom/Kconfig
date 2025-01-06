@@ -64,6 +64,15 @@ config CLK_X1E80100_TCSRCC
 	  Support for the TCSR clock controller on X1E80100 devices.
 	  Say Y if you want to use peripheral devices such as SD/UFS.
 
+config CLK_X1P42100_GPUCC
+	tristate "X1P42100 Graphics Clock Controller"
+	depends on ARM64 || COMPILE_TEST
+	select CLK_X1E8010_GCC
+	help
+	  Support for the graphics clock controller on X1P42100 devices.
+	  Say Y if you want to support graphics controller devices and
+	  functionality such as 3D graphics.
+
 config CLK_QCM2290_GPUCC
 	tristate "QCM2290 Graphics Clock Controller"
 	depends on ARM64 || COMPILE_TEST
@@ -494,6 +503,15 @@ config QCS_GCC_8300
 	  QCS8300 devices.
 	  Say Y if you want to use peripheral devices such as UART,
 	  SPI, I2C, USB, SD/UFS, PCIe etc.
+
+config QCS_GCC_615
+	tristate "QCS615 Global Clock Controller"
+	depends on ARM64 || COMPILE_TEST
+	select QCOM_GDSC
+	help
+	  Support for the global clock controller on QCS615 devices.
+	  Say Y if you want to use multimedia devices or peripheral
+	  devices such as UART, SPI, I2C, USB, SD/eMMC, PCIe etc.
 
 config SC_CAMCC_7180
 	tristate "SC7180 Camera Clock Controller"
@@ -1022,6 +1040,17 @@ config SM_DISPCC_8550
 	  Say Y if you want to support display devices and functionality such as
 	  splash screen.
 
+config SM_DISPCC_8750
+	tristate "SM8750 Display Clock Controller"
+	depends on ARM64 || COMPILE_TEST
+	depends on SM_GCC_8750
+	select QCOM_GDSC
+	help
+	  Support for the display clock controller on Qualcomm Technologies, Inc
+	  SM8750 devices.
+	  Say Y if you want to support display devices and functionality such as
+	  splash screen.
+
 config SM_GCC_4450
 	tristate "SM4450 Global Clock Controller"
 	depends on ARM64 || COMPILE_TEST
@@ -1079,6 +1108,7 @@ config SM_GCC_7150
 config SM_GCC_8150
 	tristate "SM8150 Global Clock Controller"
 	depends on ARM64 || COMPILE_TEST
+	select QCOM_GDSC
 	help
 	  Support for the global clock controller on SM8150 devices.
 	  Say Y if you want to use peripheral devices such as UART,
@@ -1127,6 +1157,15 @@ config SM_GCC_8650
 	select QCOM_GDSC
 	help
 	  Support for the global clock controller on SM8650 devices.
+	  Say Y if you want to use peripheral devices such as UART,
+	  SPI, I2C, USB, SD/UFS, PCIe etc.
+
+config SM_GCC_8750
+	tristate "SM8750 Global Clock Controller"
+	depends on ARM64 || COMPILE_TEST
+	select QCOM_GDSC
+	help
+	  Support for the global clock controller on SM8750 devices.
 	  Say Y if you want to use peripheral devices such as UART,
 	  SPI, I2C, USB, SD/UFS, PCIe etc.
 
@@ -1245,6 +1284,14 @@ config SM_TCSRCC_8650
 	help
 	  Support for the TCSR clock controller on SM8650 devices.
 	  Say Y if you want to use peripheral devices such as SD/UFS.
+
+config SM_TCSRCC_8750
+	tristate "SM8750 TCSR Clock Controller"
+	depends on ARM64 || COMPILE_TEST
+	select QCOM_GDSC
+	help
+	  Support for the TCSR clock controller on SM8750 devices.
+	  Say Y if you want to use peripheral devices such as UFS/USB/PCIe.
 
 config SA_VIDEOCC_8775P
 	tristate "SA8775P Video Clock Controller"
