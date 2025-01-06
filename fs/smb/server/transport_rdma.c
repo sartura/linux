@@ -1640,7 +1640,7 @@ static int smb_direct_accept_client(struct smb_direct_transport *t)
 	int ret;
 
 	memset(&conn_param, 0, sizeof(conn_param));
-	conn_param.initiator_depth = min_t(u8, t->cm_id->device->attrs.max_qp_rd_atom,
+	conn_param.initiator_depth = min_t(u8, t->cm_id->device->attrs.max_qp_init_rd_atom,
 					   SMB_DIRECT_CM_INITIATOR_DEPTH);
 	conn_param.responder_resources = 0;
 
@@ -2283,8 +2283,7 @@ out:
 
 		ibdev = ib_device_get_by_netdev(netdev, RDMA_DRIVER_UNKNOWN);
 		if (ibdev) {
-			if (rdma_frwr_is_supported(&ibdev->attrs))
-				rdma_capable = true;
+			rdma_capable = rdma_frwr_is_supported(&ibdev->attrs);
 			ib_device_put(ibdev);
 		}
 	}
