@@ -407,7 +407,7 @@ static const struct {
 
 static int match_opt_prefix(char *s, int l, char **arg)
 {
-	int i;
+	unsigned int i;
 
 	for (i = 0; i < ARRAY_SIZE(tokens); i++) {
 		size_t len = tokens[i].len;
@@ -3689,8 +3689,8 @@ static int ioctl_has_perm(const struct cred *cred, struct file *file,
 		return 0;
 
 	isec = inode_security(inode);
-	rc = avc_has_extended_perms(ssid, isec->sid, isec->sclass,
-				    requested, driver, xperm, &ad);
+	rc = avc_has_extended_perms(ssid, isec->sid, isec->sclass, requested,
+				    driver, AVC_EXT_IOCTL, xperm, &ad);
 out:
 	return rc;
 }
@@ -4836,7 +4836,7 @@ out:
 	return err;
 err_af:
 	/* Note that SCTP services expect -EINVAL, others -EAFNOSUPPORT. */
-	if (sksec->sclass == SECCLASS_SCTP_SOCKET)
+	if (sk->sk_protocol == IPPROTO_SCTP)
 		return -EINVAL;
 	return -EAFNOSUPPORT;
 }
@@ -5940,20 +5940,20 @@ static int nlmsg_sock_has_extended_perms(struct sock *sk, u32 perms, u16 nlmsg_t
 {
 	struct sk_security_struct *sksec = sk->sk_security;
 	struct common_audit_data ad;
-	struct lsm_network_audit net;
 	u8 driver;
 	u8 xperm;
 
 	if (sock_skip_has_perm(sksec->sid))
 		return 0;
 
-	ad_net_init_from_sk(&ad, &net, sk);
+	ad.type = LSM_AUDIT_DATA_NLMSGTYPE;
+	ad.u.nlmsg_type = nlmsg_type;
 
 	driver = nlmsg_type >> 8;
 	xperm = nlmsg_type & 0xff;
 
 	return avc_has_extended_perms(current_sid(), sksec->sid, sksec->sclass,
-			perms, driver, xperm, &ad);
+				      perms, driver, AVC_EXT_NLMSG, xperm, &ad);
 }
 
 static int selinux_netlink_send(struct sock *sk, struct sk_buff *skb)
