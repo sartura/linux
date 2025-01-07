@@ -64,6 +64,8 @@
 #define SAMA7G5_QSPI0_MAX_SPEED_HZ	200000000
 #define SAMA7G5_QSPI1_SDR_MAX_SPEED_HZ	133000000
 
+#define LAN969X_QSPI0_MAX_SPEED_HZ	150000000
+
 /* Bitfields in QSPI_CR (Control Register) */
 #define QSPI_CR_QSPIEN                  BIT(0)
 #define QSPI_CR_QSPIDIS                 BIT(1)
@@ -1666,6 +1668,12 @@ static const struct atmel_qspi_caps atmel_sama7g5_qspi_caps = {
 	.has_dma = true,
 };
 
+static const struct atmel_qspi_caps atmel_lan969x_qspi0_caps = {
+	.max_speed_hz = LAN969X_QSPI0_MAX_SPEED_HZ,
+	.has_gclk = true,
+	.has_dma = true,
+};
+
 static const struct of_device_id atmel_qspi_dt_ids[] = {
 	{
 		.compatible = "atmel,sama5d2-qspi",
@@ -1683,7 +1691,10 @@ static const struct of_device_id atmel_qspi_dt_ids[] = {
 		.compatible = "microchip,sama7g5-qspi",
 		.data = &atmel_sama7g5_qspi_caps,
 	},
-
+	{
+		.compatible = "microchip,lan969x-qspi0",
+		.data = &atmel_lan969x_qspi0_caps,
+	},
 	{ /* sentinel */ }
 };
 
