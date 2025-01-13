@@ -121,7 +121,7 @@ close_pipe:
 	close(pipefd[1]);
 }
 
-static void try_process_vm_read(int fd, int pipefd[2])
+static void try_process_vm_read(int __attribute__((unused)) fd, int pipefd[2])
 {
 	struct iovec liov, riov;
 	char buf[64];
@@ -145,7 +145,7 @@ static void try_process_vm_read(int fd, int pipefd[2])
 	exit(KSFT_FAIL);
 }
 
-static void try_ptrace(int fd, int pipefd[2])
+static void try_ptrace(int __attribute__((unused)) fd, int pipefd[2])
 {
 	pid_t ppid = getppid();
 	int status;
@@ -297,7 +297,7 @@ static void prepare(void)
 
 #define NUM_TESTS 6
 
-int main(int argc, char *argv[])
+int main(void)
 {
 	int fd;
 

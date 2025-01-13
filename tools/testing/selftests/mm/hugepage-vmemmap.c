@@ -51,7 +51,8 @@ static unsigned long virt_to_pfn(void *addr)
 
 static int check_page_flags(unsigned long pfn)
 {
-	int fd, i;
+	int fd;
+	unsigned int i;
 	unsigned long pageflags;
 
 	fd = open("/proc/kpageflags", O_RDONLY);
@@ -87,7 +88,7 @@ static int check_page_flags(unsigned long pfn)
 	return 0;
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
 	void *addr;
 	unsigned long pfn;

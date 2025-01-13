@@ -46,7 +46,7 @@ static void anon_release_pages(char *rel_area)
 		err("madvise(MADV_DONTNEED) failed");
 }
 
-static int anon_allocate_area(void **alloc_area, bool is_src)
+static int anon_allocate_area(void **alloc_area, bool __attribute__((unused)) is_src)
 {
 	*alloc_area = mmap(NULL, nr_pages * page_size, PROT_READ | PROT_WRITE,
 			   MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
@@ -57,7 +57,9 @@ static int anon_allocate_area(void **alloc_area, bool is_src)
 	return 0;
 }
 
-static void noop_alias_mapping(__u64 *start, size_t len, unsigned long offset)
+static void noop_alias_mapping(__u64 __attribute__((unused)) *start,
+			       size_t __attribute__((unused)) len,
+			       unsigned long __attribute__((unused)) offset)
 {
 }
 
@@ -108,7 +110,8 @@ static int hugetlb_allocate_area(void **alloc_area, bool is_src)
 	return 0;
 }
 
-static void hugetlb_alias_mapping(__u64 *start, size_t len, unsigned long offset)
+static void hugetlb_alias_mapping(__u64 *start, size_t __attribute__((unused)) len,
+				  unsigned long offset)
 {
 	if (!map_shared)
 		return;
@@ -167,12 +170,13 @@ static int shmem_allocate_area(void **alloc_area, bool is_src)
 	return 0;
 }
 
-static void shmem_alias_mapping(__u64 *start, size_t len, unsigned long offset)
+static void shmem_alias_mapping(__u64 *start, size_t __attribute__((unused)) len,
+				unsigned long offset)
 {
 	*start = (unsigned long)area_dst_alias + offset;
 }
 
-static void shmem_check_pmd_mapping(void *p, int expect_nr_hpages)
+static void shmem_check_pmd_mapping(void __attribute__((unused)) *p, int expect_nr_hpages)
 {
 	if (!check_huge_shmem(area_dst_alias, expect_nr_hpages,
 			      read_pmd_pagesize()))
@@ -416,7 +420,7 @@ static void continue_range(int ufd, __u64 start, __u64 len, bool wp)
 		    ret, (int64_t) req.mapped);
 }
 
-int uffd_read_msg(int ufd, struct uffd_msg *msg)
+int uffd_read_msg(struct uffd_msg *msg)
 {
 	int ret = read(uffd, msg, sizeof(*msg));
 
@@ -446,7 +450,7 @@ void uffd_handle_page_fault(struct uffd_msg *msg, struct uffd_args *args)
 		args->wp_faults++;
 	} else if (msg->arg.pagefault.flags & UFFD_PAGEFAULT_FLAG_MINOR) {
 		uint8_t *area;
-		int b;
+		unsigned int b;
 
 		/*
 		 * Minor page faults
@@ -537,7 +541,7 @@ void *uffd_poll_thread(void *arg)
 		}
 		if (!(pollfd[0].revents & POLLIN))
 			err("pollfd[0].revents %d", pollfd[0].revents);
-		if (uffd_read_msg(uffd, &msg))
+		if (uffd_read_msg(&msg))
 			continue;
 		switch (msg.event) {
 		default:
@@ -617,7 +621,7 @@ int __copy_page(int ufd, unsigned long offset, bool retry, bool wp)
 			err("UFFDIO_COPY error: %"PRId64,
 			    (int64_t)uffdio_copy.copy);
 		wake_range(ufd, uffdio_copy.dst, page_size);
-	} else if (uffdio_copy.copy != page_size) {
+	} else if (uffdio_copy.copy != (signed long)page_size) {
 		err("UFFDIO_COPY error: %"PRId64, (int64_t)uffdio_copy.copy);
 	} else {
 		if (test_uffdio_copy_eexist && retry) {
@@ -651,7 +655,7 @@ int move_page(int ufd, unsigned long offset, unsigned long len)
 			err("UFFDIO_MOVE error: %"PRId64,
 			    (int64_t)uffdio_move.move);
 		wake_range(ufd, uffdio_move.dst, len);
-	} else if (uffdio_move.move != len) {
+	} else if (uffdio_move.move != (signed long)len) {
 		err("UFFDIO_MOVE error: %"PRId64, (int64_t)uffdio_move.move);
 	} else
 		return 1;
