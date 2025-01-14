@@ -270,12 +270,10 @@ __trace_graph_function(struct trace_array *tr,
 	struct ftrace_graph_ret ret = {
 		.func     = ip,
 		.depth    = 0,
-		.calltime = time,
-		.rettime  = time,
 	};
 
 	__trace_graph_entry(tr, &ent, trace_ctx);
-	__trace_graph_return(tr, &ret, trace_ctx);
+	__trace_graph_return(tr, &ret, trace_ctx, time, time);
 }
 
 void
@@ -287,8 +285,9 @@ trace_graph_function(struct trace_array *tr,
 }
 
 void __trace_graph_return(struct trace_array *tr,
-				struct ftrace_graph_ret *trace,
-				unsigned int trace_ctx)
+			  struct ftrace_graph_ret *trace,
+			  unsigned int trace_ctx,
+			  u64 calltime, u64 rettime)
 {
 	struct ring_buffer_event *event;
 	struct trace_buffer *buffer = tr->array_buffer.buffer;
@@ -300,6 +299,8 @@ void __trace_graph_return(struct trace_array *tr,
 		return;
 	entry	= ring_buffer_event_data(event);
 	entry->ret				= *trace;
+	entry->calltime				= calltime;
+	entry->rettime				= rettime;
 	trace_buffer_unlock_commit_nostack(buffer, event);
 }
 
@@ -322,9 +323,12 @@ void trace_graph_return(struct ftrace_graph_ret *trace,
 	struct fgraph_times *ftimes;
 	unsigned long flags;
 	unsigned int trace_ctx;
+	u64 calltime, rettime;
 	long disabled;
 	int size;
 	int cpu;
+
+	rettime = trace_clock_local();
 
 	ftrace_graph_addr_finish(gops, trace);
 
@@ -339,7 +343,7 @@ void trace_graph_return(struct ftrace_graph_ret *trace,
 
 	handle_nosleeptime(trace, ftimes, size);
 
-	trace->calltime = ftimes->calltime;
+	calltime = ftimes->calltime;
 
 	local_irq_save(flags);
 	cpu = raw_smp_processor_id();
@@ -347,7 +351,7 @@ void trace_graph_return(struct ftrace_graph_ret *trace,
 	disabled = atomic_inc_return(&data->disabled);
 	if (likely(disabled == 1)) {
 		trace_ctx = tracing_gen_ctx_flags(flags);
-		__trace_graph_return(tr, trace, trace_ctx);
+		__trace_graph_return(tr, trace, trace_ctx, calltime, rettime);
 	}
 	atomic_dec(&data->disabled);
 	local_irq_restore(flags);
@@ -372,10 +376,8 @@ static void trace_graph_thresh_return(struct ftrace_graph_ret *trace,
 
 	handle_nosleeptime(trace, ftimes, size);
 
-	trace->calltime = ftimes->calltime;
-
 	if (tracing_thresh &&
-	    (trace->rettime - ftimes->calltime < tracing_thresh))
+	    (trace_clock_local() - ftimes->calltime < tracing_thresh))
 		return;
 	else
 		trace_graph_return(trace, gops);
@@ -861,7 +863,7 @@ print_graph_entry_leaf(struct trace_iterator *iter,
 
 	graph_ret = &ret_entry->ret;
 	call = &entry->graph_ent;
-	duration = graph_ret->rettime - graph_ret->calltime;
+	duration = ret_entry->rettime - ret_entry->calltime;
 
 	func = call->func + iter->tr->text_delta;
 
@@ -1142,11 +1144,14 @@ print_graph_entry(struct ftrace_graph_ent_entry *field, struct trace_seq *s,
 }
 
 static enum print_line_t
-print_graph_return(struct ftrace_graph_ret *trace, struct trace_seq *s,
+print_graph_return(struct ftrace_graph_ret_entry *retentry, struct trace_seq *s,
 		   struct trace_entry *ent, struct trace_iterator *iter,
 		   u32 flags)
 {
-	unsigned long long duration = trace->rettime - trace->calltime;
+	struct ftrace_graph_ret *trace = &retentry->ret;
+	u64 calltime = retentry->calltime;
+	u64 rettime = retentry->rettime;
+	unsigned long long duration = rettime - calltime;
 	struct fgraph_data *data = iter->private;
 	struct trace_array *tr = iter->tr;
 	unsigned long func;
@@ -1347,7 +1352,7 @@ print_graph_function_flags(struct trace_iterator *iter, u32 flags)
 	case TRACE_GRAPH_RET: {
 		struct ftrace_graph_ret_entry *field;
 		trace_assign_type(field, entry);
-		return print_graph_return(&field->ret, s, entry, iter, flags);
+		return print_graph_return(field, s, entry, iter, flags);
 	}
 	case TRACE_STACK:
 	case TRACE_FN:
