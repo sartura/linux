@@ -23,6 +23,7 @@ struct sd_flow_limit {
 extern int netdev_flow_limit_table_len;
 
 struct napi_struct *netdev_napi_by_id(struct net *net, unsigned int napi_id);
+struct net_device *dev_get_by_napi_id(unsigned int napi_id);
 
 #ifdef CONFIG_PROC_FS
 int __init dev_proc_init(void);
@@ -311,5 +312,8 @@ static inline void dev_xmit_recursion_dec(void)
 int dev_set_hwtstamp_phylib(struct net_device *dev,
 			    struct kernel_hwtstamp_config *cfg,
 			    struct netlink_ext_ack *extack);
+int dev_get_hwtstamp_phylib(struct net_device *dev,
+			    struct kernel_hwtstamp_config *cfg);
+int net_hwtstamp_validate(const struct kernel_hwtstamp_config *cfg);
 
 #endif
