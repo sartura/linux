@@ -20,6 +20,7 @@
 #include <linux/spinlock.h>
 #include <linux/workqueue.h>
 
+#include "access.h"
 #include "limits.h"
 #include "object.h"
 #include "ruleset.h"
@@ -384,7 +385,8 @@ static int merge_ruleset(struct landlock_ruleset *const dst,
 		err = -EINVAL;
 		goto out_unlock;
 	}
-	dst->access_masks[dst->num_layers - 1] = src->access_masks[0];
+	dst->access_masks[dst->num_layers - 1] =
+		landlock_upgrade_handled_access_masks(src->access_masks[0]);
 
 	/* Merges the @src inode tree. */
 	err = merge_tree(dst, src, LANDLOCK_KEY_INODE);
