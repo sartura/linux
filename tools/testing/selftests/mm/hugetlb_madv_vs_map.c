@@ -33,7 +33,7 @@ size_t mmap_size;
 char *huge_ptr;
 
 /* Touch the memory while it is being madvised() */
-void *touch(void *unused)
+void *touch(void __attribute__((unused)) *unused)
 {
 	for (int i = 0; i < INLOOP_ITER; i++)
 		huge_ptr[0] = '.';
@@ -41,7 +41,7 @@ void *touch(void *unused)
 	return NULL;
 }
 
-void *madv(void *unused)
+void *madv(void __attribute__((unused)) *unused)
 {
 	for (int i = 0; i < INLOOP_ITER; i++)
 		madvise(huge_ptr, mmap_size, MADV_DONTNEED);
@@ -54,7 +54,7 @@ void *madv(void *unused)
  * The other hugepage should be flipping from used <-> reserved, because
  * of madvise(DONTNEED).
  */
-void *map_extra(void *unused)
+void *map_extra(void __attribute__((unused)) *unused)
 {
 	void *ptr;
 
@@ -100,7 +100,7 @@ int main(void)
 				MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB,
 				-1, 0);
 
-		if ((unsigned long)huge_ptr == -1) {
+		if (huge_ptr == MAP_FAILED) {
 			ksft_test_result_fail("Failed to allocate huge page\n");
 			return KSFT_FAIL;
 		}

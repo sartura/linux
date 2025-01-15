@@ -26,7 +26,7 @@
 
 #define validate_free_pages(exp_free)					\
 	do {								\
-		int fhp = get_free_hugepages();				\
+		unsigned int fhp = get_free_hugepages();		\
 		if (fhp != (exp_free)) {				\
 			printf("Unexpected number of free huge "	\
 				"pages line %d\n", __LINE__);		\
@@ -58,7 +58,7 @@ void read_fault_pages(void *addr, unsigned long nr_pages)
 	}
 }
 
-int main(int argc, char **argv)
+int main(int __attribute__((unused)) argc, char **argv)
 {
 	unsigned long free_hugepages;
 	void *addr, *addr2;
