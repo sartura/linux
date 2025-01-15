@@ -370,6 +370,8 @@ struct amd_pmf_dev {
 	struct input_dev *pmf_idev;
 	size_t mtable_size;
 	struct resource *res;
+	struct apmf_sbios_req_v2 req; /* To get custom bios pending request */
+	struct mutex cb_mutex;
 };
 
 struct apmf_sps_prop_granular_v2 {
@@ -616,6 +618,30 @@ enum ta_slider {
 	TA_MAX,
 };
 
+enum apmf_smartpc_custom_bios_inputs {
+	APMF_SMARTPC_CUSTOM_BIOS_INPUT1,
+	APMF_SMARTPC_CUSTOM_BIOS_INPUT2,
+};
+
+enum apmf_preq_smartpc {
+	NOTIFY_CUSTOM_BIOS_INPUT1 = 5,
+	NOTIFY_CUSTOM_BIOS_INPUT2,
+};
+
+enum platform_type {
+	PTYPE_UNKNOWN = 0,
+	LID_CLOSE,
+	CLAMSHELL,
+	FLAT,
+	TENT,
+	STAND,
+	TABLET,
+	BOOK,
+	PRESENTATION,
+	PULL_FWD,
+	PTYPE_INVALID = 0xf,
+};
+
 /* Command ids for TA communication */
 enum ta_pmf_command {
 	TA_PMF_COMMAND_POLICY_BUILDER_INITIALIZE,
@@ -657,7 +683,8 @@ struct ta_pmf_condition_info {
 	u32 power_slider;
 	u32 lid_state;
 	bool user_present;
-	u32 rsvd1[2];
+	u32 bios_input1;
+	u32 bios_input2;
 	u32 monitor_count;
 	u32 rsvd2[2];
 	u32 bat_design;
@@ -667,7 +694,9 @@ struct ta_pmf_condition_info {
 	u32 device_state;
 	u32 socket_power;
 	u32 skin_temperature;
-	u32 rsvd3[5];
+	u32 rsvd3[2];
+	u32 platform_type;
+	u32 rsvd3_1[2];
 	u32 ambient_light;
 	u32 length;
 	u32 avg_c0residency;
@@ -796,8 +825,5 @@ int amd_pmf_smartpc_apply_bios_output(struct amd_pmf_dev *dev, u32 val, u32 preq
 /* Smart PC - TA interfaces */
 void amd_pmf_populate_ta_inputs(struct amd_pmf_dev *dev, struct ta_pmf_enact_table *in);
 void amd_pmf_dump_ta_inputs(struct amd_pmf_dev *dev, struct ta_pmf_enact_table *in);
-
-/* Quirk infrastructure */
-void amd_pmf_quirks_init(struct amd_pmf_dev *dev);
 
 #endif /* PMF_H */
