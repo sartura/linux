@@ -1,6 +1,8 @@
 soc/arm
 	omap/soc
 		https://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux-omap tags/omap-for-v6.14/soc-signed
+	at91/soc
+		https://git.kernel.org/pub/scm/linux/kernel/git/at91/linux tags/at91-soc-6.14
 
 soc/dt
 	patch
@@ -69,6 +71,12 @@ soc/dt
 		https://git.kernel.org/pub/scm/linux/kernel/git/gclement/mvebu tags/mvebu-dt64-6.14-1
 	riscv/dt
 		https://git.kernel.org/pub/scm/linux/kernel/git/conor/linux tags/riscv-dt-for-v6.14
+	amlogic/dt-bindings
+		https://git.kernel.org/pub/scm/linux/kernel/git/amlogic/linux tags/amlogic-drivers-for-v6.14
+	spacemit/dt
+		https://github.com/spacemit-com/linux tags/spacemit-dt-for-6.14-1
+	aspeed/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/joel/bmc tags/aspeed-6.14-devicetree
 
 soc/drivers
 	<no branch> (12e0bd600e3c2f33f9db0e3b91f6b8d8d95b7dbe)
