@@ -1,0 +1,151 @@
+soc/arm
+	omap/soc
+		https://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux-omap tags/omap-for-v6.14/soc-signed
+	at91/soc
+		https://git.kernel.org/pub/scm/linux/kernel/git/at91/linux tags/at91-soc-6.14
+
+soc/dt
+	patch
+		ARM: dts: nuvoton: Fix at24 EEPROM node names
+	stm32/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/atorgue/stm32 tags/stm32-dt-for-v6.14-1
+	renesas/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-devel tags/renesas-dts-for-v6.14-tag1
+	samsung/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/krzk/linux tags/samsung-dt-6.14
+	thead/dt
+		https://github.com/pdp7/linux tags/thead-dt-for-v6.14
+	samsung/dt64
+		https://git.kernel.org/pub/scm/linux/kernel/git/krzk/linux tags/samsung-dt64-6.14
+	dt/cleanup-64
+		https://git.kernel.org/pub/scm/linux/kernel/git/krzk/linux-dt tags/dt64-cleanup-6.14
+	dt/cleanup-32
+		https://git.kernel.org/pub/scm/linux/kernel/git/krzk/linux-dt tags/dt-cleanup-6.14
+	hisi/dt64
+		https://github.com/hisilicon/linux-hisi tags/hisi-arm64-dt-for-6.14
+	socfpga/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/dinguyen/linux tags/socfpga_dts_updates_v6.14
+	imx/dt-bindings
+		https://git.kernel.org/pub/scm/linux/kernel/git/shawnguo/linux tags/imx-bindings-6.14
+	imx/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/shawnguo/linux tags/imx-dt-6.14
+	imx/dt64
+		https://git.kernel.org/pub/scm/linux/kernel/git/shawnguo/linux tags/imx-dt64-6.14
+	sti/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/pchotard/sti tags/sti-dt-for-v6.14-round1
+	amlogic/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/amlogic/linux tags/amlogic-arm-dt-for-v6.14
+	amlogic/dt64
+		https://git.kernel.org/pub/scm/linux/kernel/git/amlogic/linux tags/amlogic-arm64-dt-for-v6.14
+	renesas/dt-2
+		https://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-devel tags/renesas-dts-for-v6.14-tag2
+	at91/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/at91/linux tags/at91-dt-6.14
+	omap/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux-omap tags/omap-for-v6.14/dt-signed
+	mediatek/dt64
+		https://git.kernel.org/pub/scm/linux/kernel/git/mediatek/linux tags/mtk-dts64-for-v6.14
+	mediatek/dt32
+		https://git.kernel.org/pub/scm/linux/kernel/git/mediatek/linux tags/mtk-dts32-for-v6.14
+	sunxi/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/sunxi/linux tags/sunxi-dt-for-6.14
+	at91/dt-2
+		https://git.kernel.org/pub/scm/linux/kernel/git/at91/linux tags/at91-dt-6.14-2
+	broadcom/dt
+		https://github.com/Broadcom/stblinux tags/arm-soc/for-6.14/devicetree
+	broadcom/dt64
+		https://github.com/Broadcom/stblinux tags/arm-soc/for-6.14/devicetree-arm64
+	tegra/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/tegra/linux tags/tegra-for-6.14-arm-dt
+	tegra/dt64
+		https://git.kernel.org/pub/scm/linux/kernel/git/tegra/linux tags/tegra-for-6.14-arm64-dt
+	ti/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/ti/linux tags/ti-k3-dt-for-v6.14
+	rockchip/dt64
+		https://git.kernel.org/pub/scm/linux/kernel/git/mmind/linux-rockchip tags/v6.14-rockchip-dts64-1
+	qcom/dt32
+		https://git.kernel.org/pub/scm/linux/kernel/git/qcom/linux tags/qcom-arm32-for-6.14
+	qcom/dt64
+		https://git.kernel.org/pub/scm/linux/kernel/git/qcom/linux tags/qcom-arm64-for-6.14
+	mvebu/dt64
+		https://git.kernel.org/pub/scm/linux/kernel/git/gclement/mvebu tags/mvebu-dt64-6.14-1
+	riscv/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/conor/linux tags/riscv-dt-for-v6.14
+	amlogic/dt-bindings
+		https://git.kernel.org/pub/scm/linux/kernel/git/amlogic/linux tags/amlogic-drivers-for-v6.14
+	spacemit/dt
+		https://github.com/spacemit-com/linux tags/spacemit-dt-for-6.14-1
+	aspeed/dt
+		https://git.kernel.org/pub/scm/linux/kernel/git/joel/bmc tags/aspeed-6.14-devicetree
+
+soc/drivers
+	<no branch> (12e0bd600e3c2f33f9db0e3b91f6b8d8d95b7dbe)
+		https://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-devel tags/renesas-drivers-for-v6.14-tag1
+	drivers/optee
+		https://git.linaro.org/people/jens.wiklander/linux-tee tags/optee-for-v6.14
+	drivers/memory
+		https://git.kernel.org/pub/scm/linux/kernel/git/krzk/linux-mem-ctrl tags/memory-controller-drv-6.14
+	ti/memory
+		https://git.kernel.org/pub/scm/linux/kernel/git/krzk/linux-mem-ctrl tags/memory-controller-drv-ti-6.14
+	drivers/scmi
+		https://git.kernel.org/pub/scm/linux/kernel/git/sudeep.holla/linux tags/scmi-updates-6.14
+	imx/soc
+		https://git.kernel.org/pub/scm/linux/kernel/git/shawnguo/linux tags/imx-drivers-6.14
+	mediatek/drivers
+		https://git.kernel.org/pub/scm/linux/kernel/git/mediatek/linux tags/mtk-soc-for-v6.14
+	tegra/drivers
+		https://git.kernel.org/pub/scm/linux/kernel/git/tegra/linux tags/tegra-for-6.14-soc
+	ti/maintainer
+		https://git.kernel.org/pub/scm/linux/kernel/git/ti/linux tags/ti-k3-maintainer-for-v6.14
+	qcom/drivers
+		https://git.kernel.org/pub/scm/linux/kernel/git/qcom/linux tags/qcom-drivers-for-6.14
+	samsung/drivers
+		https://git.kernel.org/pub/scm/linux/kernel/git/krzk/linux tags/samsung-drivers-6.14
+	drivers/reset
+		git://git.pengutronix.de/pza/linux tags/reset-for-v6.14-2
+
+soc/defconfig
+	patch
+		arm64: defconfig: Enable Amazon Elastic Network Adaptor
+	renesas/defconfig
+		https://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-devel tags/renesas-arm-defconfig-for-v6.14-tag1
+	patch
+		ARM: configs: stm32: Remove FLASH_MEM_BASE and FLASH_SIZE in STM32 defconfig
+		ARM: configs: stm32: Clean STM32 defconfig
+		ARM: configs: stm32: Remove CRYPTO in STM32 defconfig
+		ARM: configs: stm32: Remove useless flags in STM32 defconfig
+	imx/defconfig
+		https://git.kernel.org/pub/scm/linux/kernel/git/shawnguo/linux tags/imx-defconfig-6.14
+	patch
+		arm64: defconfig: enable Maxim TCPCI driver
+		dt-bindings: soc: samsung: exynos-pmu: Add exynos990-pmu compatible
+	at91/defconfig
+		https://git.kernel.org/pub/scm/linux/kernel/git/at91/linux tags/at91-defconfig-6.14
+	mediatek/defconfig
+		https://git.kernel.org/pub/scm/linux/kernel/git/mediatek/linux tags/mtk-defconfig-for-v6.14
+	ti/defconfig
+		https://git.kernel.org/pub/scm/linux/kernel/git/ti/linux tags/ti-k3-config-for-v6.14
+	rockchips/defconfig
+		https://git.kernel.org/pub/scm/linux/kernel/git/mmind/linux-rockchip tags/v6.14-rockchip-defconfig64-1
+	qcom/defconfig
+		https://git.kernel.org/pub/scm/linux/kernel/git/qcom/linux tags/qcom-arm64-defconfig-for-6.14
+	riscv/defconfig
+		https://git.kernel.org/pub/scm/linux/kernel/git/conor/linux tags/riscv-config-for-v6.14
+
+soc/late
+
+arm/fixes
+	<no branch> (1f8af9712413f456849fdf3f3a782cbe099476d7)
+		git://git.pengutronix.de/pza/linux tags/reset-fixes-for-v6.13
+	<no branch> (202580b60229345dc2637099f10c8a8857c1fdc2)
+		https://git.kernel.org/pub/scm/linux/kernel/git/ti/linux tags/ti-driver-soc-for-v6.14
+
+soc/newsoc
+	patch
+		dt-bindings: Add Blaize vendor prefix
+		dt-bindings: arm: blaize: Add Blaize BLZP1600 SoC
+		arm64: Add Blaize BLZP1600 SoC family
+		arm64: dts: Add initial support for Blaize BLZP1600 CB2
+		arm64: defconfig: Enable Blaize BLZP1600 platform
+		MAINTAINER: Add entry for Blaize SoC
+
