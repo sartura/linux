@@ -828,6 +828,7 @@ struct TCP_Server_Info {
 	 */
 	char *leaf_fullpath;
 	bool dfs_conn:1;
+	char dns_dom[CIFS_MAX_DOMAINNAME_LEN + 1];
 };
 
 static inline bool is_smb1(struct TCP_Server_Info *server)
@@ -1154,6 +1155,7 @@ struct cifs_ses {
 	/* ========= end: protected by chan_lock ======== */
 	struct cifs_ses *dfs_root_ses;
 	struct nls_table *local_nls;
+	char *dns_dom; /* FQDN of the domain */
 };
 
 static inline bool
@@ -2308,6 +2310,26 @@ static inline bool cifs_ses_exiting(struct cifs_ses *ses)
 	spin_lock(&ses->ses_lock);
 	ret = ses->ses_status == SES_EXITING;
 	spin_unlock(&ses->ses_lock);
+	return ret;
+}
+
+static inline bool cifs_netbios_name(const char *name, size_t namelen)
+{
+	bool ret = false;
+	size_t i;
+
+	if (namelen >= 1 && namelen <= RFC1001_NAME_LEN) {
+		for (i = 0; i < namelen; i++) {
+			const unsigned char c = name[i];
+
+			if (c == '\\' || c == '/' || c == ':' || c == '*' ||
+			    c == '?' || c == '"' || c == '<' || c == '>' ||
+			    c == '|' || c == '.')
+				return false;
+			if (!ret && isalpha(c))
+				ret = true;
+		}
+	}
 	return ret;
 }
 
