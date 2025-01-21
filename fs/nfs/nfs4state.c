@@ -1207,6 +1207,7 @@ void nfs4_schedule_state_manager(struct nfs_client *clp)
 		swapon = !test_and_set_bit(NFS4CLNT_MANAGER_AVAILABLE,
 					   &clp->cl_state);
 		if (!swapon) {
+			smp_mb__after_atomic();
 			wake_up_var(&clp->cl_state);
 			return;
 		}
@@ -1313,9 +1314,8 @@ int nfs4_wait_clnt_recover(struct nfs_client *clp)
 	might_sleep();
 
 	refcount_inc(&clp->cl_count);
-	res = wait_on_bit_action(&clp->cl_state, NFS4CLNT_MANAGER_RUNNING,
-				 nfs_wait_bit_killable,
-				 TASK_KILLABLE|TASK_FREEZABLE_UNSAFE);
+	res = wait_on_bit(&clp->cl_state, NFS4CLNT_MANAGER_RUNNING,
+			  TASK_KILLABLE|TASK_FREEZABLE_UNSAFE);
 	if (res)
 		goto out;
 	if (clp->cl_cons_state < 0)
@@ -1955,6 +1955,7 @@ restart:
 	}
 	rcu_read_unlock();
 	nfs4_free_state_owners(&freeme);
+	nfs_local_probe_async(clp);
 	if (lost_locks)
 		pr_warn("NFS: %s: lost %d locks\n",
 			clp->cl_hostname, lost_locks);

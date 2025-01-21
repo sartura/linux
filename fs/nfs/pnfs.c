@@ -306,7 +306,6 @@ void
 pnfs_put_layout_hdr(struct pnfs_layout_hdr *lo)
 {
 	struct inode *inode;
-	unsigned long i_state;
 
 	if (!lo)
 		return;
@@ -317,12 +316,11 @@ pnfs_put_layout_hdr(struct pnfs_layout_hdr *lo)
 		if (!list_empty(&lo->plh_segs))
 			WARN_ONCE(1, "NFS: BUG unfreed layout segments.\n");
 		pnfs_detach_layout_hdr(lo);
-		i_state = inode->i_state;
+		/* Notify pnfs_destroy_layout_final() that we're done */
+		if (inode->i_state & (I_FREEING | I_CLEAR))
+			wake_up_var_locked(lo, &inode->i_lock);
 		spin_unlock(&inode->i_lock);
 		pnfs_free_layout_hdr(lo);
-		/* Notify pnfs_destroy_layout_final() that we're done */
-		if (i_state & (I_FREEING | I_CLEAR))
-			wake_up_var(lo);
 	}
 }
 
@@ -386,10 +384,7 @@ pnfs_clear_layoutreturn_info(struct pnfs_layout_hdr *lo)
 
 static void pnfs_clear_layoutreturn_waitbit(struct pnfs_layout_hdr *lo)
 {
-	clear_bit_unlock(NFS_LAYOUT_RETURN, &lo->plh_flags);
-	clear_bit(NFS_LAYOUT_RETURN_LOCK, &lo->plh_flags);
-	smp_mb__after_atomic();
-	wake_up_bit(&lo->plh_flags, NFS_LAYOUT_RETURN);
+	clear_and_wake_up_bit(NFS_LAYOUT_RETURN, &lo->plh_flags);
 	rpc_wake_up(&NFS_SERVER(lo->plh_inode)->roc_rpcwaitq);
 }
 
@@ -471,9 +466,6 @@ pnfs_mark_layout_stateid_invalid(struct pnfs_layout_hdr *lo,
 	pnfs_clear_layoutreturn_info(lo);
 	pnfs_free_returned_lsegs(lo, lseg_list, &range, 0);
 	set_bit(NFS_LAYOUT_DRAIN, &lo->plh_flags);
-	if (test_bit(NFS_LAYOUT_RETURN, &lo->plh_flags) &&
-	    !test_and_set_bit(NFS_LAYOUT_RETURN_LOCK, &lo->plh_flags))
-		pnfs_clear_layoutreturn_waitbit(lo);
 	return !list_empty(&lo->plh_segs);
 }
 
@@ -801,23 +793,16 @@ void pnfs_destroy_layout(struct nfs_inode *nfsi)
 }
 EXPORT_SYMBOL_GPL(pnfs_destroy_layout);
 
-static bool pnfs_layout_removed(struct nfs_inode *nfsi,
-				struct pnfs_layout_hdr *lo)
-{
-	bool ret;
-
-	spin_lock(&nfsi->vfs_inode.i_lock);
-	ret = nfsi->layout != lo;
-	spin_unlock(&nfsi->vfs_inode.i_lock);
-	return ret;
-}
-
 void pnfs_destroy_layout_final(struct nfs_inode *nfsi)
 {
 	struct pnfs_layout_hdr *lo = __pnfs_destroy_layout(nfsi);
 
-	if (lo)
-		wait_var_event(lo, pnfs_layout_removed(nfsi, lo));
+	if (lo) {
+		spin_lock(&nfsi->vfs_inode.i_lock);
+		wait_var_event_spinlock(lo, nfsi->layout != lo,
+					&nfsi->vfs_inode.i_lock);
+		spin_unlock(&nfsi->vfs_inode.i_lock);
+	}
 }
 
 static bool
@@ -1310,9 +1295,8 @@ pnfs_prepare_layoutreturn(struct pnfs_layout_hdr *lo,
 	/* Serialise LAYOUTGET/LAYOUTRETURN */
 	if (atomic_read(&lo->plh_outstanding) != 0 && lo->plh_return_seq == 0)
 		return false;
-	if (test_and_set_bit(NFS_LAYOUT_RETURN_LOCK, &lo->plh_flags))
+	if (test_and_set_bit(NFS_LAYOUT_RETURN, &lo->plh_flags))
 		return false;
-	set_bit(NFS_LAYOUT_RETURN, &lo->plh_flags);
 	pnfs_get_layout_hdr(lo);
 	nfs4_stateid_copy(stateid, &lo->plh_stateid);
 	*cred = get_cred(lo->plh_lc_cred);
@@ -1454,7 +1438,7 @@ _pnfs_return_layout(struct inode *ino)
 	/* Reference matched in nfs4_layoutreturn_release */
 	pnfs_get_layout_hdr(lo);
 	/* Is there an outstanding layoutreturn ? */
-	if (test_bit(NFS_LAYOUT_RETURN_LOCK, &lo->plh_flags)) {
+	if (test_bit(NFS_LAYOUT_RETURN, &lo->plh_flags)) {
 		spin_unlock(&ino->i_lock);
 		if (wait_on_bit(&lo->plh_flags, NFS_LAYOUT_RETURN,
 					TASK_UNINTERRUPTIBLE))
@@ -1564,7 +1548,7 @@ retry:
 		goto out_noroc;
 	}
 	pnfs_get_layout_hdr(lo);
-	if (test_bit(NFS_LAYOUT_RETURN_LOCK, &lo->plh_flags)) {
+	if (test_bit(NFS_LAYOUT_RETURN, &lo->plh_flags)) {
 		spin_unlock(&ino->i_lock);
 		rcu_read_unlock();
 		wait_on_bit(&lo->plh_flags, NFS_LAYOUT_RETURN,
@@ -2029,9 +2013,8 @@ static int pnfs_prepare_to_retry_layoutget(struct pnfs_layout_hdr *lo)
 	 * reference
 	 */
 	pnfs_layoutcommit_inode(lo->plh_inode, false);
-	return wait_on_bit_action(&lo->plh_flags, NFS_LAYOUT_RETURN,
-				   nfs_wait_bit_killable,
-				   TASK_KILLABLE|TASK_FREEZABLE_UNSAFE);
+	return wait_on_bit(&lo->plh_flags, NFS_LAYOUT_RETURN,
+			   TASK_KILLABLE|TASK_FREEZABLE_UNSAFE);
 }
 
 static void nfs_layoutget_begin(struct pnfs_layout_hdr *lo)
@@ -2041,9 +2024,8 @@ static void nfs_layoutget_begin(struct pnfs_layout_hdr *lo)
 
 static void nfs_layoutget_end(struct pnfs_layout_hdr *lo)
 {
-	if (atomic_dec_and_test(&lo->plh_outstanding) &&
-	    test_and_clear_bit(NFS_LAYOUT_DRAIN, &lo->plh_flags))
-		wake_up_bit(&lo->plh_flags, NFS_LAYOUT_DRAIN);
+	if (atomic_dec_and_test(&lo->plh_outstanding))
+		test_and_clear_wake_up_bit(NFS_LAYOUT_DRAIN, &lo->plh_flags);
 }
 
 static bool pnfs_is_first_layoutget(struct pnfs_layout_hdr *lo)
@@ -2055,9 +2037,7 @@ static void pnfs_clear_first_layoutget(struct pnfs_layout_hdr *lo)
 {
 	unsigned long *bitlock = &lo->plh_flags;
 
-	clear_bit_unlock(NFS_LAYOUT_FIRST_LAYOUTGET, bitlock);
-	smp_mb__after_atomic();
-	wake_up_bit(bitlock, NFS_LAYOUT_FIRST_LAYOUTGET);
+	clear_and_wake_up_bit(NFS_LAYOUT_FIRST_LAYOUTGET, bitlock);
 }
 
 static void _add_to_server_list(struct pnfs_layout_hdr *lo,
@@ -3228,9 +3208,7 @@ static void pnfs_clear_layoutcommitting(struct inode *inode)
 {
 	unsigned long *bitlock = &NFS_I(inode)->flags;
 
-	clear_bit_unlock(NFS_INO_LAYOUTCOMMITTING, bitlock);
-	smp_mb__after_atomic();
-	wake_up_bit(bitlock, NFS_INO_LAYOUTCOMMITTING);
+	clear_and_wake_up_bit(NFS_INO_LAYOUTCOMMITTING, bitlock);
 }
 
 /*
@@ -3331,9 +3309,8 @@ pnfs_layoutcommit_inode(struct inode *inode, bool sync)
 	if (test_and_set_bit(NFS_INO_LAYOUTCOMMITTING, &nfsi->flags)) {
 		if (!sync)
 			goto out;
-		status = wait_on_bit_lock_action(&nfsi->flags,
+		status = wait_on_bit_lock(&nfsi->flags,
 				NFS_INO_LAYOUTCOMMITTING,
-				nfs_wait_bit_killable,
 				TASK_KILLABLE|TASK_FREEZABLE_UNSAFE);
 		if (status)
 			goto out;
@@ -3380,7 +3357,6 @@ pnfs_layoutcommit_inode(struct inode *inode, bool sync)
 			goto out_unlock;
 		}
 	}
-
 
 	status = nfs4_proc_layoutcommit(data, sync);
 out:
