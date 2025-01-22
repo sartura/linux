@@ -43,6 +43,11 @@ struct linux_binprm {
 		 * original userspace.
 		 */
 		point_of_no_return:1,
+		/*
+		 * Set by user space to check executability according to the
+		 * caller's environment.
+		 */
+		is_check:1,
 		/* Set when "comm" must come from the dentry. */
 		comm_from_dentry:1;
 	struct file *executable; /* Executable to pass to the interpreter */
