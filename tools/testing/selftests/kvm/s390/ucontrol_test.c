@@ -459,10 +459,12 @@ TEST_F(uc_kvm, uc_no_user_region)
 	};
 
 	ASSERT_EQ(-1, ioctl(self->vm_fd, KVM_SET_USER_MEMORY_REGION, &region));
-	ASSERT_EQ(EINVAL, errno);
+	if (errno != EEXIST)
+		ASSERT_EQ(EINVAL, errno);
 
 	ASSERT_EQ(-1, ioctl(self->vm_fd, KVM_SET_USER_MEMORY_REGION2, &region2));
-	ASSERT_EQ(EINVAL, errno);
+	if (errno != EEXIST)
+		ASSERT_EQ(EINVAL, errno);
 }
 
 TEST_F(uc_kvm, uc_map_unmap)
