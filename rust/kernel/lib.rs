@@ -13,11 +13,12 @@
 
 #![no_std]
 #![feature(arbitrary_self_types)]
-#![feature(coerce_unsized)]
-#![feature(dispatch_from_dyn)]
+#![cfg_attr(CONFIG_RUSTC_HAS_COERCE_POINTEE, feature(derive_coerce_pointee))]
+#![cfg_attr(not(CONFIG_RUSTC_HAS_COERCE_POINTEE), feature(coerce_unsized))]
+#![cfg_attr(not(CONFIG_RUSTC_HAS_COERCE_POINTEE), feature(dispatch_from_dyn))]
+#![cfg_attr(not(CONFIG_RUSTC_HAS_COERCE_POINTEE), feature(unsize))]
 #![feature(inline_const)]
 #![feature(lint_reasons)]
-#![feature(unsize)]
 // Stable in Rust 1.83
 #![feature(const_maybe_uninit_as_mut_ptr)]
 #![feature(const_mut_refs)]
@@ -37,7 +38,8 @@ pub use ffi;
 pub mod alloc;
 #[cfg(CONFIG_BLOCK)]
 pub mod block;
-mod build_assert;
+#[doc(hidden)]
+pub mod build_assert;
 pub mod cred;
 pub mod device;
 pub mod device_id;
@@ -87,9 +89,6 @@ pub mod workqueue;
 pub use bindings;
 pub use macros;
 pub use uapi;
-
-#[doc(hidden)]
-pub use build_error::build_error;
 
 /// Prefix to appear before log messages printed from within the `kernel` crate.
 const __LOG_PREFIX: &[u8] = b"rust_kernel\0";
