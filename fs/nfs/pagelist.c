@@ -214,11 +214,10 @@ nfs_page_set_headlock(struct nfs_page *req)
 void
 nfs_page_clear_headlock(struct nfs_page *req)
 {
-	clear_bit_unlock(PG_HEADLOCK, &req->wb_flags);
-	smp_mb__after_atomic();
 	if (!test_bit(PG_CONTENDED1, &req->wb_flags))
-		return;
-	wake_up_bit(&req->wb_flags, PG_HEADLOCK);
+		clear_bit_unlock(PG_HEADLOCK, &req->wb_flags);
+	else
+		clear_and_wake_up_bit(PG_HEADLOCK, &req->wb_flags);
 }
 
 /*
@@ -519,11 +518,10 @@ nfs_create_subreq(struct nfs_page *req,
  */
 void nfs_unlock_request(struct nfs_page *req)
 {
-	clear_bit_unlock(PG_BUSY, &req->wb_flags);
-	smp_mb__after_atomic();
 	if (!test_bit(PG_CONTENDED2, &req->wb_flags))
-		return;
-	wake_up_bit(&req->wb_flags, PG_BUSY);
+		clear_bit_unlock(PG_BUSY, &req->wb_flags);
+	else
+		clear_and_wake_up_bit(PG_BUSY, &req->wb_flags);
 }
 
 /**
@@ -559,8 +557,7 @@ static void nfs_clear_request(struct nfs_page *req)
 		req->wb_page = NULL;
 	}
 	if (l_ctx != NULL) {
-		if (atomic_dec_and_test(&l_ctx->io_count)) {
-			wake_up_var(&l_ctx->io_count);
+		if (atomic_dec_and_wake_up(&l_ctx->io_count)) {
 			ctx = l_ctx->open_context;
 			if (test_bit(NFS_CONTEXT_UNLOCK, &ctx->flags))
 				rpc_wake_up(&NFS_SERVER(d_inode(ctx->dentry))->uoc_rpcwaitq);
@@ -961,8 +958,9 @@ static int nfs_generic_pg_pgios(struct nfs_pageio_descriptor *desc)
 		struct nfs_client *clp = NFS_SERVER(hdr->inode)->nfs_client;
 
 		struct nfsd_file *localio =
-			nfs_local_open_fh(clp, hdr->cred,
-					  hdr->args.fh, hdr->args.context->mode);
+			nfs_local_open_fh(clp, hdr->cred, hdr->args.fh,
+					  &hdr->args.context->nfl,
+					  hdr->args.context->mode);
 
 		if (NFS_SERVER(hdr->inode)->nfs_client->cl_minorversion)
 			task_flags = RPC_TASK_MOVEABLE;
