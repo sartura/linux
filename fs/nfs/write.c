@@ -1658,11 +1658,7 @@ void nfs_commit_begin(struct nfs_mds_commit_info *cinfo)
 
 bool nfs_commit_end(struct nfs_mds_commit_info *cinfo)
 {
-	if (atomic_dec_and_test(&cinfo->rpcs_out)) {
-		wake_up_var(&cinfo->rpcs_out);
-		return true;
-	}
-	return false;
+	return atomic_dec_and_wake_up(&cinfo->rpcs_out);
 }
 
 void nfs_commitdata_release(struct nfs_commit_data *data)
@@ -1826,7 +1822,8 @@ nfs_commit_list(struct inode *inode, struct list_head *head, int how,
 		task_flags = RPC_TASK_MOVEABLE;
 
 	localio = nfs_local_open_fh(NFS_SERVER(inode)->nfs_client, data->cred,
-				    data->args.fh, data->context->mode);
+				    data->args.fh, &data->context->nfl,
+				    data->context->mode);
 	return nfs_initiate_commit(NFS_CLIENT(inode), data, NFS_PROTO(inode),
 				   data->mds_ops, how,
 				   RPC_TASK_CRED_NOREF | task_flags, localio);
