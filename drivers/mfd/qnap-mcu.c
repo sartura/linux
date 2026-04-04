@@ -340,6 +340,14 @@ static const struct qnap_mcu_variant qnap_ts433_mcu = {
 	.usb_led = true,
 };
 
+static const struct qnap_mcu_variant qnap_ts435xeu_mcu = {
+	.baud_rate = 115200,
+	.num_drives = 6,
+	.fan_pwm_min = 51,  /* Specified in original model.conf */
+	.fan_pwm_max = 255,
+	.usb_led = true,
+};
+
 static struct mfd_cell qnap_mcu_cells[] = {
 	{ .name = "qnap-mcu-eeprom", },
 	{ .name = "qnap-mcu-input", },
@@ -408,6 +416,7 @@ static const struct of_device_id qnap_mcu_dt_ids[] = {
 	{ .compatible = "qnap,ts133-mcu", .data = &qnap_ts133_mcu },
 	{ .compatible = "qnap,ts233-mcu", .data = &qnap_ts233_mcu },
 	{ .compatible = "qnap,ts433-mcu", .data = &qnap_ts433_mcu },
+	{ .compatible = "qnap,ts435xeu-mcu", .data = &qnap_ts435xeu_mcu },
 	{ /* sentinel */ }
 };
 MODULE_DEVICE_TABLE(of, qnap_mcu_dt_ids);
